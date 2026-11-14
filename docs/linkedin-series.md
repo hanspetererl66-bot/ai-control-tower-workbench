@@ -56,6 +56,35 @@ Regeln für jeden Deep Dive:
 
 Ehrliche Grenzen je Post (für den letzten Satz): Beispieldaten und nichts angebunden in allen. Zusätzlich: Post 9 Prognose auf synthetischen Rechnungsdaten, keine Bonitätsbewertung; Post 11 Nutzen (1.200 Verlängerungen, 1,5 Stunden) ist eine Annahme von Hans-Peter und wird erst durch den Pilot gemessen (ab etwa 6 % gesparter Vorbereitungszeit trägt sich der Assistent, siehe `docs/renewals-pilot.md`); Post 12 Interview ohne echtes Mikrofon in der Desktop-App getestet; Post 14 kein echtes Monitoring, Sprachagent bleibt Demo.
 
+## Hook und Brücke in jedem Post
+Jeder Post beginnt mit einem Hook (erste 3 bis 5 Sekunden, **vor** "Hi, I am …" und vor der Wäscheleine) und endet mit einer Brücke, die eine Frage offen lässt.
+
+Regeln:
+1. **Konkret und überraschend**, nie allgemein ("Heute zeigen wir …" ist kein Hook). Muster: eine Zahl, ein Widerspruch, eine Frage, ein sichtbarer Moment.
+2. **Bild und Wort zusammen:** LinkedIn spielt Videos zuerst stumm ab, und die Serie hat keine Untertitel. Das erste Bild muss deshalb ohne Ton eine Spannung zeigen (großes Wort, Zahl oder eine Bewegung). Ob eine kurze Texteinblendung im Hook ausnahmsweise erlaubt ist, entscheidet Hans-Peter.
+3. **Eingelöst im Post:** Die Antwort auf den Hook kommt im "einen Moment" (Szene 2).
+4. **Zahlen nur aus den Beispieldaten** und im Post als "sample data" gekennzeichnet.
+5. **Brücke:** Der letzte Satz stellt die Frage des nächsten Posts, nicht nur "next post". Im Finale löst sie den Diamanten auf.
+
+| Nr. | Hook (gesprochen, erste Sekunden) | Erstes Bild | Brücke (letzter Satz) |
+|---|---|---|---|
+| 1 | "Imagine your whole workday in one window." | Das Fenster öffnet sich: Rail, Liste, Chat bauen sich nacheinander auf. | "But what does the assistant actually know about you?" |
+| 2 | "What does your assistant know about you? Now you can see it." | Das Kontext-Symbol klappt auf, Zeile für Zeile erscheint, was mitgeht. | "Now: a page of your own, without a ticket." |
+| 3 | "Your own dashboard. No ticket. No waiting." | Ein Satz wird getippt, die Seite baut sich auf. | "And what if everyone could reuse what works?" |
+| 4 | "One colleague solved it. Now everyone can. Safely." | Ein Gespräch wird zur Skill-Karte, vier Stempel fallen nacheinander. | "But do all of them mean the same thing?" |
+| 5 | "Ask three people what a renewal is. Get four answers." | Ein Wort, vier verschiedene Karten; sie verschmelzen zu einer. | "Next: from the first posting to the first day." |
+| 6 | "Fifty applications. No names. Decide on skills." | Kandidatenkarten mit geschwärzten Namen; eine Karte hebt sich ab. | "The contract is signed. But when does the revenue count?" |
+| 7 | "You sold it in October. When does the revenue count?" | Eine Rechnungslinie und eine Umsatzlinie laufen auseinander. | "And are you ready to close the books?" |
+| 8 | "Three days before close. Are you ready? Look." | Eine Abschlussreife-Anzeige läuft hoch, rote Punkte blinken. | "Which invoice will be paid late, and by whom?" |
+| 9 | "This invoice will probably be paid late. And here is why." | Die oberste Rechnung, Risiko in Prozent, die Gründe wandern in Zeilen heran. | "And that customer? There is a whole story behind it." |
+| 10 | "One customer. Scattered everywhere. Until now." | Fünf Fenster fliegen zu einem Graphen zusammen. | "Now Monday morning. Which renewals need you first?" |
+| 11 | "Monday morning. Five renewals are red. Where do you start?" | Die Heute-Ansicht mit drei Zahlen; eine Karte pulsiert. | "So how does a wish become something we can build?" |
+| 12 | "Describe your process out loud. Watch it become a plan." | Eine Waveform wird zu Prozessschritten. | "And when it runs, can you prove what it did?" |
+| 13 | "Your agents ran all night. Can you prove what they did?" | Eine Spur von Läufen, ein Siegel wird gesetzt. | "One more: what happens when IT operations run themselves?" |
+| 14 | "A certificate expires at midnight. Who acts?" | Ein Zertifikat zählt Stunden herunter, die Konsole mit vielen Monitoren. | "And where did the diamond go? Which story do you want next?" (Auflösung und Aufruf zur Staffel zwei) |
+
+Die Zahlen in den Hooks (fünf rote Verlängerungen, "fifty" Bewerbungen, die Risikoprozente) sind Platzhalter aus den Beispieldaten und werden beim Bau gegen die Daten im Space geprüft.
+
 ## Wäsche, Kater und Musik: Zuordnung zu den neuen Nummern (Vorschlag, offen)
 | Neu | Übernimmt | Offen |
 |---|---|---|
