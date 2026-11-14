@@ -15,7 +15,7 @@ const byId = new Map(graph.nodes.map((n) => [n.id, n]));
 const edgeKeys = new Set(graph.edges.map((e) => `${e.source}|${e.type}|${e.target}`));
 
 test('renewals in the graph: every renewal case is a contract node of its customer, with decision date and health', () => {
-  assert.equal(data.cases.length, 21);
+  assert.equal(data.cases.length, 25);
   for (const c of data.cases) {
     const node = byId.get(`contract:${c.contractId}`);
     assert.ok(node, `contract node for ${c.contractId}`);
@@ -88,5 +88,5 @@ test('renewals in the graph: the page carries the graph and styles the new type'
   assert.equal(inPage.nodes.length, graph.nodes.length);
   assert.match(html, /invoice:\{c:'amber',s:'square'/);
   assert.match(html, /const SALES = \[[^\]]*'invoice'/);
-  assert.equal(renewalsFromRepo().cases.length, 21);
+  assert.equal(renewalsFromRepo().cases.length, 25);
 });
