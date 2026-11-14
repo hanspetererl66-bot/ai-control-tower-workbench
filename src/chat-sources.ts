@@ -9,6 +9,8 @@ export type Source = {
   /** Tools used (connector) or what the page is (web). */
   detail?: string;
   url?: string;
+  /** Connector sources: the connector's own name, for its mark. */
+  ext?: string;
 };
 
 const cleanUrl = (u: string) => u.replace(/[.,;:!?)\]]+$/, '');
@@ -27,7 +29,7 @@ export function collectSources(tools: ToolCall[], text: string): Source[] {
     if (tool && !list.includes(tool)) list.push(tool);
     byExt.set(ext, list);
   }
-  for (const [ext, list] of byExt) out.push({ kind: 'connector', label: connectorDisplayName(ext), detail: list.slice(0, 6).join(', ') });
+  for (const [ext, list] of byExt) out.push({ kind: 'connector', label: connectorDisplayName(ext), detail: list.slice(0, 6).join(', '), ext });
   const seen = new Set<string>();
   for (const raw of text.match(/https?:\/\/[^\s)\]>"']+/g) ?? []) {
     const url = cleanUrl(raw);

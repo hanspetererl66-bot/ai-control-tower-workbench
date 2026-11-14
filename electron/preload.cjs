@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('host', {
   openFile: (path) => ipcRenderer.invoke('open-file', path),
   openWorkspace: () => ipcRenderer.invoke('open-workspace'),
   revealFile: (path) => ipcRenderer.send('reveal-file', path),
+  writeJobResult: (request) => ipcRenderer.invoke('write-job-result', request),
   renderBriefingPdf: (request) => ipcRenderer.invoke('render-briefing-pdf', request),
   composeChatMail: (request) => ipcRenderer.invoke('compose-chat-mail', request),
   pickChatFiles: () => ipcRenderer.invoke('pick-chat-files'),

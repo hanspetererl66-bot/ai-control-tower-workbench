@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Revenue Recognition (Software)</title>
+<title>Revenue Recognition</title>
 <style id="design-system">
 /* Shared design system for the example Spaces (AI Control Tower, Sub4Me).
    Source of truth: examples/shared/design-system.css. Embedded into each Space by
@@ -352,7 +352,7 @@ details.acc .abody{padding:2px 14px 14px}
 .five{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 14px}
 .five div{border:1px solid var(--line);border-radius:var(--radius-s);padding:8px 10px;background:var(--surface);display:flex;gap:8px;align-items:baseline}
 .five b{color:var(--purple);font-size:16px}.five span{font-weight:600;font-size:12px}
-.chart{width:100%;height:auto;max-width:860px;display:block}
+.chart{width:100%;height:auto;max-width:1040px;display:block}
 .chart .gr{stroke:var(--line);stroke-width:1}.chart .ax{fill:var(--muted);font-size:10px}
 .chart polyline{stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .chart .l-billed{stroke:var(--blue)}.chart .l-rec{stroke:var(--purple)}.chart .l-coll{stroke:var(--green)}
@@ -361,17 +361,151 @@ details.acc .abody{padding:2px 14px 14px}
 .sw-a{background:var(--amber)}.chart .l-bill2{stroke:var(--amber)}.chart .zero{stroke:var(--muted);stroke-width:1.5}
 .sw-b{background:var(--blue)}.sw-r{background:var(--purple)}.sw-c{background:var(--green)}
 @media (max-width:900px){.five{grid-template-columns:1fr 1fr}}
+
+/* ---- the process: five coloured steps, then what happens after signing ---- */
+.ph1{--ph:var(--blue);--ph-bg:var(--blue-dim);--ph-bd:var(--blue-border)}
+.ph2{--ph:var(--teal);--ph-bg:var(--teal-dim);--ph-bd:color-mix(in srgb,var(--teal) 32%,transparent)}
+.ph3{--ph:var(--amber);--ph-bg:var(--amber-dim);--ph-bd:var(--amber-border)}
+.ph4{--ph:var(--purple);--ph-bg:var(--purple-dim);--ph-bd:var(--purple-border)}
+.ph5{--ph:var(--green);--ph-bg:var(--green-dim);--ph-bd:var(--green-border)}
+.ph6{--ph:color-mix(in srgb,var(--blue) 55%,var(--purple));--ph-bg:color-mix(in srgb,var(--blue) 7%,transparent);--ph-bd:color-mix(in srgb,var(--blue) 30%,var(--purple))}
+.ph7{--ph:color-mix(in srgb,var(--teal) 55%,var(--blue));--ph-bg:color-mix(in srgb,var(--teal) 8%,transparent);--ph-bd:color-mix(in srgb,var(--teal) 32%,var(--blue))}
+.ph8{--ph:color-mix(in srgb,var(--amber) 60%,var(--red));--ph-bg:color-mix(in srgb,var(--amber) 8%,transparent);--ph-bd:color-mix(in srgb,var(--amber) 35%,var(--red))}
+nav#tabs{display:block;padding:14px 22px 12px;overflow:visible}
+.rail{display:flex;align-items:stretch;flex-wrap:wrap;row-gap:10px}
+#tabs .rn{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 10px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 16px 9px 10px;border-radius:14px;font:inherit;cursor:pointer;min-width:0;transition:transform .15s,box-shadow .15s,border-color .15s,background-color .15s}
+#tabs .rn:hover{border-color:var(--ph);transform:translateY(-2px);box-shadow:var(--shadow)}
+#tabs .rn:focus-visible{outline:2px solid var(--ph);outline-offset:2px}
+#tabs .rn .dot{grid-row:1/3;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;border:2px solid var(--ph);color:var(--ph);background:var(--ph-bg)}
+#tabs .rn b{font-size:13px;line-height:1.2;color:var(--ink)}
+#tabs .rn small{grid-column:2;color:var(--muted);font-size:11px;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+#tabs .rn:not(.mini){flex:1 1 150px;max-width:250px}
+#tabs .rn.on{border-color:var(--ph);background:var(--ph-bg);box-shadow:0 6px 18px color-mix(in srgb,var(--ph) 22%,transparent)}
+#tabs .rn.on .dot,#tabs .rn.done .dot{background:var(--ph);color:var(--surface)}
+#tabs .rn.on .dot{animation:rn-pulse 2.2s ease-in-out infinite}
+#tabs .rn.done .dot span{display:none}
+#tabs .rn.done .dot::before{content:"\2713";font-size:15px}
+.rl{flex:0 0 26px;align-self:center;height:4px;border-radius:2px;background:var(--line);transform-origin:left}
+.rl.lit{background:var(--ph)}
+.rl.next{background:repeating-linear-gradient(90deg,var(--ph) 0 6px,transparent 6px 12px);background-size:12px 100%;animation:rl-flow .8s linear infinite}
+.after{margin-left:auto;display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding-left:14px;border-left:1px dashed var(--line)}
+.alab{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+#tabs .rn.mini{display:inline-flex;gap:8px;padding:7px 12px;border-radius:99px;font-weight:600;font-size:12.5px}
+#tabs .rn.mini .mdot{width:10px;height:10px;border-radius:50%;background:var(--ph)}
+#tabs .rn.mini.on{color:var(--ink)}
+.rail-in .rn{opacity:0;animation:rn-in .5s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i)*90ms)}
+.rail-in .rl{animation:rl-draw .4s ease both;animation-delay:calc(var(--i)*90ms + 60ms)}
+.rail-in .rl.next{animation:rl-draw .4s ease both,rl-flow .8s linear .6s infinite;animation-delay:calc(var(--i)*90ms + 60ms),0s}
+.rail-in .rn.on{animation:rn-in .5s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes rn-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes rl-draw{from{transform:scaleX(0)}to{transform:none}}
+@keyframes rl-flow{to{background-position:12px 0}}
+@keyframes rn-pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ph) 45%,transparent)}50%{box-shadow:0 0 0 7px transparent}}
+.banner{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 18px;padding:14px 18px;border:1px solid var(--ph-bd);border-left:6px solid var(--ph);background:var(--ph-bg);border-radius:var(--radius-s)}
+.banner .bn-l{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ph)}
+.banner .bn-t{font-size:19px;font-weight:800;letter-spacing:-.015em;margin:1px 0 2px}
+.banner .bn-q{color:var(--ink-2);font-size:13px;max-width:70ch}
+.banner .bnav{margin-left:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.banner .btn.go{background:var(--ph);border-color:var(--ph);color:var(--surface)}
+.banner .seg button[aria-pressed=true]{background:var(--ph);color:var(--surface)}
+.flowmap{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:0 0 20px}
+.fm{position:relative;display:block;text-align:left;border:1px solid var(--ph-bd);background:var(--ph-bg);border-top:4px solid var(--ph);border-radius:var(--radius-s);padding:12px 14px;margin-right:24px;cursor:pointer;font:inherit;color:var(--ink);transition:transform .15s,box-shadow .15s}
+.fm:last-child{margin-right:0}
+.fm:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.fm:focus-visible{outline:2px solid var(--ph);outline-offset:2px}
+.fm .fn{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ph);color:var(--surface);font-weight:800;font-size:12px}
+.fm b{display:block;margin:6px 0 0;font-size:13px}
+.fm .fq{display:block;color:var(--muted);font-size:11px;margin:2px 0 8px;line-height:1.3}
+.fm .fv{display:block;font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--ph);font-variant-numeric:tabular-nums;white-space:nowrap}
+.fm .fc{display:block;color:var(--ink-2);font-size:11px;line-height:1.3;margin-top:2px}
+.fm:not(:last-child)::after{content:"";position:absolute;right:-24px;top:46%;width:24px;height:3px;background:repeating-linear-gradient(90deg,var(--ph) 0 5px,transparent 5px 10px);background-size:10px 100%;animation:rl-flow .8s linear infinite}
+.fm:not(:last-child)::before{content:"\203A";position:absolute;right:-12px;top:46%;transform:translateY(-62%);color:var(--ph);font-weight:800;font-size:16px;z-index:1}
+@media (max-width:1000px){.flowmap{grid-template-columns:1fr 1fr;gap:10px}.fm{margin-right:0}.fm::after,.fm::before{display:none}}
+/* one colour per position and per account, the same on every page */
+.pos0{--pc:var(--purple)}.pos1{--pc:var(--blue)}.pos2{--pc:var(--teal)}.pos3{--pc:var(--amber)}.pos4{--pc:var(--green)}
+.pos5{--pc:color-mix(in srgb,var(--amber) 50%,var(--red))}.pos6{--pc:color-mix(in srgb,var(--red) 55%,var(--purple))}
+.pdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pc);margin-right:8px;vertical-align:baseline}
+tr.posr td:first-child{box-shadow:inset 3px 0 0 var(--pc)}
+.acct{display:inline-block;padding:1px 9px;border-radius:99px;font-size:11.5px;font-weight:700;border:1px solid var(--ac-bd);background:var(--ac-bg);color:var(--ac)}
+.ac-recv{--ac:var(--blue);--ac-bg:var(--blue-dim);--ac-bd:var(--blue-border)}
+.ac-bank{--ac:var(--green);--ac-bg:var(--green-dim);--ac-bd:var(--green-border)}
+.ac-def{--ac:var(--amber);--ac-bg:var(--amber-dim);--ac-bd:var(--amber-border)}
+.ac-rev{--ac:var(--purple);--ac-bg:var(--purple-dim);--ac-bd:var(--purple-border)}
+.ac-oth{--ac:var(--teal);--ac-bg:var(--teal-dim);--ac-bd:color-mix(in srgb,var(--teal) 32%,transparent)}
+.kpi.k-b{border-top:3px solid var(--blue)}.kpi.k-r{border-top:3px solid var(--purple)}.kpi.k-c{border-top:3px solid var(--green)}.kpi.k-a{border-top:3px solid var(--amber)}.kpi.k-t{border-top:3px solid var(--teal)}
+.kpi.k-b b{color:var(--blue-ink)}.kpi.k-r b{color:var(--purple-ink)}.kpi.k-c b{color:var(--green-ink)}.kpi.k-a b{color:var(--amber-ink)}
+.kpi b{font-variant-numeric:tabular-nums}
+/* price allocation as bars */
+.albars{display:grid;gap:10px;margin:0 0 16px}
+.alrow{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;align-items:center}
+.alrow>b{font-size:12px;color:var(--ink-2)}
+.albar{display:flex;height:30px;border-radius:8px;overflow:hidden;background:var(--line-2)}
+.albar i{display:flex;align-items:center;height:100%;width:var(--w);min-width:2px;background:var(--pc);color:var(--surface);font-style:normal;font-size:11px;font-weight:700;padding:0 8px;white-space:nowrap;overflow:hidden;transform-origin:left}
+.albar i.disc{background:repeating-linear-gradient(135deg,var(--red-border) 0 6px,transparent 6px 12px);color:var(--red-ink)}
+.alleg{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--ink-2);font-size:12px;margin:0 0 14px}
+/* charts and the month player */
+.chart .st{fill:var(--pc);stroke:var(--surface);stroke-width:.6}
+.enter #revrect{animation:rr-wipe 1.6s ease both}
+@keyframes rr-wipe{from{width:0}}
+.chart .ar{fill:var(--purple);opacity:.1}.chart .ar2{fill:var(--purple);opacity:.12}
+.chart .l-billed{stroke:var(--blue);stroke-width:2}.chart .l-rec{stroke:var(--purple);stroke-width:3.2}.chart .l-coll{stroke:var(--green);stroke-width:2.2}
+.chart .lb-b{fill:var(--blue-ink)}.chart .lb-r{fill:var(--purple-ink)}.chart .lb-c{fill:var(--green-ink)}
+.chart .cur{stroke:var(--ink);stroke-width:1;stroke-dasharray:3 3;opacity:.55}
+.chart .cd{stroke:var(--surface);stroke-width:2}.chart .d-b{fill:var(--blue)}.chart .d-r{fill:var(--purple)}.chart .d-c{fill:var(--green)}
+.chart .tk{stroke:var(--faint);stroke-width:1}
+.play{display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center;margin:10px 0 6px}
+.play input[type=range]{flex:1 1 220px;accent-color:var(--purple)}
+.play .pm{min-width:76px;font-weight:700;font-variant-numeric:tabular-nums}
+.readout{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:6px 0 16px}
+.ro{border:1px solid var(--line);border-top:3px solid var(--rc);border-radius:10px;padding:8px 12px;background:var(--surface)}
+.ro b{display:block;font-size:17px;font-variant-numeric:tabular-nums;color:var(--rc)}.ro span{color:var(--muted);font-size:11px}
+.ro.rb{--rc:var(--blue-ink)}.ro.rr{--rc:var(--purple-ink)}.ro.rc{--rc:var(--green-ink)}.ro.rg{--rc:var(--amber-ink)}
+@media (max-width:900px){.readout{grid-template-columns:1fr 1fr}.alrow{grid-template-columns:1fr}}
+/* motion: only when a page is opened (class "enter"), never when a button on the page is pressed */
+.enter>*{animation:rr-up .45s cubic-bezier(.2,.8,.2,1) both}
+.enter>:nth-child(2){animation-delay:.05s}.enter>:nth-child(3){animation-delay:.1s}.enter>:nth-child(4){animation-delay:.15s}.enter>:nth-child(5){animation-delay:.2s}.enter>:nth-child(n+6){animation-delay:.25s}
+.enter .kpi{animation:rr-pop .5s cubic-bezier(.2,.9,.3,1.2) both}
+.enter .kpi:nth-child(2){animation-delay:.07s}.enter .kpi:nth-child(3){animation-delay:.14s}.enter .kpi:nth-child(4){animation-delay:.21s}.enter .kpi:nth-child(5){animation-delay:.28s}.enter .kpi:nth-child(6){animation-delay:.35s}
+.enter .fm{animation:rr-up .5s cubic-bezier(.2,.8,.2,1) both}
+.enter .fm:nth-child(2){animation-delay:.12s}.enter .fm:nth-child(3){animation-delay:.24s}.enter .fm:nth-child(4){animation-delay:.36s}.enter .fm:nth-child(5){animation-delay:.48s}
+.enter tbody tr{animation:rr-row .4s ease both}
+.enter tbody tr:nth-child(1){animation-delay:.04s}.enter tbody tr:nth-child(2){animation-delay:.08s}.enter tbody tr:nth-child(3){animation-delay:.12s}.enter tbody tr:nth-child(4){animation-delay:.16s}.enter tbody tr:nth-child(5){animation-delay:.2s}.enter tbody tr:nth-child(6){animation-delay:.24s}.enter tbody tr:nth-child(7){animation-delay:.28s}.enter tbody tr:nth-child(8){animation-delay:.32s}.enter tbody tr:nth-child(n+9){animation-delay:.36s}
+.enter .albar i{animation:rr-grow .9s cubic-bezier(.2,.8,.2,1) both}
+.enter .albar i:nth-child(2){animation-delay:.08s}.enter .albar i:nth-child(3){animation-delay:.16s}.enter .albar i:nth-child(4){animation-delay:.24s}.enter .albar i:nth-child(5){animation-delay:.32s}.enter .albar i:nth-child(6){animation-delay:.4s}.enter .albar i:nth-child(7){animation-delay:.48s}.enter .albar i:nth-child(8){animation-delay:.56s}
+.enter .chart polyline{stroke-dasharray:1;stroke-dashoffset:1;animation:rr-draw 1.6s ease forwards}
+.enter .chart polyline.l-rec{animation-delay:.25s}.enter .chart polyline.l-coll{animation-delay:.5s}
+.enter .chart .ar,.enter .chart .ar2{animation:rr-fade 1.2s ease .9s both}
+@keyframes rr-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes rr-pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes rr-row{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes rr-grow{from{transform:scaleX(0)}to{transform:none}}
+@keyframes rr-draw{to{stroke-dashoffset:0}}
+@keyframes rr-fade{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){.enter #revrect{animation:none!important}.rail-in .rn,.rail-in .rl,.enter>*,.enter .kpi,.enter .fm,.enter tbody tr,.enter .albar i,.enter .chart polyline,.enter .chart .ar,.enter .chart .ar2,.rl.next,.fm::after,#tabs .rn.on .dot{animation:none!important}.enter .chart polyline{stroke-dasharray:none;stroke-dashoffset:0}.rail-in .rn{opacity:1}}
+/* tips: speech bubbles that explain a step; size and colours come from Settings, Skin, Tips */
+.tipb{position:fixed;z-index:60;width:min(calc(var(--tip-size,13.5px)*25),calc(100vw - 24px));box-sizing:border-box;padding:14px 16px 12px;font-size:var(--tip-size,13.5px);background:var(--tip-bg,var(--surface));color:var(--tip-text,var(--ink));border:1px solid var(--purple);border-radius:14px;box-shadow:var(--shadow-lg);animation:rr-up .2s ease both}
+.tipb h3{margin:2px 0 6px;font-size:1.11em;color:inherit}
+.tipb p{margin:0;font-size:1em;line-height:1.5;color:inherit}
+.tipb .tp-step{font-size:.86em;color:color-mix(in srgb,var(--tip-text,var(--ink)) 62%,transparent)}
+.tipb .tp-acts{display:flex;align-items:center;gap:6px;margin-top:12px}.tipb .tp-gap{flex:1}
+.tipb::before{content:"";position:absolute;width:12px;height:12px;background:var(--tip-bg,var(--surface));border:1px solid var(--purple);transform:rotate(45deg)}
+.tipb.below::before{top:-7px;left:calc(var(--arrow) - 6px);border-right:0;border-bottom:0}
+.tipb.above::before{bottom:-7px;left:calc(var(--arrow) - 6px);border-left:0;border-top:0}
+.tipb.right::before{left:-7px;top:calc(var(--arrow) - 6px);border-right:0;border-top:0}
+.tipmark{position:fixed;z-index:59;pointer-events:none;border-radius:10px;background:color-mix(in srgb,var(--tip-mark,var(--purple)) 14%,transparent);outline:2px solid color-mix(in srgb,var(--tip-mark,var(--purple)) 70%,transparent);outline-offset:2px}
+.btn.tbn{padding:4px 11px;font-size:12px}
 </style>
 </head>
 <body>
 <header>
-  <div><div class="logo">Revenue <b>Recognition</b> · Software</div><div class="sub">When is a software deal revenue? Five steps, the pattern per kind of software, and what ends up in the books</div></div>
-  <div class="hr"><span class="tag amber">draft mode</span><span class="sub" id="sys"></span></div>
+  <span id="wb-customer" data-wb-customer hidden></span>
+  <div><div class="logo">Revenue <b>Recognition</b></div><div class="sub">When is a software deal revenue? Five steps, the pattern per kind of software, and what ends up in the books</div></div>
+  <div class="hr"><span class="tag amber">draft mode</span><button type="button" class="btn tbn" id="tips-btn"></button><span class="sub" id="sys"></span></div>
 </header>
 <div class="demo">Mockup with fictional data, teaching version (IFRS 15 and ASC 606, simplified). Not accounting advice: policy choices, estimates and the mapping to a finance system must be confirmed by the company's accountants. Nothing is posted anywhere.</div>
 <nav role="tablist" aria-label="Sections" id="tabs"></nav>
 <main id="main"></main>
-<script type="application/json" id="data">{"asOf":"2026-11-08","company":"Rheinsoft Solutions (fictional)","currency":"EUR","terms":30,"customer":{"name":"Kestrel Versicherung AG","billTo":"Kestrel Group Services GmbH","country":"DE"},"contract":{"id":"C-4410","signed":"2026-10-28","serviceStart":"2026-12-01","months":36,"order":"OF-7731","salesOrder":"SO-90412","bom":"BOM-90412"},"lines":[{"id":"L10","kind":"License","name":"Architect Server licences","material":"SW-LIC-ARCH","model":"Licence purchase (perpetual)","qty":40,"unit":"licence","unitPrice":1450,"price":58000,"ssp":64000,"pattern":"point","fulfil":"key","recognizeOn":"2026-11-04","billOn":"2026-11-10","recognitionNote":"Right to use: revenue at one point in time, when the keys are delivered and the customer can use the software."},{"id":"L20","kind":"Subscription","name":"Insight Cloud subscription","material":"SW-SUB-INSIGHT","model":"Monthly subscription, 250 users","qty":250,"unit":"user per month","unitPrice":28,"monthly":7000,"months":36,"start":"2026-12","price":252000,"ssp":270000,"pattern":"ratable","fulfil":"tenant","recognitionNote":"Right to access (SaaS): revenue evenly over the 36 months."},{"id":"L21","kind":"Overage","name":"Insight Cloud overage","material":"SW-SUB-INSIGHT","model":"Subscription overage above 250 users","parent":"L20","included":250,"rate":34,"unit":"user per month","pattern":"overage","fulfil":"meter","periods":[{"month":"2026-12","peak":268,"billedOn":"2027-01-05"},{"month":"2027-01","peak":255,"billedOn":"2027-02-05"}],"recognitionNote":"Variable consideration: recognised in the month the extra users are there, at the contract rate."},{"id":"L30","kind":"Consumption","name":"Flow Engine consumption","material":"SW-USE-FLOW","model":"Software on consumption, billed in arrears","rate":0.4,"per":1000,"unit":"API calls","pattern":"usage","fulfil":"meter","periods":[{"month":"2026-12","metered":28400000,"billed":26100000,"billedOn":"2027-01-05","trueUpOn":"2027-01-15"},{"month":"2027-01","metered":31000000,"billed":31000000,"billedOn":"2027-02-05"}],"recognitionNote":"Usage-based fee: revenue as the calls are made. Not part of the committed price."},{"id":"L40","kind":"Service","name":"Implementation","material":"SRV-IMPL","model":"Fixed fee, three milestones","qty":1,"unit":"project","price":24000,"ssp":26000,"pattern":"milestone","fulfil":"service","milestones":[{"id":"M1","name":"Design accepted (30 %)","share":0.3,"acceptedOn":"2026-11-20"},{"id":"M2","name":"Build accepted (40 %)","share":0.4,"acceptedOn":"2027-01-15"},{"id":"M3","name":"Go-live accepted (30 %)","share":0.3,"plannedOn":"2027-02-26"}],"progress":[{"on":"2026-11-30","pct":0.2},{"on":"2026-12-31","pct":0.45},{"on":"2027-01-31","pct":0.75},{"on":"2027-02-28","pct":1}],"recognitionNote":"Over time by progress (hours worked against plan). Billing follows the milestones, so the two differ."},{"id":"L50","kind":"Service","name":"Training","material":"SRV-TRN","model":"Time and material, 6 days","qty":6,"unit":"day","unitPrice":1800,"price":10800,"ssp":11700,"pattern":"units","fulfil":"service","periods":[{"on":"2026-12-08","units":3,"billedOn":"2026-12-31"},{"on":"2027-01-19","units":3,"billedOn":"2027-01-31"}],"recognitionNote":"Recognised when a training day has been held; billed at the end of that month."},{"id":"L60","kind":"Service","name":"Managed operations (Premium)","material":"SRV-MGD","model":"Monthly service fee, 36 months","qty":1,"unit":"month","monthly":1200,"months":36,"start":"2026-12","price":43200,"ssp":45000,"pattern":"ratable","fulfil":"service","recognitionNote":"Stand-ready service: revenue evenly over the 36 months."}],"title":"Revenue Recognition (Software)","steps":[{"n":1,"name":"Identify the contract","question":"Is there an enforceable contract, and are these papers one contract or several?","case":"Contract C-4410 (signed 2026-10-28) with Kestrel Versicherung AG: rights and payment terms are clear, the customer has the commitment, payment is probable. The order form, the master agreement and the service description are read as one contract because they were negotiated together.","judge":"Combining contracts signed at about the same time; contract term when either side can cancel; free pilots before the contract; side letters.","owner":"Revenue accounting with Legal"},{"n":2,"name":"Identify the performance obligations","question":"Which promises are distinct, so that each gets its own revenue?","case":"Five committed obligations: Architect Server licences, Insight Cloud subscription, implementation, training, managed operations. Overage and consumption are not promised in advance; they are usage that adds up later.","judge":"Is the implementation distinct from the cloud service, or does it change the service so much that both are one obligation? Is support part of the licence or separate?","owner":"Revenue accounting with Product"},{"n":3,"name":"Determine the transaction price","question":"What does the company expect to receive?","case":"Fixed 388,000.00 EUR. On top: overage at 34.00 per extra user and 0.40 per 1,000 API calls. These are variable and are not in the fixed price. Possible reductions: service credits for missed availability, volume rebate.","judge":"Variable consideration (estimate, then limit it so a large reversal is not likely), service credits, rebates, significant financing (payment terms beyond one year), money paid to the customer.","owner":"Revenue accounting with Sales"},{"n":4,"name":"Allocate the price","question":"How is the price shared out to the obligations?","case":"By stand-alone selling price: 416,700.00 at list, 388,000.00 charged, so a discount of 28,700.00 (6.9 %) is shared proportionally. Usage and overage stay out because their rates match the stand-alone price.","judge":"Evidence for the stand-alone price (what do others pay for the same?); relative method or residual approach; whether the discount belongs to one obligation only.","owner":"Pricing with Revenue accounting"},{"n":5,"name":"Recognise the revenue","question":"When is each obligation satisfied?","case":"Licences at one point in time when the keys are delivered (2026-11-04). Subscription and managed operations evenly over 36 months from 2026-12-01. Implementation by progress, training by day held, usage and overage as they arise.","judge":"Licence or service? Point in time or over time? Method for measuring progress. Customer acceptance clauses.","owner":"Revenue accounting"}],"treatments":[{"id":"perp","name":"Perpetual on-premise licence","pattern":"Point in time","why":"The customer can run the software on its own systems. It is a right to use the software as it exists. Revenue when the keys are delivered and the licence period has started.","watch":"A customer acceptance clause can delay the point. Updates that are promised are a separate service.","refs":"IFRS 15 B58 to B62, ASC 606-10-55-58 to 55-64","je":"Dr Receivable, Cr Revenue","inCase":"L10"},{"id":"term","name":"Term licence on-premise (for example 3 years)","pattern":"Point in time","why":"The licence part is recognised at the start of the term, not spread over it. Support for the term is a separate service, recognised evenly.","watch":"Multi-year payment in arrears can contain a financing component. A renewal is recognised at the start of the renewal period, never earlier.","refs":"IFRS 15 B58 to B62, B63","je":"Dr Receivable, Cr Revenue (licence); Dr Receivable, Cr Deferred revenue (support)"},{"id":"saas","name":"Software as a service (subscription)","pattern":"Over time","why":"The customer gets access, not the software. The company stands ready every day, so revenue is spread evenly over the term.","watch":"If the customer can take the software and run it elsewhere without a major penalty, it is a licence plus hosting instead.","refs":"IFRS 15 35(a), ASC 606-10-25-27(a)","je":"Dr Receivable, Cr Deferred revenue; each month Dr Deferred revenue, Cr Revenue","inCase":"L20"},{"id":"hosted","name":"Hosted licence (customer could take possession)","pattern":"Point in time + over time","why":"Two parts: the licence at one point in time, the hosting evenly over the term.","watch":"Needs an honest answer to: could the customer run it on its own or a third party's hardware without a significant penalty?","refs":"ASC 985-20-15-5; IFRS 15 B52","je":"Split the price by stand-alone price first"},{"id":"pcs","name":"Support and maintenance","pattern":"Over time","why":"A ready-to-help promise, recognised evenly. Updates that come when and if available are part of it.","watch":"If the support is so basic that the customer needs it to use the software, it can be one obligation with the licence.","refs":"IFRS 15 B49 to B51","je":"Dr Receivable, Cr Deferred revenue; monthly release to Revenue"},{"id":"usage","name":"Consumption fee (per call, per transaction)","pattern":"As incurred","why":"The amount depends on use. It is recognised in the month the use happens, at the contract rate.","watch":"Two rules look similar: for a licence of intellectual property the royalty is recognised at the later of use and satisfaction; for a service the fee belongs to the period of use. Check the rate against the stand-alone price.","refs":"IFRS 15 85 and B63, ASC 606-10-32-40 and 55-65","je":"Dr Contract asset (or Receivable), Cr Revenue each month; invoice later","inCase":"L30"},{"id":"overage","name":"Overage above a committed volume","pattern":"As incurred","why":"The extra users or calls are variable. Revenue in the month they occur, invoiced in arrears.","watch":"If the overage rate is far below the normal price, part of the committed price may have to move to it.","refs":"IFRS 15 50 to 59","je":"Dr Contract asset, Cr Revenue; on invoice Dr Receivable, Cr Contract asset","inCase":"L21"},{"id":"impl","name":"Implementation and configuration","pattern":"Over time (by progress)","why":"If another company could do it and the cloud service works without it, it is distinct: revenue by hours worked against plan or by milestones that show real progress.","watch":"If the work changes the service itself, it is one obligation with the subscription and follows its pattern.","refs":"IFRS 15 27 to 30, 35","je":"Invoice by milestone: Dr Receivable, Cr Deferred revenue; progress: Dr Deferred revenue or Contract asset, Cr Revenue","inCase":"L40"},{"id":"train","name":"Training","pattern":"As delivered","why":"Each day held is revenue. Prepaid vouchers are deferred and released when used or when the customer will not use them.","watch":"Unused vouchers (breakage) need an estimate based on history.","refs":"IFRS 15 B44 to B47","je":"Dr Receivable, Cr Deferred revenue; Dr Deferred revenue, Cr Revenue per day","inCase":"L50"},{"id":"ops","name":"Managed operations","pattern":"Over time","why":"A stand-ready service, recognised evenly over the term.","watch":"Penalties for missed service levels reduce the price.","refs":"IFRS 15 35(a)","je":"Dr Receivable, Cr Deferred revenue; monthly release","inCase":"L60"},{"id":"trial","name":"Free trial or pilot","pattern":"No revenue","why":"Without a payment or a binding commitment there is no contract yet, so nothing is recognised.","watch":"A discount on the later purchase can be a material right.","refs":"IFRS 15 9, B39 to B43","je":"None"},{"id":"renew","name":"Renewal option at a discount","pattern":"Deferred, then over time","why":"If the discount is larger than what other customers get, the option is a material right: part of today's price is deferred until the renewal or the option expires.","watch":"Estimate the likelihood that the customer renews.","refs":"IFRS 15 B39 to B43","je":"Part of the price goes to Deferred revenue"},{"id":"resell","name":"Sale through a reseller","pattern":"Depends","why":"If the reseller is the customer, revenue when control passes to the reseller. If the reseller only arranges the sale, the company recognises on sale to the end customer.","watch":"Right of return, price protection and sell-through reporting.","refs":"IFRS 15 B34 to B38","je":"Depends on who controls the software"},{"id":"finance","name":"Payment terms beyond one year","pattern":"Adjusts the price","why":"A significant financing component splits the price into revenue and interest income. Within a year the practical expedient says: ignore it.","watch":"Multi-year licences paid at the end are the typical case.","refs":"IFRS 15 60 to 65","je":"Dr Receivable, Cr Revenue and Cr Interest income over time"}],"sla":{"fee":7000,"tiers":[{"min":99.9,"pct":0},{"min":99.5,"pct":5},{"min":99,"pct":10},{"min":0,"pct":25}],"options":[100,99.95,99.7,99.2,98.4]},"rebate":{"line":"L30","threshold":30000000,"pct":0.05,"scenarios":[{"calls":25000000,"p":0.25},{"calls":31000000,"p":0.5},{"calls":36000000,"p":0.25}]},"modification":{"asOf":"2027-03-31","from":"2027-04","line":"L20","lineLic":"L10","rule":0.9,"scenarios":[{"id":"A","name":"Add 50 users from April 2027","text":"The customer adds 50 users to Insight Cloud for the rest of the term, at 28.00 per user and month. The stand-alone price is 30.00.","users":50,"userSsp":30,"userRate":28,"licences":0,"licSsp":0,"licRate":0},{"id":"B","name":"Add 10 licences and 50 users, deep discount","text":"One amendment adds 10 Architect Server licences (1,200.00 each, stand-alone price 1,600.00) and 50 users at 20.00 per month (stand-alone price 30.00).","users":50,"userSsp":30,"userRate":20,"licences":10,"licSsp":1600,"licRate":1200}]},"commission":{"rate":0.06,"months":60,"start":"2026-12","note":"Incremental cost of obtaining the contract: capitalised and amortised over the expected customer life of five years, because renewals are expected and the commission on renewals is lower."},"judgements":[{"area":"Distinct or not","question":"Can the customer use the implementation without the cloud service, and could someone else do it?","risk":"Revenue for implementation is shown too early if it is really part of the service.","control":"Written assessment per contract type, approved once and reviewed for new offers","owner":"Revenue accounting"},{"area":"Stand-alone price","question":"What do we actually charge for each piece when sold alone?","risk":"A list price that nobody pays moves revenue between obligations.","control":"Yearly SSP study with ranges; deals outside the range are flagged","owner":"Pricing"},{"area":"Licence or service","question":"Can the customer take the software and run it elsewhere?","risk":"Licence revenue up front when it should be spread.","control":"Checklist in the deal review, evidence in the contract file","owner":"Product, Revenue accounting"},{"area":"Variable consideration","question":"How much of overage, rebates and credits is likely to stay?","risk":"Revenue reversed in a later quarter.","control":"Estimate each quarter, compare with actual, keep the constraint note","owner":"Revenue accounting"},{"area":"Contract term","question":"Can the customer leave early without a real penalty?","risk":"The 36 months are really 12.","control":"Legal flags termination for convenience; term set accordingly","owner":"Legal"},{"area":"Principal or agent","question":"Does the company control what the end customer receives?","risk":"Gross against net revenue.","control":"Decision memo for marketplaces and resellers","owner":"Revenue accounting"},{"area":"Acceptance clauses","question":"Does the customer have a right to reject?","risk":"Revenue before the customer has accepted.","control":"Acceptance date is a posting condition","owner":"Order management"},{"area":"Side agreements","question":"Did sales promise anything outside the contract?","risk":"Unrecorded rights to returns, free periods or future products.","control":"Quarterly confirmation by sales leaders","owner":"Finance controller"},{"area":"Modifications","question":"Is an upsell a separate contract or a change of this one?","risk":"Wrong pattern for the added users.","control":"Decision tree in the process; reviewed above a value limit","owner":"Revenue accounting"},{"area":"Financing","question":"Is payment more than a year after delivery?","risk":"Interest hidden in revenue.","control":"Payment terms flagged at order entry","owner":"Credit management"},{"area":"Cut-off","question":"Was the keys delivery really before the quarter end?","risk":"Licence revenue booked in the wrong quarter.","control":"Key issue date from the entitlement system is the evidence","owner":"Revenue accounting"},{"area":"Contract costs","question":"Which commissions are incremental, and how long do they last?","risk":"Costs expensed too early or kept too long.","control":"Commission plan mapped to the policy; yearly impairment check","owner":"Finance controller"}],"sap":[{"step":"Contract signed in CRM","record":"Contract and price list","note":"Source of the contract terms"},{"step":"Order","record":"Sales order with items per obligation","note":"Each item carries the revenue pattern from the material"},{"step":"Revenue accounting contract","record":"Contract with performance obligations","note":"Created from the order; combines or splits items"},{"step":"Allocation","record":"Stand-alone price per obligation","note":"Relative method; usage items excluded"},{"step":"Fulfilment","record":"Delivery, completion message, progress","note":"Keys issued, tenant ready, milestones accepted"},{"step":"Billing","record":"Invoices and usage records","note":"Creates receivables and contract liabilities"},{"step":"Posting","record":"Revenue, contract asset or liability","note":"Monthly run; journal entries as on the Balances tab"}],"sapNote":"Illustrative mapping to the stages of a revenue accounting component in an ERP. Product names, fields and the sequence in a real SAP system are not shown and must be confirmed with the finance system team."}</script>
+<script type="application/json" id="data">{"asOf":"2026-11-08","company":"Rheinsoft Solutions (fictional)","currency":"EUR","terms":30,"customer":{"name":"Kestrel Versicherung AG","billTo":"Kestrel Group Services GmbH","country":"DE"},"contract":{"id":"C-4410","signed":"2026-10-28","serviceStart":"2026-12-01","months":36,"order":"OF-7731","salesOrder":"SO-90412","bom":"BOM-90412"},"lines":[{"id":"L10","kind":"License","name":"Architect Server licences","material":"SW-LIC-ARCH","model":"Licence purchase (perpetual)","qty":40,"unit":"licence","unitPrice":1450,"price":58000,"ssp":64000,"pattern":"point","fulfil":"key","recognizeOn":"2026-11-04","billOn":"2026-11-10","recognitionNote":"Right to use: revenue at one point in time, when the keys are delivered and the customer can use the software."},{"id":"L20","kind":"Subscription","name":"Insight Cloud subscription","material":"SW-SUB-INSIGHT","model":"Monthly subscription, 250 users","qty":250,"unit":"user per month","unitPrice":28,"monthly":7000,"months":36,"start":"2026-12","price":252000,"ssp":270000,"pattern":"ratable","fulfil":"tenant","recognitionNote":"Right to access (SaaS): revenue evenly over the 36 months."},{"id":"L21","kind":"Overage","name":"Insight Cloud overage","material":"SW-SUB-INSIGHT","model":"Subscription overage above 250 users","parent":"L20","included":250,"rate":34,"unit":"user per month","pattern":"overage","fulfil":"meter","periods":[{"month":"2026-12","peak":268,"billedOn":"2027-01-05"},{"month":"2027-01","peak":255,"billedOn":"2027-02-05"}],"recognitionNote":"Variable consideration: recognised in the month the extra users are there, at the contract rate."},{"id":"L30","kind":"Consumption","name":"Flow Engine consumption","material":"SW-USE-FLOW","model":"Software on consumption, billed in arrears","rate":0.4,"per":1000,"unit":"API calls","pattern":"usage","fulfil":"meter","periods":[{"month":"2026-12","metered":28400000,"billed":26100000,"billedOn":"2027-01-05","trueUpOn":"2027-01-15"},{"month":"2027-01","metered":31000000,"billed":31000000,"billedOn":"2027-02-05"}],"recognitionNote":"Usage-based fee: revenue as the calls are made. Not part of the committed price."},{"id":"L40","kind":"Service","name":"Implementation","material":"SRV-IMPL","model":"Fixed fee, three milestones","qty":1,"unit":"project","price":24000,"ssp":26000,"pattern":"milestone","fulfil":"service","milestones":[{"id":"M1","name":"Design accepted (30 %)","share":0.3,"acceptedOn":"2026-11-20"},{"id":"M2","name":"Build accepted (40 %)","share":0.4,"acceptedOn":"2027-01-15"},{"id":"M3","name":"Go-live accepted (30 %)","share":0.3,"plannedOn":"2027-02-26"}],"progress":[{"on":"2026-11-30","pct":0.2},{"on":"2026-12-31","pct":0.45},{"on":"2027-01-31","pct":0.75},{"on":"2027-02-28","pct":1}],"recognitionNote":"Over time by progress (hours worked against plan). Billing follows the milestones, so the two differ."},{"id":"L50","kind":"Service","name":"Training","material":"SRV-TRN","model":"Time and material, 6 days","qty":6,"unit":"day","unitPrice":1800,"price":10800,"ssp":11700,"pattern":"units","fulfil":"service","periods":[{"on":"2026-12-08","units":3,"billedOn":"2026-12-31"},{"on":"2027-01-19","units":3,"billedOn":"2027-01-31"}],"recognitionNote":"Recognised when a training day has been held; billed at the end of that month."},{"id":"L60","kind":"Service","name":"Managed operations (Premium)","material":"SRV-MGD","model":"Monthly service fee, 36 months","qty":1,"unit":"month","monthly":1200,"months":36,"start":"2026-12","price":43200,"ssp":45000,"pattern":"ratable","fulfil":"service","recognitionNote":"Stand-ready service: revenue evenly over the 36 months."}],"title":"Revenue Recognition","steps":[{"n":1,"name":"Identify the contract","question":"Is there an enforceable contract, and are these papers one contract or several?","case":"Contract C-4410 (signed 2026-10-28) with Kestrel Versicherung AG: rights and payment terms are clear, the customer has the commitment, payment is probable. The order form, the master agreement and the service description are read as one contract because they were negotiated together.","judge":"Combining contracts signed at about the same time; contract term when either side can cancel; free pilots before the contract; side letters.","owner":"Revenue accounting with Legal"},{"n":2,"name":"Identify the performance obligations","question":"Which promises are distinct, so that each gets its own revenue?","case":"Five committed obligations: Architect Server licences, Insight Cloud subscription, implementation, training, managed operations. Overage and consumption are not promised in advance; they are usage that adds up later.","judge":"Is the implementation distinct from the cloud service, or does it change the service so much that both are one obligation? Is support part of the licence or separate?","owner":"Revenue accounting with Product"},{"n":3,"name":"Determine the transaction price","question":"What does the company expect to receive?","case":"Fixed 388,000.00 EUR. On top: overage at 34.00 per extra user and 0.40 per 1,000 API calls. These are variable and are not in the fixed price. Possible reductions: service credits for missed availability, volume rebate.","judge":"Variable consideration (estimate, then limit it so a large reversal is not likely), service credits, rebates, significant financing (payment terms beyond one year), money paid to the customer.","owner":"Revenue accounting with Sales"},{"n":4,"name":"Allocate the price","question":"How is the price shared out to the obligations?","case":"By stand-alone selling price: 416,700.00 at list, 388,000.00 charged, so a discount of 28,700.00 (6.9 %) is shared proportionally. Usage and overage stay out because their rates match the stand-alone price.","judge":"Evidence for the stand-alone price (what do others pay for the same?); relative method or residual approach; whether the discount belongs to one obligation only.","owner":"Pricing with Revenue accounting"},{"n":5,"name":"Recognise the revenue","question":"When is each obligation satisfied?","case":"Licences at one point in time when the keys are delivered (2026-11-04). Subscription and managed operations evenly over 36 months from 2026-12-01. Implementation by progress, training by day held, usage and overage as they arise.","judge":"Licence or service? Point in time or over time? Method for measuring progress. Customer acceptance clauses.","owner":"Revenue accounting"}],"treatments":[{"id":"perp","name":"Perpetual on-premise licence","pattern":"Point in time","why":"The customer can run the software on its own systems. It is a right to use the software as it exists. Revenue when the keys are delivered and the licence period has started.","watch":"A customer acceptance clause can delay the point. Updates that are promised are a separate service.","refs":"IFRS 15 B58 to B62, ASC 606-10-55-58 to 55-64","je":"Dr Receivable, Cr Revenue","inCase":"L10"},{"id":"term","name":"Term licence on-premise (for example 3 years)","pattern":"Point in time","why":"The licence part is recognised at the start of the term, not spread over it. Support for the term is a separate service, recognised evenly.","watch":"Multi-year payment in arrears can contain a financing component. A renewal is recognised at the start of the renewal period, never earlier.","refs":"IFRS 15 B58 to B62, B63","je":"Dr Receivable, Cr Revenue (licence); Dr Receivable, Cr Deferred revenue (support)"},{"id":"saas","name":"Software as a service (subscription)","pattern":"Over time","why":"The customer gets access, not the software. The company stands ready every day, so revenue is spread evenly over the term.","watch":"If the customer can take the software and run it elsewhere without a major penalty, it is a licence plus hosting instead.","refs":"IFRS 15 35(a), ASC 606-10-25-27(a)","je":"Dr Receivable, Cr Deferred revenue; each month Dr Deferred revenue, Cr Revenue","inCase":"L20"},{"id":"hosted","name":"Hosted licence (customer could take possession)","pattern":"Point in time + over time","why":"Two parts: the licence at one point in time, the hosting evenly over the term.","watch":"Needs an honest answer to: could the customer run it on its own or a third party's hardware without a significant penalty?","refs":"ASC 985-20-15-5; IFRS 15 B52","je":"Split the price by stand-alone price first"},{"id":"pcs","name":"Support and maintenance","pattern":"Over time","why":"A ready-to-help promise, recognised evenly. Updates that come when and if available are part of it.","watch":"If the support is so basic that the customer needs it to use the software, it can be one obligation with the licence.","refs":"IFRS 15 B49 to B51","je":"Dr Receivable, Cr Deferred revenue; monthly release to Revenue"},{"id":"usage","name":"Consumption fee (per call, per transaction)","pattern":"As incurred","why":"The amount depends on use. It is recognised in the month the use happens, at the contract rate.","watch":"Two rules look similar: for a licence of intellectual property the royalty is recognised at the later of use and satisfaction; for a service the fee belongs to the period of use. Check the rate against the stand-alone price.","refs":"IFRS 15 85 and B63, ASC 606-10-32-40 and 55-65","je":"Dr Contract asset (or Receivable), Cr Revenue each month; invoice later","inCase":"L30"},{"id":"overage","name":"Overage above a committed volume","pattern":"As incurred","why":"The extra users or calls are variable. Revenue in the month they occur, invoiced in arrears.","watch":"If the overage rate is far below the normal price, part of the committed price may have to move to it.","refs":"IFRS 15 50 to 59","je":"Dr Contract asset, Cr Revenue; on invoice Dr Receivable, Cr Contract asset","inCase":"L21"},{"id":"impl","name":"Implementation and configuration","pattern":"Over time (by progress)","why":"If another company could do it and the cloud service works without it, it is distinct: revenue by hours worked against plan or by milestones that show real progress.","watch":"If the work changes the service itself, it is one obligation with the subscription and follows its pattern.","refs":"IFRS 15 27 to 30, 35","je":"Invoice by milestone: Dr Receivable, Cr Deferred revenue; progress: Dr Deferred revenue or Contract asset, Cr Revenue","inCase":"L40"},{"id":"train","name":"Training","pattern":"As delivered","why":"Each day held is revenue. Prepaid vouchers are deferred and released when used or when the customer will not use them.","watch":"Unused vouchers (breakage) need an estimate based on history.","refs":"IFRS 15 B44 to B47","je":"Dr Receivable, Cr Deferred revenue; Dr Deferred revenue, Cr Revenue per day","inCase":"L50"},{"id":"ops","name":"Managed operations","pattern":"Over time","why":"A stand-ready service, recognised evenly over the term.","watch":"Penalties for missed service levels reduce the price.","refs":"IFRS 15 35(a)","je":"Dr Receivable, Cr Deferred revenue; monthly release","inCase":"L60"},{"id":"trial","name":"Free trial or pilot","pattern":"No revenue","why":"Without a payment or a binding commitment there is no contract yet, so nothing is recognised.","watch":"A discount on the later purchase can be a material right.","refs":"IFRS 15 9, B39 to B43","je":"None"},{"id":"renew","name":"Renewal option at a discount","pattern":"Deferred, then over time","why":"If the discount is larger than what other customers get, the option is a material right: part of today's price is deferred until the renewal or the option expires.","watch":"Estimate the likelihood that the customer renews.","refs":"IFRS 15 B39 to B43","je":"Part of the price goes to Deferred revenue"},{"id":"resell","name":"Sale through a reseller","pattern":"Depends","why":"If the reseller is the customer, revenue when control passes to the reseller. If the reseller only arranges the sale, the company recognises on sale to the end customer.","watch":"Right of return, price protection and sell-through reporting.","refs":"IFRS 15 B34 to B38","je":"Depends on who controls the software"},{"id":"finance","name":"Payment terms beyond one year","pattern":"Adjusts the price","why":"A significant financing component splits the price into revenue and interest income. Within a year the practical expedient says: ignore it.","watch":"Multi-year licences paid at the end are the typical case.","refs":"IFRS 15 60 to 65","je":"Dr Receivable, Cr Revenue and Cr Interest income over time"}],"sla":{"fee":7000,"tiers":[{"min":99.9,"pct":0},{"min":99.5,"pct":5},{"min":99,"pct":10},{"min":0,"pct":25}],"options":[100,99.95,99.7,99.2,98.4]},"rebate":{"line":"L30","threshold":30000000,"pct":0.05,"scenarios":[{"calls":25000000,"p":0.25},{"calls":31000000,"p":0.5},{"calls":36000000,"p":0.25}]},"modification":{"asOf":"2027-03-31","from":"2027-04","line":"L20","lineLic":"L10","rule":0.9,"scenarios":[{"id":"A","name":"Add 50 users from April 2027","text":"The customer adds 50 users to Insight Cloud for the rest of the term, at 28.00 per user and month. The stand-alone price is 30.00.","users":50,"userSsp":30,"userRate":28,"licences":0,"licSsp":0,"licRate":0},{"id":"B","name":"Add 10 licences and 50 users, deep discount","text":"One amendment adds 10 Architect Server licences (1,200.00 each, stand-alone price 1,600.00) and 50 users at 20.00 per month (stand-alone price 30.00).","users":50,"userSsp":30,"userRate":20,"licences":10,"licSsp":1600,"licRate":1200}]},"commission":{"rate":0.06,"months":60,"start":"2026-12","note":"Incremental cost of obtaining the contract: capitalised and amortised over the expected customer life of five years, because renewals are expected and the commission on renewals is lower."},"judgements":[{"area":"Distinct or not","question":"Can the customer use the implementation without the cloud service, and could someone else do it?","risk":"Revenue for implementation is shown too early if it is really part of the service.","control":"Written assessment per contract type, approved once and reviewed for new offers","owner":"Revenue accounting"},{"area":"Stand-alone price","question":"What do we actually charge for each piece when sold alone?","risk":"A list price that nobody pays moves revenue between obligations.","control":"Yearly SSP study with ranges; deals outside the range are flagged","owner":"Pricing"},{"area":"Licence or service","question":"Can the customer take the software and run it elsewhere?","risk":"Licence revenue up front when it should be spread.","control":"Checklist in the deal review, evidence in the contract file","owner":"Product, Revenue accounting"},{"area":"Variable consideration","question":"How much of overage, rebates and credits is likely to stay?","risk":"Revenue reversed in a later quarter.","control":"Estimate each quarter, compare with actual, keep the constraint note","owner":"Revenue accounting"},{"area":"Contract term","question":"Can the customer leave early without a real penalty?","risk":"The 36 months are really 12.","control":"Legal flags termination for convenience; term set accordingly","owner":"Legal"},{"area":"Principal or agent","question":"Does the company control what the end customer receives?","risk":"Gross against net revenue.","control":"Decision memo for marketplaces and resellers","owner":"Revenue accounting"},{"area":"Acceptance clauses","question":"Does the customer have a right to reject?","risk":"Revenue before the customer has accepted.","control":"Acceptance date is a posting condition","owner":"Order management"},{"area":"Side agreements","question":"Did sales promise anything outside the contract?","risk":"Unrecorded rights to returns, free periods or future products.","control":"Quarterly confirmation by sales leaders","owner":"Finance controller"},{"area":"Modifications","question":"Is an upsell a separate contract or a change of this one?","risk":"Wrong pattern for the added users.","control":"Decision tree in the process; reviewed above a value limit","owner":"Revenue accounting"},{"area":"Financing","question":"Is payment more than a year after delivery?","risk":"Interest hidden in revenue.","control":"Payment terms flagged at order entry","owner":"Credit management"},{"area":"Cut-off","question":"Was the keys delivery really before the quarter end?","risk":"Licence revenue booked in the wrong quarter.","control":"Key issue date from the entitlement system is the evidence","owner":"Revenue accounting"},{"area":"Contract costs","question":"Which commissions are incremental, and how long do they last?","risk":"Costs expensed too early or kept too long.","control":"Commission plan mapped to the policy; yearly impairment check","owner":"Finance controller"}],"sap":[{"step":"Contract signed in CRM","record":"Contract and price list","note":"Source of the contract terms"},{"step":"Order","record":"Sales order with items per obligation","note":"Each item carries the revenue pattern from the material"},{"step":"Revenue accounting contract","record":"Contract with performance obligations","note":"Created from the order; combines or splits items"},{"step":"Allocation","record":"Stand-alone price per obligation","note":"Relative method; usage items excluded"},{"step":"Fulfilment","record":"Delivery, completion message, progress","note":"Keys issued, tenant ready, milestones accepted"},{"step":"Billing","record":"Invoices and usage records","note":"Creates receivables and contract liabilities"},{"step":"Posting","record":"Revenue, contract asset or liability","note":"Monthly run; journal entries as on the Balances tab"}],"sapNote":"Illustrative mapping to the stages of a revenue accounting component in an ERP. Product names, fields and the sequence in a real SAP system are not shown and must be confirmed with the finance system team."}</script>
 <script>
 (function () {
   'use strict';
@@ -536,8 +670,7 @@ details.acc .abody{padding:2px 14px 14px}
   }
   // @logic-end
   var L = makeLogic(D);
-  var S = { tab: 'steps', asOf: '2026-12', alloc: 'relative', filter: 'all', avail: 99.7, method: 'expected', mod: 'A' };
-  var TABS = [['steps', 'Five steps'], ['treat', 'Treatment by software type'], ['alloc', 'Price allocation'], ['sched', 'Schedule'], ['bal', 'Balances and entries'], ['var', 'Variable consideration'], ['chg', 'Changes and costs'], ['disc', 'Disclosures'], ['judge', 'Judgements and system']];
+  var S = { tab: 'steps', asOf: '2026-12', alloc: 'relative', filter: 'all', avail: 99.7, method: 'expected', mod: 'A', enter: true, railIn: true };
   var LINE = {}; D.lines.forEach(function (l) { LINE[l.id] = l; });
   function $(s) { return document.querySelector(s); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -548,16 +681,89 @@ details.acc .abody{padding:2px 14px 14px}
   function months4() { return [['2026-11', 'Nov 2026'], ['2026-12', 'Dec 2026'], ['2027-01', 'Jan 2027'], ['2027-02', 'Feb 2027']]; }
   function acc(title, hint, body) { return '<details class="acc"><summary>' + title + (hint ? '<span class="hint">' + hint + '</span>' : '') + '</summary><div class="abody">' + body + '</div></details>'; }
   function pat(p) { var g = L.group(p); return tag(p, g === 'point' ? 't-sw' : g === 'over' ? 'blue' : g === 'as' ? 'amber' : ''); }
-  function kpi(v, l, c) { return '<div class="kpi ' + (c || '') + '"><b>' + v + '</b><span>' + l + '</span></div>'; }
+  function kpi(v, l, c) { var isN = typeof v === 'number'; return '<div class="kpi ' + (c || '') + '"><b' + (isN ? ' data-n="' + v + '"' : '') + '>' + (isN ? m(v) : v) + '</b><span>' + l + '</span></div>'; }
+  function pidx(id) { for (var i = 0; i < D.lines.length; i++) if (D.lines[i].id === id) return i; return 0; }
+  function pdot(id) { return '<span class="pdot pos' + pidx(id) + '"></span>'; }
+  function posrow(id) { return ' class="posr pos' + pidx(id) + '"'; }
+  function acct(name) { var k = /receivable/i.test(name) ? 'recv' : /bank/i.test(name) ? 'bank' : /deferred/i.test(name) ? 'def' : /^revenue$/i.test(name) ? 'rev' : 'oth'; return '<span class="acct ac-' + k + '">' + esc(name) + '</span>'; }
+  function seg2(opts) { return '<span class="seg" role="group" aria-label="View">' + opts.map(function (o) { return '<button type="button" data-act="tab" data-id="' + o[0] + '" aria-pressed="' + (S.tab === o[0]) + '">' + esc(o[1]) + '</button>'; }).join('') + '</span>'; }
+
+  /* ---- the process: the five steps of the standard, then what happens after signing ---- */
+  var NAME = { steps: 'Contract', treat: 'Obligations', 'var': 'Price', alloc: 'Allocation', sched: 'Schedule', bal: 'Balances and entries', chg: 'Changes and costs', disc: 'Disclosures', judge: 'Judgements and system' };
+  var PROC = [
+    { id: 'steps', n: 1, ph: 'ph1', name: 'Contract', q: 'Is there an enforceable contract?', lead: 'The whole path in one picture, then the five steps in words.' },
+    { id: 'treat', n: 2, ph: 'ph2', name: 'Obligations', q: 'Which promises are distinct?', lead: 'What the customer gets decides the pattern: one point in time, evenly over time, or as it is used.' },
+    { id: 'var', n: 3, ph: 'ph3', name: 'Price', q: 'What will the company receive?', lead: 'Part of the price is not fixed. Estimate it, but recognise only as much as is unlikely to be reversed.' },
+    { id: 'alloc', n: 4, ph: 'ph4', name: 'Allocation', q: 'How is the price shared out?', lead: 'The committed price, with its discount, is shared out to the obligations by stand-alone price.' },
+    { id: 'sched', n: 5, ph: 'ph5', name: 'Revenue', q: 'When is each obligation satisfied?', lead: 'The schedule shows when revenue arises; the balances and entries show what ends up in the books.', subs: ['sched', 'bal'] }
+  ];
+  var AFTER = [
+    { id: 'chg', ph: 'ph6', name: 'Changes and costs', q: 'What moves after signing?', lead: 'An amendment changes the schedule; the commission paid to win the deal is capitalised and spread over the term.' },
+    { id: 'disc', ph: 'ph7', name: 'Disclosures', q: 'What goes into the notes?', lead: 'How revenue splits, how the contract balances moved, and how much is contracted but not yet earned.' },
+    { id: 'judge', ph: 'ph8', name: 'Judgements and system', q: 'Where can a wrong call change the numbers?', lead: 'Twelve places where judgement decides the numbers, and where each step happens in the finance system.' }
+  ];
+  var PATH = ['steps', 'treat', 'var', 'alloc', 'sched', 'bal', 'chg', 'disc', 'judge'];
+  function phase(tab) {
+    var i, p;
+    for (i = 0; i < PROC.length; i++) { p = PROC[i]; if (p.id === tab || (p.subs && p.subs.indexOf(tab) >= 0)) return { step: true, p: p, i: i }; }
+    for (i = 0; i < AFTER.length; i++) if (AFTER[i].id === tab) return { step: false, p: AFTER[i], i: PROC.length };
+    return { step: true, p: PROC[0], i: 0 };
+  }
+  function rail() {
+    var c = phase(S.tab), h = '<div class="rail' + (S.railIn ? ' rail-in' : '') + '">';
+    PROC.forEach(function (p, i) {
+      if (i) h += '<span class="rl ' + PROC[i - 1].ph + (i <= c.i ? ' lit' : '') + (c.step && i === c.i + 1 ? ' next' : '') + '" style="--i:' + i + '"></span>';
+      var on = c.step && c.i === i, done = i < c.i;
+      h += '<button type="button" role="tab" class="rn ' + p.ph + (on ? ' on' : '') + (done ? ' done' : '') + '" style="--i:' + i + '" aria-selected="' + on + '"' + (on ? ' aria-current="step"' : '') + ' data-act="tab" data-id="' + p.id + '"><span class="dot"><span>' + p.n + '</span></span><b>' + p.name + '</b><small>' + esc(p.q) + '</small></button>';
+    });
+    h += '<div class="after"><span class="alab">After signing</span>';
+    AFTER.forEach(function (a) { var on = S.tab === a.id; h += '<button type="button" role="tab" class="rn mini ' + a.ph + (on ? ' on' : '') + '" aria-selected="' + on + '" data-act="tab" data-id="' + a.id + '"><span class="mdot"></span>' + a.name + '</button>'; });
+    return h + '</div></div>';
+  }
+  function banner() {
+    var c = phase(S.tab), p = c.p, idx = PATH.indexOf(S.tab), prev = PATH[idx - 1], next = PATH[idx + 1];
+    var label = c.step ? 'Step ' + p.n + ' of 5' : 'After signing', title = c.step && p.subs ? p.name + ' · ' + NAME[S.tab] : p.name;
+    var h = '<div class="banner ' + p.ph + '"><div><div class="bn-l">' + label + '</div><div class="bn-t">' + esc(title) + '</div><div class="bn-q"><b>' + esc(p.q) + '</b> ' + esc(p.lead) + '</div></div><div class="bnav">';
+    if (c.step && p.subs) h += seg2(p.subs.map(function (id) { return [id, NAME[id]]; }));
+    h += '<button type="button" class="btn" data-act="tab" data-id="' + (prev || '') + '"' + (prev ? '' : ' disabled') + '>‹ Back</button>';
+    h += '<button type="button" class="btn go" data-act="tab" data-id="' + (next || '') + '"' + (next ? '' : ' disabled') + '>' + (next ? 'Next: ' + NAME[next] + ' ›' : 'End of the path') + '</button></div></div>';
+    return h;
+  }
+  function flowmap() {
+    var A = L.allocate(), P = L.position(L.monthEnd('2026-12')), tot = 0, nOb = D.lines.filter(function (l) { return l.ssp; }).length;
+    L.byYear().forEach(function (y) { tot += y.total; });
+    var cards = [
+      [PROC[0], null, esc(D.contract.id), 'signed ' + esc(D.contract.signed) + ' with ' + esc(D.customer.name)],
+      [PROC[1], [nOb, 'n'], null, 'committed obligations, plus ' + (D.lines.length - nOb) + ' usage items'],
+      [PROC[2], [A.price, 'm'], null, 'committed price; usage is variable'],
+      [PROC[3], [A.discount, 'm'], null, 'discount shared out (' + (Math.round(A.discount / A.ssp * 1000) / 10) + ' %)'],
+      [PROC[4], [P.total.recognized, 'm'], null, 'recognised by Dec 2026, ' + m(Math.round(tot * 100) / 100) + ' over 38 months']
+    ];
+    return '<div class="flowmap" role="list">' + cards.map(function (c) {
+      var p = c[0], val = c[1] ? '<span class="fv" data-n="' + c[1][0] + '" data-f="' + c[1][1] + '">' + (c[1][1] === 'n' ? c[1][0] : m(c[1][0])) + '</span>' : '<span class="fv">' + c[2] + '</span>';
+      return '<button type="button" role="listitem" class="fm ' + p.ph + '" data-act="tab" data-id="' + p.id + '"><span class="fn">' + p.n + '</span><b>' + p.name + '</b><span class="fq">' + esc(p.q) + '</span>' + val + '<span class="fc">' + c[3] + '</span></button>';
+    }).join('') + '</div>';
+  }
+  function allocBars(A, use) {
+    var ls = D.lines.filter(function (l) { return l.ssp; }), total = A.ssp, price = {}, ssp = {};
+    ls.forEach(function (l) { price[l.id] = l.price; ssp[l.id] = l.ssp; });
+    function bar(title, vals, withDisc) {
+      var h = '<div class="alrow"><b>' + title + '</b><div class="albar" role="img" aria-label="' + esc(title) + '">';
+      ls.forEach(function (l) { var v = vals[l.id]; h += '<i class="pos' + pidx(l.id) + '" style="--w:' + (v / total * 100).toFixed(2) + '%" title="' + esc(l.name) + ': ' + m(v) + '">' + (v / total > 0.11 ? m(Math.round(v)).replace(/\.00$/, '') : '') + '</i>'; });
+      if (withDisc) h += '<i class="disc" style="--w:' + (A.discount / total * 100).toFixed(2) + '%" title="Discount ' + m(A.discount) + '">discount</i>';
+      return h + '</div></div>';
+    }
+    return '<div class="albars">' + bar('Stand-alone prices', ssp, false) + bar('Price in the contract', price, true) + bar('Allocated (recognised)', use, true) + '</div><div class="alleg">' + ls.map(function (l) { return '<span>' + pdot(l.id) + esc(l.name) + '</span>'; }).join('') + '</div>';
+  }
 
   function vSteps() {
     var h = '<h2>The five steps of IFRS 15 and ASC 606</h2><p class="note">Each step is shown with the question it answers, what it means for contract ' + esc(D.contract.id) + ' with ' + esc(D.customer.name) + ', and where people have to judge. Open a step to read it. Nothing here is accounting advice; the policy choices belong to the company\'s accountants.</p>';
-    h += '<div class="five">' + D.steps.map(function (s) { return '<div><b>' + s.n + '</b><span>' + esc(s.name) + '</span></div>'; }).join('') + '</div>';
+    h += flowmap();
     D.steps.forEach(function (s) {
       h += acc(s.n + '. ' + esc(s.name), esc(s.question), '<div class="cols"><div><h4>In this case</h4><p>' + esc(s.case) + '</p></div><div><h4>Where judgement is needed</h4><p>' + esc(s.judge) + '</p></div><div><h4>Usually done by</h4><p>' + esc(s.owner) + '</p></div></div>');
     });
     h += '<h3>This contract in one view</h3><div class="scroll"><table><thead><tr><th>Position</th><th>Sold as</th><th>Obligation?</th><th>Pattern</th></tr></thead><tbody>';
-    D.lines.forEach(function (l) { h += '<tr><td><b>' + esc(l.name) + '</b></td><td>' + esc(l.model) + '</td><td>' + (l.ssp ? tag('yes, committed', 'ok') : tag('usage, not committed')) + '</td><td>' + esc(l.recognitionNote) + '</td></tr>'; });
+    D.lines.forEach(function (l) { h += '<tr' + posrow(l.id) + '><td>' + pdot(l.id) + '<b>' + esc(l.name) + '</b></td><td>' + esc(l.model) + '</td><td>' + (l.ssp ? tag('yes, committed', 'ok') : tag('usage, not committed')) + '</td><td>' + esc(l.recognitionNote) + '</td></tr>'; });
     return h + '</tbody></table></div>';
   }
 
@@ -574,10 +780,11 @@ details.acc .abody{padding:2px 14px 14px}
   function vAlloc() {
     var A = L.allocate(), R = L.residual(), use = S.alloc === 'relative' ? A.byLine : R.byLine, ls = D.lines.filter(function (l) { return l.ssp; });
     var h = '<h2>Price allocation (step 4)</h2><p class="note">The committed price of ' + m(A.price) + ' is shared out to the five obligations. Usage and overage are not allocated: their rates match the stand-alone price, so they follow their own month.</p><div class="tools">' + seg('alloc', [['relative', 'Relative stand-alone price (normal)'], ['residual', 'Residual for the licence (exception)']], S.alloc) + '</div>';
-    h += '<div class="kpis">' + kpi(m(A.ssp), 'Stand-alone prices added up') + kpi(m(A.price), 'Price in the contract') + kpi(m(A.discount), 'Discount to share out (' + (Math.round(A.discount / A.ssp * 1000) / 10) + ' %)') + '</div>';
+    h += '<div class="kpis">' + kpi(A.ssp, 'Stand-alone prices added up', 'k-b') + kpi(A.price, 'Price in the contract', 'k-r') + kpi(A.discount, 'Discount to share out (' + (Math.round(A.discount / A.ssp * 1000) / 10) + ' %)', 'k-a') + '</div>';
+    h += allocBars(A, use);
     h += '<div class="scroll"><table><thead><tr><th>Obligation</th><th>Pattern</th><th class="num">Price in contract</th><th class="num">Stand-alone price</th><th class="num">Allocated</th><th class="num">Change against price</th></tr></thead><tbody>';
     var tot = 0;
-    ls.forEach(function (l) { tot += use[l.id]; h += '<tr><td><b>' + esc(l.name) + '</b></td><td>' + pat(l.fulfil === 'key' ? 'Point in time' : 'Over time') + '</td><td class="num">' + m(l.price) + '</td><td class="num">' + m(l.ssp) + '</td><td class="num"><b>' + m(use[l.id]) + '</b></td><td class="num">' + m(Math.round((use[l.id] - l.price) * 100) / 100) + '</td></tr>'; });
+    ls.forEach(function (l) { tot += use[l.id]; h += '<tr' + posrow(l.id) + '><td><b>' + pdot(l.id) + esc(l.name) + '</b></td><td>' + pat(l.fulfil === 'key' ? 'Point in time' : 'Over time') + '</td><td class="num">' + m(l.price) + '</td><td class="num">' + m(l.ssp) + '</td><td class="num"><b>' + m(use[l.id]) + '</b></td><td class="num">' + m(Math.round((use[l.id] - l.price) * 100) / 100) + '</td></tr>'; });
     h += '<tr class="grp"><td colspan="2">Total</td><td class="num">' + m(A.price) + '</td><td class="num">' + m(A.ssp) + '</td><td class="num">' + m(Math.round(tot * 100) / 100) + '</td><td></td></tr></tbody></table></div>';
     h += '<div class="verdict ' + (S.alloc === 'relative' ? 'ok' : 'warn') + '" style="margin-top:14px">' + (S.alloc === 'relative'
       ? '<b>Relative method.</b> Every obligation takes its share of the discount. The licence is recognised on delivery with ' + m(A.byLine.L10) + ', which is ' + m(D.lines[0].price - A.byLine.L10) + ' less than its price on the invoice.'
@@ -585,38 +792,91 @@ details.acc .abody{padding:2px 14px 14px}
     return h;
   }
 
+  var CH = null, playT = null;
+  function stopPlay() { if (playT) { clearInterval(playT); playT = null; } var b = $('#play'); if (b) b.textContent = '▶ Play the 38 months'; }
+  function xlab(sr, X, H) {
+    var g = '<text class="ax" x="' + X(0).toFixed(1) + '" y="' + (H - 7) + '">' + sr[0].ym.slice(0, 4) + '</text>';
+    sr.forEach(function (x, k) { if (k && x.ym.slice(5) === '01') g += '<line class="tk" x1="' + X(k).toFixed(1) + '" x2="' + X(k).toFixed(1) + '" y1="' + (H - 24) + '" y2="' + (H - 19) + '"/><text class="ax" x="' + (X(k) + 3).toFixed(1) + '" y="' + (H - 7) + '">' + x.ym.slice(0, 4) + '</text>'; });
+    return g;
+  }
   function chart(sr) {
-    var W = 760, H = 250, pl = 56, pr = 70, pt = 12, pb = 28, max = 0, i;
+    var W = 760, H = 270, pl = 56, pr = 100, pt = 14, pb = 30, max = 0, n = sr.length, i, v;
     sr.forEach(function (x) { max = Math.max(max, x.billed, x.recognized, x.collected); });
-    var top = Math.ceil(max / 100000) * 100000, X = function (k) { return pl + (W - pl - pr) * k / (sr.length - 1); }, Y = function (v) { return pt + (H - pt - pb) * (1 - v / top); };
-    var line = function (key, cls) { return '<polyline class="' + cls + '" points="' + sr.map(function (x, k) { return X(k).toFixed(1) + ',' + Y(x[key]).toFixed(1); }).join(' ') + '" fill="none"/>'; };
+    var top = Math.ceil(max / 100000) * 100000, X = function (k) { return pl + (W - pl - pr) * k / (n - 1); }, Y = function (val) { return pt + (H - pt - pb) * (1 - val / top); };
+    var pts = function (key) { return sr.map(function (x, k) { return X(k).toFixed(1) + ',' + Y(x[key]).toFixed(1); }).join(' '); };
     var g = '';
-    for (i = 0; i <= 4; i++) { var v = top * i / 4; g += '<line class="gr" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"/><text class="ax" x="' + (pl - 6) + '" y="' + (Y(v) + 4).toFixed(1) + '" text-anchor="end">' + Math.round(v / 1000) + 'k</text>'; }
-    sr.forEach(function (x, k) { if (x.ym.slice(5) === '01' || k === 0) g += '<text class="ax" x="' + X(k).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">' + x.ym.slice(0, 4) + '</text>'; });
-    var last = sr.length - 1;
-    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cumulative billed, recognised and collected amounts from November 2026 to December 2029" class="chart">' + g + line('billed', 'l-billed') + line('recognized', 'l-rec') + line('collected', 'l-coll') +
-      '<text class="lb lb-b" x="' + (X(last) + 6) + '" y="' + (Y(sr[last].billed) - 14).toFixed(1) + '">Billed</text><text class="lb lb-r" x="' + (X(last) + 6) + '" y="' + (Y(sr[last].recognized) + 4).toFixed(1) + '">Recognised</text><text class="lb lb-c" x="' + (X(last) + 6) + '" y="' + (Y(sr[last].collected) + 18).toFixed(1) + '">Collected</text></svg>';
+    for (i = 0; i <= 4; i++) { v = top * i / 4; g += '<line class="gr" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"/><text class="ax" x="' + (pl - 6) + '" y="' + (Y(v) + 4).toFixed(1) + '" text-anchor="end">' + Math.round(v / 1000) + 'k</text>'; }
+    g += xlab(sr, X, H);
+    var base = Y(0).toFixed(1), area = '<polygon class="ar" points="' + X(0).toFixed(1) + ',' + base + ' ' + pts('recognized') + ' ' + X(n - 1).toFixed(1) + ',' + base + '"/>';
+    var last = sr[n - 1], ends = [['lb-b', 'Billed', Y(last.billed)], ['lb-r', 'Recognised', Y(last.recognized)], ['lb-c', 'Collected', Y(last.collected)]].sort(function (a, b) { return a[2] - b[2]; });
+    for (i = 1; i < ends.length; i++) if (ends[i][2] - ends[i - 1][2] < 15) ends[i][2] = ends[i - 1][2] + 15;
+    var lbl = ends.map(function (e) { return '<text class="lb ' + e[0] + '" x="' + (X(n - 1) + 8).toFixed(1) + '" y="' + (e[2] + 4).toFixed(1) + '">' + e[1] + '</text>'; }).join('');
+    CH = { sr: sr, X: X, Y: Y };
+    var cx = X(n - 1).toFixed(1), dot = function (id, cls, key) { return '<circle id="' + id + '" class="cd ' + cls + '" r="4.5" cx="' + cx + '" cy="' + Y(last[key]).toFixed(1) + '"/>'; };
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cumulative billed, recognised and collected amounts from November 2026 to December 2029" class="chart">' + g + area +
+      '<polyline class="l-billed" pathLength="1" fill="none" points="' + pts('billed') + '"/><polyline class="l-rec" pathLength="1" fill="none" points="' + pts('recognized') + '"/><polyline class="l-coll" pathLength="1" fill="none" points="' + pts('collected') + '"/>' +
+      '<line id="cur" class="cur" x1="' + cx + '" x2="' + cx + '" y1="' + pt + '" y2="' + (H - pb) + '"/>' + dot('d-b', 'd-b', 'billed') + dot('d-r', 'd-r', 'recognized') + dot('d-c', 'd-c', 'collected') + lbl + '</svg>';
   }
   function gapChart(sr) {
-    var W = 760, H = 220, pl = 56, pr = 90, pt = 12, pb = 28, lo = 0, hi = 0, i, k;
+    var W = 760, H = 230, pl = 56, pr = 24, pt = 12, pb = 30, lo = 0, hi = 0, n = sr.length, v;
     var ser = sr.map(function (x) { return { g: Math.round((x.billed - x.recognized) * 100) / 100, o: Math.round((x.billed - x.collected) * 100) / 100 }; });
     ser.forEach(function (x) { lo = Math.min(lo, x.g, x.o); hi = Math.max(hi, x.g, x.o); });
     lo = Math.floor(lo / 20000) * 20000; hi = Math.ceil(hi / 20000) * 20000;
-    var X = function (n) { return pl + (W - pl - pr) * n / (sr.length - 1); }, Y = function (v) { return pt + (H - pt - pb) * (1 - (v - lo) / (hi - lo)); };
+    var X = function (k) { return pl + (W - pl - pr) * k / (n - 1); }, Y = function (val) { return pt + (H - pt - pb) * (1 - (val - lo) / (hi - lo)); };
     var g = '';
     for (v = lo; v <= hi; v += 20000) g += '<line class="gr" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"/><text class="ax" x="' + (pl - 6) + '" y="' + (Y(v) + 4).toFixed(1) + '" text-anchor="end">' + Math.round(v / 1000) + 'k</text>';
-    var v; sr.forEach(function (x, n) { if (x.ym.slice(5) === '01' || n === 0) g += '<text class="ax" x="' + X(n).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">' + x.ym.slice(0, 4) + '</text>'; });
-    var pts = function (key) { return ser.map(function (x, n) { return X(n).toFixed(1) + ',' + Y(x[key]).toFixed(1); }).join(' '); };
-    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Billed minus recognised, and billed minus collected, from November 2026 to December 2029" class="chart"><line class="zero" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(0).toFixed(1) + '" y2="' + Y(0).toFixed(1) + '"/>' + g + '<polyline class="l-rec" points="' + pts('g') + '" fill="none"/><polyline class="l-bill2" points="' + pts('o') + '" fill="none"/><text class="lb" x="' + (W - pr + 6) + '" y="' + (Y(ser[10].g) - 0).toFixed(1) + '" style="display:none"></text></svg>';
+    g += xlab(sr, X, H);
+    var pts = function (key) { return ser.map(function (x, k) { return X(k).toFixed(1) + ',' + Y(x[key]).toFixed(1); }).join(' '); }, zero = Y(0).toFixed(1);
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Billed minus recognised, and billed minus collected, from November 2026 to December 2029" class="chart">' + g +
+      '<polygon class="ar2" points="' + X(0).toFixed(1) + ',' + zero + ' ' + pts('g') + ' ' + X(n - 1).toFixed(1) + ',' + zero + '"/><line class="zero" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + zero + '" y2="' + zero + '"/>' +
+      '<polyline class="l-rec" pathLength="1" fill="none" points="' + pts('g') + '"/><polyline class="l-bill2" pathLength="1" fill="none" points="' + pts('o') + '"/></svg>';
+  }
+  function stackChart(sr) {
+    var W = 760, H = 250, pl = 56, pr = 24, pt = 12, pb = 30, n = sr.length, i, k, j, v, max = 0, ids = D.lines.map(function (l) { return l.id; }), cum = [];
+    sr.forEach(function (x, kk) { var rows = L.position(L.monthEnd(x.ym)).rows, run = 0; cum[kk] = ids.map(function (id) { run += rows.filter(function (r) { return r.id === id; })[0].recognized; return run; }); max = Math.max(max, run); });
+    var top = Math.ceil(max / 100000) * 100000, X = function (q) { return pl + (W - pl - pr) * q / (n - 1); }, Y = function (val) { return pt + (H - pt - pb) * (1 - val / top); };
+    var g = '';
+    for (i = 0; i <= 4; i++) { v = top * i / 4; g += '<line class="gr" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"/><text class="ax" x="' + (pl - 6) + '" y="' + (Y(v) + 4).toFixed(1) + '" text-anchor="end">' + Math.round(v / 1000) + 'k</text>'; }
+    g += xlab(sr, X, H);
+    var layers = '';
+    for (j = 0; j < ids.length; j++) {
+      var up = [], lo = [];
+      for (k = 0; k < n; k++) { up.push(X(k).toFixed(1) + ',' + Y(cum[k][j]).toFixed(1)); lo.unshift(X(k).toFixed(1) + ',' + Y(j ? cum[k][j - 1] : 0).toFixed(1)); }
+      layers += '<polygon class="st pos' + j + '" points="' + up.join(' ') + ' ' + lo.join(' ') + '"><title>' + esc(LINE[ids[j]].name) + '</title></polygon>';
+    }
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cumulative revenue by position, stacked, from November 2026 to December 2029" class="chart">' + g + '<defs><clipPath id="revclip"><rect id="revrect" x="0" y="0" width="' + W + '" height="' + H + '"/></clipPath></defs><g clip-path="url(#revclip)">' + layers + '</g></svg>';
+  }
+  function setMonth(k) {
+    var cur = $('#cur'); if (!CH || !cur) return;
+    var x = CH.sr[k], X = CH.X(k).toFixed(1), diff = Math.round((x.billed - x.recognized) * 100) / 100;
+    cur.setAttribute('x1', X); cur.setAttribute('x2', X);
+    [['d-b', 'billed'], ['d-r', 'recognized'], ['d-c', 'collected']].forEach(function (p) { var c = $('#' + p[0]); c.setAttribute('cx', X); c.setAttribute('cy', CH.Y(x[p[1]]).toFixed(1)); });
+    $('#pm').textContent = ym(x.ym);
+    $('#readout').innerHTML = '<div class="ro rb"><b>' + m(x.billed) + '</b><span>Billed</span></div><div class="ro rr"><b>' + m(x.recognized) + '</b><span>Recognised as revenue</span></div><div class="ro rc"><b>' + m(x.collected) + '</b><span>Collected in cash</span></div><div class="ro rg"><b>' + m(Math.abs(diff)) + '</b><span>' + (diff > 0 ? 'Contract liability: billed more than recognised' : diff < 0 ? 'Contract asset: recognised more than billed' : 'Billed and recognised are equal') + '</span></div>';
+    $('#scrub').value = k;
+  }
+  function initPlayer() {
+    var sc = $('#scrub'); if (!sc || !CH) return;
+    var n = CH.sr.length;
+    setMonth(n - 1);
+    sc.oninput = function () { stopPlay(); setMonth(+sc.value); };
+    $('#play').onclick = function () {
+      if (playT) { stopPlay(); return; }
+      var k = +sc.value >= n - 1 ? 0 : +sc.value;
+      this.textContent = '❚❚ Pause'; setMonth(k);
+      playT = setInterval(function () { if (k >= n - 1) { stopPlay(); return; } k++; setMonth(k); }, 130);
+    };
   }
   function vSched() {
     var sr = L.series(), Y = L.byYear(), cl = D.lines.filter(function (l) { return l.ssp; });
     var h = '<h2>Schedule over 38 months</h2><p class="note">Cumulative billed, recognised and collected from signing to the end of the term. Billed leads recognised for subscription and operations (invoiced in advance) and trails it for usage (invoiced in arrears). Collected follows billed by ' + D.terms + ' days. Usage after January 2027 is not forecast.</p>';
     h += '<div class="legend"><span><i class="sw sw-b"></i>Billed</span><span><i class="sw sw-r"></i>Recognised as revenue</span><span><i class="sw sw-c"></i>Collected</span></div>' + chart(sr);
+    h += '<div class="play"><button type="button" class="btn" id="play">▶ Play the 38 months</button><input type="range" id="scrub" min="0" max="' + (sr.length - 1) + '" value="' + (sr.length - 1) + '" aria-label="Month"><span class="pm" id="pm"></span></div><div class="readout" id="readout" aria-live="polite"></div>';
+    h += '<h3>Revenue by position, month by month</h3><p class="note">The purple line above, split by position. The same colours are used in every table of this page.</p><div class="alleg">' + D.lines.map(function (l) { return '<span>' + pdot(l.id) + esc(l.name) + '</span>'; }).join('') + '</div>' + stackChart(sr);
     h += '<h3>Where billing and revenue part ways</h3><p class="note">Above zero: billed more than recognised (a contract liability) or than collected (open receivables). Below zero: recognised before billed (a contract asset).</p><div class="legend"><span><i class="sw sw-r"></i>Billed minus recognised</span><span><i class="sw sw-a"></i>Billed minus collected (open receivables)</span></div>' + gapChart(sr);
     h += '<h3>Revenue by year and position</h3><div class="scroll"><table><thead><tr><th>Position</th>' + Y.map(function (y) { return '<th class="num">' + (y.year === '2026' ? '2026 (Nov to Dec)' : y.year) + '</th>'; }).join('') + '<th class="num">Total</th></tr></thead><tbody>';
-    D.lines.forEach(function (l) { var t = 0; h += '<tr><td>' + esc(l.name) + (l.ssp ? '' : ' <span class="sub">(only known months)</span>') + '</td>' + Y.map(function (y) { t += y.rows[l.id]; return '<td class="num">' + m(y.rows[l.id]) + '</td>'; }).join('') + '<td class="num"><b>' + m(Math.round(t * 100) / 100) + '</b></td></tr>'; });
-    var T = 0; h += '<tr class="grp"><td>Total</td>' + Y.map(function (y) { T += y.total; return '<td class="num">' + m(y.total) + '</td>'; }).join('') + '<td class="num">' + m(Math.round(T * 100) / 100) + '</td></tr></tbody></table></div>';
+    D.lines.forEach(function (l) { var t = 0; h += '<tr' + posrow(l.id) + '><td>' + pdot(l.id) + esc(l.name) + (l.ssp ? '' : ' <span class="sub">(only known months)</span>') + '</td>' + Y.map(function (y) { t += y.rows[l.id]; return '<td class="num">' + m(y.rows[l.id]) + '</td>'; }).join('') + '<td class="num"><b>' + m(Math.round(t * 100) / 100) + '</b></td></tr>'; });
+    var T2 = 0; h += '<tr class="grp"><td>Total</td>' + Y.map(function (y) { T2 += y.total; return '<td class="num">' + m(y.total) + '</td>'; }).join('') + '<td class="num">' + m(Math.round(T2 * 100) / 100) + '</td></tr></tbody></table></div>';
     h += '<p class="note" style="margin-top:8px">' + cl.length + ' committed obligations. The licence (' + m(L.allocate().byLine.L10) + ') falls entirely into 2026; the 36-month items run until November 2029.</p>';
     return h;
   }
@@ -624,16 +884,16 @@ details.acc .abody{padding:2px 14px 14px}
   function vBal() {
     var end = L.monthEnd(S.asOf), P = L.position(end), prevEnd = L.monthEnd(L.addMonths(S.asOf, -1)), Q = L.position(prevEnd), J = L.journal(S.asOf), Ac = L.accounts(J), R = L.rpo(S.asOf);
     var h = '<h2>Balances and journal entries</h2><p class="note">Pick the month end. Billed, recognised and collected are three different numbers; their difference is a contract liability (billed more than recognised) or a contract asset (recognised more than billed).</p><div class="tools">' + seg('asOf', months4(), S.asOf) + '</div>';
-    h += '<div class="kpis">' + kpi(m(P.total.billed), 'Billed (cumulative)') + kpi(m(P.total.recognized), 'Recognised as revenue') + kpi(m(P.total.collected), 'Collected in cash') + kpi(m(P.total.receivable), 'Open receivables') + kpi(P.contractLiability ? m(P.contractLiability) : m(P.contractAsset), P.contractLiability ? 'Contract liability (deferred revenue)' : 'Contract asset', P.contractAsset ? 'warn' : '') + kpi(m(R.total), 'Remaining performance obligations') + '</div>';
+    h += '<div class="kpis">' + kpi(P.total.billed, 'Billed (cumulative)', 'k-b') + kpi(P.total.recognized, 'Recognised as revenue', 'k-r') + kpi(P.total.collected, 'Collected in cash', 'k-c') + kpi(P.total.receivable, 'Open receivables', 'k-a') + kpi(P.contractLiability || P.contractAsset, P.contractLiability ? 'Contract liability (deferred revenue)' : 'Contract asset', P.contractAsset ? 'warn' : 'k-t') + kpi(R.total, 'Remaining performance obligations', 'k-t') + '</div>';
     h += '<div class="card"><h2>By position</h2><div class="scroll"><table><thead><tr><th>Position</th><th class="num">Allocated</th><th class="num">Billed</th><th class="num">Recognised</th><th class="num">Collected</th><th class="num">Billed minus recognised</th></tr></thead><tbody>';
-    P.rows.forEach(function (r) { h += '<tr><td>' + esc(r.name) + '</td><td class="num">' + (r.allocated ? m(r.allocated) : 'as used') + '</td><td class="num">' + m(r.billed) + '</td><td class="num">' + m(r.recognized) + '</td><td class="num">' + m(r.collected) + '</td><td class="num">' + m(r.diff) + '</td></tr>'; });
+    P.rows.forEach(function (r) { h += '<tr' + posrow(r.id) + '><td>' + pdot(r.id) + esc(r.name) + '</td><td class="num">' + (r.allocated ? m(r.allocated) : 'as used') + '</td><td class="num">' + m(r.billed) + '</td><td class="num">' + m(r.recognized) + '</td><td class="num">' + m(r.collected) + '</td><td class="num">' + m(r.diff) + '</td></tr>'; });
     h += '<tr class="grp"><td colspan="2">Total</td><td class="num">' + m(P.total.billed) + '</td><td class="num">' + m(P.total.recognized) + '</td><td class="num">' + m(P.total.collected) + '</td><td class="num">' + m(Math.round((P.total.billed - P.total.recognized) * 100) / 100) + '</td></tr></tbody></table></div>';
     h += '<p class="note" style="margin-top:8px">Netted for the whole contract: the contract is either a liability or an asset, never both. Month before: billed ' + m(Q.total.billed) + ', recognised ' + m(Q.total.recognized) + '.</p></div>';
-    h += '<div class="card"><h2>Journal entries of ' + ym(S.asOf) + '</h2><div class="scroll"><table><thead><tr><th>Date</th><th>Position</th><th>Text</th><th>Debit</th><th>Credit</th><th class="num">Amount</th></tr></thead><tbody>';
-    J.forEach(function (e) { h += '<tr><td>' + e.date + '</td><td>' + esc(LINE[e.line].name) + '</td><td>' + esc(e.text) + '</td><td>' + esc(e.dr) + '</td><td>' + esc(e.cr) + '</td><td class="num">' + m(e.amount) + '</td></tr>'; });
+    h += '<div class="card jt"><h2>Journal entries of ' + ym(S.asOf) + '</h2><div class="scroll"><table><thead><tr><th>Date</th><th>Position</th><th>Text</th><th>Debit</th><th>Credit</th><th class="num">Amount</th></tr></thead><tbody>';
+    J.forEach(function (e) { h += '<tr' + posrow(e.line) + '><td>' + e.date + '</td><td>' + pdot(e.line) + esc(LINE[e.line].name) + '</td><td>' + esc(e.text) + '</td><td>' + acct(e.dr) + '</td><td>' + acct(e.cr) + '</td><td class="num">' + m(e.amount) + '</td></tr>'; });
     if (!J.length) h += '<tr><td colspan="6">No entries in this month.</td></tr>';
     h += '</tbody></table></div><h3>Accounts of the month</h3><div class="scroll"><table><thead><tr><th>Account</th><th class="num">Debit</th><th class="num">Credit</th><th class="num">Net movement</th></tr></thead><tbody>';
-    Ac.forEach(function (a) { h += '<tr><td>' + esc(a.name) + '</td><td class="num">' + m(a.dr) + '</td><td class="num">' + m(a.cr) + '</td><td class="num">' + m(a.net) + '</td></tr>'; });
+    Ac.forEach(function (a) { h += '<tr><td>' + acct(a.name) + '</td><td class="num">' + m(a.dr) + '</td><td class="num">' + m(a.cr) + '</td><td class="num">' + m(a.net) + '</td></tr>'; });
     h += '</tbody></table></div><p class="note" style="margin-top:8px">Invoices are booked to deferred revenue first; the revenue step then releases it. For usage invoiced in arrears, deferred revenue goes below zero for a month: that is the contract asset.</p></div>';
     return h;
   }
@@ -692,21 +952,139 @@ details.acc .abody{padding:2px 14px 14px}
   }
 
   var VIEWS = { steps: vSteps, treat: vTreat, alloc: vAlloc, sched: vSched, bal: vBal, 'var': vVar, chg: vChg, disc: vDisc, judge: vJudge };
+
+  /* ---- tips: speech bubbles that explain a step. They are switched on and off in Settings, Skin, Tips (the app tells this page);
+         "Turn off tips" in a bubble asks the app to switch them off. Size and colours come from the same place. ---- */
+  var TIPS = {
+    steps: [
+      { sel: '#tabs .rail', title: 'Five steps, one path', text: 'Revenue is recognised in five steps. Each step has its own colour and its own page. The step you are on is filled, a tick shows what you have passed. After signing, three more pages follow.' },
+      { sel: '.flowmap', title: 'The whole deal in one picture', text: 'This is the contract on its way from signature to revenue. The figures come from this contract. Click a card to jump to that step.' },
+      { sel: '#main details.acc', title: 'Read a step', text: 'Open a step to see the question it answers, what it means for this contract and where people have to judge.' }
+    ],
+    treat: [
+      { sel: '#main .tools', title: 'Filter by pattern', text: 'Pick a pattern to see only the kinds of software deals that follow it: at one point in time, evenly over time, or as it is used.' },
+      { sel: '#main details.acc', title: 'Open a case', text: 'Each case gives the reason for the pattern, the pitfall to watch for and the typical entry. A green tag marks what is in this contract.' }
+    ],
+    'var': [
+      { sel: '#main .tools', title: 'Try it', text: 'Pick an availability level. The credit for missed availability reduces the price of that month, so the revenue of the month changes with it.' },
+      { sel: '#main .verdict', title: 'The constraint', text: 'An estimate is recognised only as far as a reversal is unlikely. This box says how much is held back and why.' }
+    ],
+    alloc: [
+      { sel: '#main .tools', title: 'Two methods', text: 'Relative stand-alone price is the normal way. The residual approach is an exception that puts the whole discount on the licence; auditors look hard at it. Switch and watch the bars.' },
+      { sel: '.albars', title: 'Read the bars', text: 'Top: what each obligation would cost on its own. Middle: the price in the contract, shorter by the hatched discount. Bottom: what is recognised once the discount is shared out.' },
+      { sel: '#main .verdict', title: 'What it means', text: 'The verdict says what the choice does to the licence, which is recognised at once on delivery.' }
+    ],
+    sched: [
+      { sel: '#main svg.chart', title: 'Three lines', text: 'Billed (blue) is what was invoiced, recognised (purple) is revenue and collected (green) is cash. They part ways because invoices and revenue follow different rules.' },
+      { sel: '.play', title: 'Play the months', text: 'Press play to run through the 38 months, or drag the slider. The cards below show the figures of the month you stop at.' },
+      { sel: '#readout', title: 'Liability or asset', text: 'The last card shows the gap between billed and recognised: a contract liability when billing is ahead, a contract asset when revenue is ahead.' }
+    ],
+    bal: [
+      { sel: '#main .tools', title: 'Pick a month end', text: 'The balances and the journal entries are shown for the month end you choose.' },
+      { sel: '#main .kpis', title: 'Three numbers, not one', text: 'Billed, recognised and collected differ. Their differences are the open receivables and the contract liability or asset.' },
+      { sel: '#main .jt', title: 'The entries', text: 'Each entry has a debit and a credit account, coloured the same way everywhere: receivable blue, bank green, deferred revenue amber, revenue purple.' }
+    ],
+    chg: [
+      { sel: '#main .tools', title: 'Try an amendment', text: 'Pick a scenario. If the addition is priced close to its stand-alone price it is a separate contract; if not, the open obligations are shared out again.' },
+      { sel: '#main .verdict', title: 'The verdict', text: 'It says how the amendment is treated and why. The table below shows what changes in the schedule.' }
+    ],
+    disc: [
+      { sel: '#main .tools', title: 'Pick a month end', text: 'The three disclosures are calculated for the month end you choose.' },
+      { sel: '#main .card', title: 'Three tables for the notes', text: 'Revenue by kind, the movement of the contract balances, and the remaining performance obligations by the time they will be recognised.' }
+    ],
+    judge: [
+      { sel: '#main details.acc', title: 'Twelve places to judge', text: 'Open one to see what can go wrong, the control that catches it and who owns it. Below, a table shows where each step happens in the finance system.' }
+    ]
+  };
+  var T = { on: tipsOn(), i: 0, open: false, shown: {}, el: null };
+  function tipsOn() { try { return getComputedStyle(document.documentElement).getPropertyValue('--wb-tips').trim() !== 'off'; } catch (e) { return true; } }
+  function tipList() { return (TIPS[S.tab] || []).filter(function (t) { return document.querySelector(t.sel); }); }
+  function hideTip() { var a = $('#tipb'), b = $('#tipm'); if (a) a.remove(); if (b) b.remove(); T.el = null; }
+  function placeTip(b, mk, el) {
+    var r = el.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight, w = b.offsetWidth, h = b.offsetHeight, gap = 14, mar = 12;
+    mk.style.left = r.left + 'px'; mk.style.top = r.top + 'px'; mk.style.width = r.width + 'px'; mk.style.height = r.height + 'px';
+    var side = r.bottom + gap + h <= vh - mar ? 'below' : r.top - gap - h >= mar ? 'above' : 'below';
+    var left = Math.max(mar, Math.min(r.left + r.width / 2 - w / 2, vw - mar - w)), top = side === 'below' ? Math.min(r.bottom + gap, vh - mar - h) : r.top - gap - h;
+    b.className = 'tipb ' + side; b.style.left = left + 'px'; b.style.top = Math.max(mar, top) + 'px';
+    b.style.setProperty('--arrow', Math.max(18, Math.min(r.left + r.width / 2 - left, w - 18)) + 'px');
+  }
+  function showTip() {
+    hideTip();
+    if (!T.on || !T.open) return;
+    var list = tipList();
+    if (!list.length || T.i >= list.length) { T.open = false; return; }
+    var t = list[T.i], el = document.querySelector(t.sel);
+    var r = el.getBoundingClientRect();
+    if ((r.top < 70 || r.bottom > window.innerHeight - 20) && el.scrollIntoView) el.scrollIntoView({ block: 'center' });
+    var mk = document.createElement('div'); mk.id = 'tipm'; mk.className = 'tipmark'; document.body.appendChild(mk);
+    var b = document.createElement('div'); b.id = 'tipb'; b.className = 'tipb'; b.setAttribute('role', 'note'); b.setAttribute('aria-label', 'Tip: ' + t.title);
+    b.innerHTML = '<p class="tp-step">Tip ' + (T.i + 1) + ' of ' + list.length + '</p><h3>' + esc(t.title) + '</h3><p>' + esc(t.text) + '</p><div class="tp-acts"><button type="button" class="btn tbn" id="tp-back"' + (T.i ? '' : ' disabled') + '>Back</button><button type="button" class="btn tbn primary" id="tp-next">' + (T.i === list.length - 1 ? 'Done' : 'Next') + '</button><span class="tp-gap"></span><button type="button" class="btn tbn" id="tp-off" title="Switch the tips off. You can switch them on again in Settings, Skin, Tips.">Turn off tips</button></div>';
+    document.body.appendChild(b);
+    T.el = el; placeTip(b, mk, el);
+    $('#tp-back').onclick = function () { T.i--; showTip(); };
+    $('#tp-next').onclick = function () { T.i++; if (T.i >= list.length) { T.open = false; T.shown[S.tab] = true; } showTip(); };
+    $('#tp-off').onclick = function () { setTips(false); };
+  }
+  function renderTipsBtn() { var b = $('#tips-btn'); if (!b) return; b.textContent = T.on ? 'Tips' : 'Tips off'; b.setAttribute('aria-pressed', String(T.on)); b.title = T.on ? 'Show the tips for this page' : 'Switch the tips on (or in Settings, Skin, Tips)'; }
+  function setTips(on) {
+    T.on = on; T.shown = {}; T.i = 0; T.open = on; if (on) showTip(); else hideTip();
+    renderTipsBtn();
+    if (window.parent !== window) window.parent.postMessage({ type: 'wb:tips', enabled: on }, '*');
+  }
+
+  /* ---- numbers that count up, and the check for reduced motion (system setting or the app's own) ---- */
+  function reduce() {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return true;
+    var p = document.createElement('i'); p.style.cssText = 'animation:rr-fade 1s;position:absolute;visibility:hidden'; document.body.appendChild(p);
+    var d = parseFloat(getComputedStyle(p).animationDuration) || 0; p.remove(); return d < 0.01;
+  }
+  function countUp(root) {
+    if (reduce()) return;
+    root.querySelectorAll('[data-n]').forEach(function (el) {
+      var to = parseFloat(el.getAttribute('data-n')), f = el.getAttribute('data-f') || 'm', t0 = null;
+      var fmt = function (v) { return f === 'n' ? String(Math.round(v)) : m(Math.round(v * 100) / 100); };
+      function step(ts) { if (!t0) t0 = ts; var k = Math.min(1, (ts - t0) / 750), e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(to * e); if (k < 1) requestAnimationFrame(step); else el.textContent = fmt(to); }
+      requestAnimationFrame(step);
+    });
+  }
+
   function render(keep) {
+    stopPlay();
     var open = []; if (keep) document.querySelectorAll('#main details[open]').forEach(function (d, i) { open.push(i); });
-    $('#tabs').innerHTML = TABS.map(function (t) { return '<button role="tab" aria-selected="' + (S.tab === t[0]) + '" data-act="tab" data-id="' + t[0] + '">' + t[1] + '</button>'; }).join('');
+    $('#tabs').innerHTML = rail(); S.railIn = false;
     $('#sys').textContent = D.company + ' · ' + D.asOf;
-    $('#main').innerHTML = VIEWS[S.tab]();
+    var main = $('#main'); main.className = S.enter ? 'enter' : '';
+    main.innerHTML = banner() + VIEWS[S.tab]();
     var ds = document.querySelectorAll('#main details'); open.forEach(function (i) { if (ds[i]) ds[i].open = true; });
+    if (S.tab === 'sched') initPlayer();
+    if (S.enter) { countUp(main); T.i = 0; T.open = T.on && !T.shown[S.tab]; }
+    S.enter = false;
+    renderTipsBtn(); showTip();
   }
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('[data-act]') : null;
     if (!b || b.disabled) return;
     var act = b.getAttribute('data-act');
-    if (act === 'tab') { S.tab = b.getAttribute('data-id'); window.scrollTo(0, 0); }
+    if (act === 'tab') { var id = b.getAttribute('data-id'); if (!id) return; S.tab = id; S.enter = true; window.scrollTo(0, 0); }
     else if (act === 'set') { var k = b.getAttribute('data-k'), v = b.getAttribute('data-v'); S[k === 'avail' ? 'avail' : k] = k === 'avail' ? parseFloat(v) : v; }
     render(act !== 'tab');
   });
+  $('#tips-btn').onclick = function () { if (T.on) { T.i = 0; T.open = true; showTip(); } else setTips(true); };
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && T.open) { T.open = false; T.shown[S.tab] = true; hideTip(); } });
+  var raf = 0;
+  function repos() { raf = 0; var b = $('#tipb'), mk = $('#tipm'); if (b && mk && T.el && document.body.contains(T.el)) placeTip(b, mk, T.el); }
+  window.addEventListener('scroll', function () { if (!raf && T.open) raf = requestAnimationFrame(repos); }, true);
+  window.addEventListener('resize', function () { if (T.open) showTip(); });
+  // The app tells the page the tips settings when they change (Settings, Skin, Tips): on or off, size and colours.
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (e.source !== window.parent || !d || d.type !== 'ct:tips') return;
+    var root = document.documentElement.style, set = function (k, v) { if (v) root.setProperty(k, String(v).slice(0, 32)); else root.removeProperty(k); };
+    set('--tip-size', typeof d.size === 'number' ? d.size + 'px' : ''); set('--tip-text', d.textColor); set('--tip-bg', d.bubbleColor); set('--tip-mark', d.highlightColor);
+    var on = d.enabled !== false;
+    if (on !== T.on) { T.on = on; T.shown = {}; T.i = 0; T.open = on; if (on) showTip(); else hideTip(); renderTipsBtn(); } else if (T.open) showTip();
+  });
+  document.getElementById('wb-customer').textContent = D.customer.name;  // the host shows it in the top bar of every Space
   render();
 })();
 </script>

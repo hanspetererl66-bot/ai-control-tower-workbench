@@ -1222,6 +1222,29 @@ function workspaceFile(path) {
   return rel && !rel.startsWith('..') && !isAbsolute(rel) ? target : null;
 }
 
+/** Result of a scheduler job as a text file in workspace/job-results/<folder>/. The folder and the name are checked here (the renderer is
+ * not trusted): only plain segments, no "..", the file must stay inside the results folder, and an existing file is never overwritten. */
+const JOB_RESULT_MAX = 1_000_000;
+ipcMain.handle('write-job-result', async (_event, raw) => {
+  const folder = typeof raw?.folder === 'string' ? raw.folder.replace(/^\/+|\/+$/g, '') : '';
+  const name = typeof raw?.fileName === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,100}\.(md|txt)$/.test(raw.fileName) ? raw.fileName : '';
+  const content = typeof raw?.content === 'string' ? raw.content : '';
+  if (!name || !content || content.length > JOB_RESULT_MAX) return { ok: false, detail: 'Nothing to write.' };
+  if (folder && !/^(?!.*(^|\/)\.\.?(\/|$))[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+){0,4}$/.test(folder)) return { ok: false, detail: 'The folder name is not allowed.' };
+  try {
+    const base = join(WORKSPACE, 'job-results');
+    const dir = folder ? join(base, folder) : base;
+    const rel = relative(base, dir);
+    if (rel.startsWith('..') || isAbsolute(rel)) return { ok: false, detail: 'The folder is outside the results folder.' };
+    mkdirSync(dir, { recursive: true });
+    const path = join(dir, name);
+    writeFileSync(path, content, { encoding: 'utf8', flag: 'wx' });
+    return { ok: true, path };
+  } catch (error) {
+    return { ok: false, detail: error?.code === 'EEXIST' ? 'A file with this name already exists.' : (error?.message ?? String(error)) };
+  }
+});
+
 /** Briefing as PDF: the HTML comes from the renderer, is drawn in a hidden window without scripts and network, and the PDF is
  * written to workspace/briefings/. The file name is cleaned here; the bytes go back so they can be attached to a draft. */
 const BRIEFING_PDF_MAX = 5 * 1024 * 1024;
