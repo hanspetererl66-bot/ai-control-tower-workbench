@@ -87,9 +87,9 @@ export const DEFAULT_CHAT_TOOLS: ChatTools = { readAloud: false, privacyBar: fal
  * The tips of the Ontology Manager (speech bubbles that explain each part). `enabled` is the on/off switch; the colours are empty
  * (= follow the skin, light or dark) or one #RRGGBB value each: text, bubble (its fill) and highlight (the tint and frame around the part a tip points at).
  */
-export const TIP_SIZES = ['small', 'normal', 'large', 'xlarge'] as const;
+export const TIP_SIZES = ['tiny', 'small', 'normal', 'large', 'xlarge'] as const;
 export type TipSize = (typeof TIP_SIZES)[number];
-export const TIP_SIZE_PX: Record<TipSize, number> = { small: 12, normal: 13.5, large: 16, xlarge: 18.5 };
+export const TIP_SIZE_PX: Record<TipSize, number> = { tiny: 9, small: 12, normal: 13.5, large: 16, xlarge: 18.5 };
 export type TipsPrefs = { enabled: boolean; size: TipSize; textColor: string; bubbleColor: string; highlightColor: string };
 export const DEFAULT_TIPS: TipsPrefs = { enabled: true, size: 'normal', textColor: '', bubbleColor: '', highlightColor: '' };
 export type Starter = { label: string; prompt: string };
