@@ -142,7 +142,7 @@ export function createSimulation(map: GraphMap, seed = 7): Simulation {
   const slugs = [...new Set(map.nodes.map((m) => m.slug))];
   const rand = rng(seed);
   // two or three ontologies sit close together; many need room, or their areas run into each other
-  const ringR = slugs.length > 3 ? 120 + slugs.length * 62 : 220;
+  const ringR = slugs.length > 3 ? 150 + slugs.length * 70 : 260;
   const anchor = map.nodes.map((m) => {
     const k = Math.max(0, slugs.indexOf(m.slug));
     const a = (k / Math.max(1, slugs.length)) * Math.PI * 2 - Math.PI / 2;
@@ -158,15 +158,15 @@ export function createSimulation(map: GraphMap, seed = 7): Simulation {
       for (let j = i + 1; j < n; j++) {
         let dx = x[i] - x[j], dy = y[i] - y[j];
         const d2 = dx * dx + dy * dy + 0.5;
-        if (d2 > 90000) continue;
-        const d = Math.sqrt(d2), f = (2200 / d2) * alpha;
+        if (d2 > 160000) continue;
+        const d = Math.sqrt(d2), f = (3600 / d2) * alpha;
         dx /= d; dy /= d;
         vx[i] += dx * f; vy[i] += dy * f; vx[j] -= dx * f; vy[j] -= dy * f;
       }
     }
     for (const l of links) {
       const dx = x[l.b] - x[l.a], dy = y[l.b] - y[l.a], d = Math.sqrt(dx * dx + dy * dy) + 0.01;
-      const len = l.weak ? 120 : 70, k = l.weak ? 0.012 : 0.05, f = (d - len) * k * alpha;
+      const len = l.weak ? 150 : 92, k = l.weak ? 0.012 : 0.05, f = (d - len) * k * alpha;
       const fx = (dx / d) * f, fy = (dy / d) * f;
       vx[l.a] += fx; vy[l.a] += fy; vx[l.b] -= fx; vy[l.b] -= fy;
     }
