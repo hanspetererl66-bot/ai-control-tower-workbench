@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BackArrow } from './AdminHero';
 import { FEATURES, analyzeSpace, failedReport, filterReports, fixRequest, summarize, HEALTH_LABEL, RULE_LABEL, type FeatureFilter, type HealthFilter, type SpaceReport } from '../space-analysis';
 import { fetchSpaceHtml, type Space } from '../spaces';
 
@@ -57,7 +58,7 @@ export default function SpaceAnalysisView({ spaces, onBack, onOpenSpace, fetchHt
   return (
     <main className="sa">
       <header className="sa-hero">
-        <button className="om-back" onClick={onBack} aria-label="Back to the Admin console">←</button>
+        <button className="om-back" onClick={onBack} aria-label="Back to the Admin console"><BackArrow /></button>
         <div>
           <p className="om-crumb">Admin console</p>
           <h1>Space Analysis</h1>
