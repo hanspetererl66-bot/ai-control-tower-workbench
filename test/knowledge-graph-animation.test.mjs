@@ -35,7 +35,17 @@ test('graph animation: the rings use theme tokens, the breath never runs with re
   assert.doesNotMatch(block, /#[0-9a-fA-F]{3,8}\b/, 'no colour literals in the new code');
   assert.deepEqual(Object.values(vm.runInNewContext(`${block}; HEALTH_TOKEN`)).sort(), ['amber', 'green', 'red']);
   assert.match(html, /PULSE\.has\(n\.id\) && !reduced && IP >= 1/, 'the breath is off with reduced motion and waits for the intro');
-  assert.match(html, /if \(!foc && r > 5 && \(n\.renewal \|\| n\.escalation\)\)/, 'rings only in the calm state, not while something is selected');
+  assert.match(html, /if \(foc \|\| r <= 5 \|\| !\(n\.renewal \|\| n\.escalation\)\) return;/, 'rings only in the calm state, not while something is selected');
   assert.match(html, /Ring colour = renewal health/);
   assert.match(html, /Colour = renewal health \(red, yellow, green\)/);
+});
+
+test('graph animation: the ring is one function, drawn in 2D and in 3D; an overdue invoice is red', () => {
+  assert.equal((html.match(/(?<!function )healthRing\(n, /g) ?? []).length, 2, 'one call in the 2D view and one in the 3D view');
+  assert.equal((html.match(/function healthRing\(/g) ?? []).length, 1);
+  assert.match(html, /healthRing\(n, q\.x, q\.y, r, al \* depth\(q\), now\)/, 'the 3D view fades the ring with the depth of the node');
+  assert.match(html, /n\.type === 'invoice' && n\.meta && n\.meta\.Status === 'Overdue'\) return C\.red/);
+  const overdue = graph.nodes.filter((n) => n.type === 'invoice' && n.meta.Status === 'Overdue'), open = graph.nodes.filter((n) => n.type === 'invoice' && n.meta.Status === 'Open');
+  assert.ok(overdue.length > 0 && open.length > 0, 'the sample data has both kinds');
+  assert.match(html, /overdue invoices are red/);
 });
