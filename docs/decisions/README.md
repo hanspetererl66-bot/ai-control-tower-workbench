@@ -30,3 +30,4 @@ Hier steht, was entschieden ist, und was noch auf eine Entscheidung wartet. Eine
 | 015 | [Wissens-Feeder: Seed-Lauf und rechtliche Fragen](015-wissens-feeder-seed-lauf-und-rechtliche-fragen.md) | vorgeschlagen | 11.11.2026 | Hans-Peter |
 | 016 | [Ontology Akt B: offene Fragen der Konzeption](016-ontology-akt-b-offene-fragen-der-konzeption.md) | vorgeschlagen | 13.11.2026 | Hans-Peter |
 | 017 | [Diagramme im Chat als Mermaid, zuerst ohne Figma](017-diagramme-im-chat-als-mermaid-nicht-in-figma.md) | entschieden | 13.11.2026 | Hans-Peter |
+| 018 | [Der Notion-Connector darf schreiben, aber nichts löschen](018-der-notion-connector-darf-schreiben-aber-nichts-loeschen.md) | entschieden | 14.11.2026 (Auftrag im Chat) | Hans-Peter |

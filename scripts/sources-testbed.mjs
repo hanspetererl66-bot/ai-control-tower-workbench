@@ -8,6 +8,7 @@
  *   JIRA_SITE=https://firma.atlassian.net JIRA_EMAIL=you@firma.com JIRA_API_TOKEN=... SLACK_BOT_TOKEN=xoxb-... \
  *     node scripts/sources-testbed.mjs --project TB --channel testbed --create
  *
+ * --dataset <file> uses another dataset (examples/sources-testbed/joule-demo.json: Slack only, ideas for the next Joule Work).
  * --only jira | slack limits it to one side. Use a test Jira project and a test Slack channel (the bot must be in it).
  * Nothing is deleted by this script. Jira issues carry the label werkbank-testbed, Slack messages end with [testbed].
  */
@@ -16,7 +17,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-export const loadDataset = () => JSON.parse(readFileSync(join(ROOT, 'examples/sources-testbed/dataset.json'), 'utf8'));
+export const loadDataset = (file = join(ROOT, 'examples/sources-testbed/dataset.json')) => JSON.parse(readFileSync(file, 'utf8'));
 export const LABEL = 'werkbank-testbed';
 export const MARK = ' [testbed]';
 const KEY = /^[A-Z][A-Z0-9_]{1,19}$/;
@@ -82,7 +83,7 @@ export async function createSlack(d, { token, channel, fetchImpl = fetch, pause 
 async function main() {
   const a = process.argv.slice(2);
   const get = (f) => { const i = a.indexOf(f); return i >= 0 ? a[i + 1] : undefined; };
-  const d = loadDataset();
+  const d = loadDataset(get('--dataset'));
   if (a.includes('--expect')) { console.log(expectedTable(d)); return; }
   const only = get('--only');
   const p = plan(d, { only });
@@ -92,7 +93,7 @@ async function main() {
     console.log('\nAdd --create (with the variables from the header) to send them. --expect shows the answer to compare with.');
     return;
   }
-  if (only !== 'slack') console.log('Jira issues:', (await createJira(d, { site: process.env.JIRA_SITE, email: process.env.JIRA_EMAIL, token: process.env.JIRA_API_TOKEN, project: get('--project') })).join(', '));
+  if (only !== 'slack' && d.jira.length) console.log('Jira issues:', (await createJira(d, { site: process.env.JIRA_SITE, email: process.env.JIRA_EMAIL, token: process.env.JIRA_API_TOKEN, project: get('--project') })).join(', '));
   if (only !== 'jira') console.log('Slack messages sent:', await createSlack(d, { token: process.env.SLACK_BOT_TOKEN, channel: get('--channel') }));
   console.log('\nNow load both in the app (Develop, Requirement collection) and compare with:\n\n' + expectedTable(d));
 }

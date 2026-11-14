@@ -1,0 +1,89 @@
+{
+  "note": "every message that voices the need counts once; a '+1 same for us' counts; a question about who or when, greetings and chatter do not.",
+  "themes": [
+    {
+      "id": "sources",
+      "title": "Every number in an answer links to its source",
+      "expectClass": [
+        "feature"
+      ],
+      "expect": {
+        "slack": 3,
+        "jira": 0
+      }
+    },
+    {
+      "id": "approval",
+      "title": "Approval before an agent writes to a connected system",
+      "expectClass": [
+        "workflow",
+        "feature"
+      ],
+      "expect": {
+        "slack": 2,
+        "jira": 0
+      }
+    },
+    {
+      "id": "briefing",
+      "title": "Morning summary sent to Slack",
+      "expectClass": [
+        "agent",
+        "workflow"
+      ],
+      "expect": {
+        "slack": 2,
+        "jira": 0
+      }
+    }
+  ],
+  "slack": [
+    {
+      "theme": "sources",
+      "text": "Mia (Finance): Joule told me the open invoices total 184k. Where does that number come from? I cannot check it, so I cannot use it in the board deck."
+    },
+    {
+      "theme": null,
+      "text": "Good morning everyone, coffee machine on 3 is fixed again."
+    },
+    {
+      "theme": "sources",
+      "text": "Jonas (Sales): Same problem with the pipeline numbers. A link to the table or the ticket behind each figure would save me ten minutes per answer."
+    },
+    {
+      "theme": "approval",
+      "text": "Kim (Operations): Heads up, yesterday the agent added a comment to a Jira ticket on its own. It was harmless, but nobody asked me first. We need an approval step before an agent writes anything.",
+      "replies": [
+        {
+          "theme": "approval",
+          "text": "+1, in Legal we would only allow that if we see the exact text beforehand."
+        },
+        {
+          "theme": null,
+          "text": "Which agent was it? Was that the one from the Renewals demo?"
+        }
+      ]
+    },
+    {
+      "theme": "briefing",
+      "text": "Sophie (Management): Could Joule send me a short summary every morning in Slack? Open decisions, risks, what changed since yesterday. I do not want to open another app first."
+    },
+    {
+      "theme": "sources",
+      "text": "Quellenangaben fehlen mir auch. Ich glaube einer Zahl nur, wenn ich sie in zwei Klicks prüfen kann. (Tobias, Controlling)"
+    },
+    {
+      "theme": null,
+      "text": "Reminder: all-hands moved to Thursday 10:00."
+    },
+    {
+      "theme": "briefing",
+      "text": "Eine tägliche Zusammenfassung per Slack am Morgen wäre für mein Team genau richtig. (Anja, Vertrieb)"
+    },
+    {
+      "theme": null,
+      "text": "Thanks for the quick fix on the dashboard, looks great now!"
+    }
+  ],
+  "jira": []
+}
