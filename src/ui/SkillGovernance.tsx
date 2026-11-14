@@ -201,7 +201,7 @@ export default function SkillGovernance({ skills, renderRow }: { skills: Skill[]
                   const on = picked === r.skill.name;
                   return (
                     <tr key={r.skill.dir} data-skill={r.skill.name} className={`sgov-tr ${on ? 'on' : ''}`} tabIndex={on || (!picked && r === shown[0]) ? 0 : -1} aria-selected={on} onClick={() => setPicked(r.skill.name)}>
-                      <td className="sgov-td-name"><span className="sgov-skill-name"><SkillIcon name={r.skill.name} />{r.skill.name}</span><small>{r.skill.description}</small></td>
+                      <td className="sgov-td-name"><span className="sgov-skill-name skill-name"><SkillIcon name={r.skill.name} />{r.skill.name}</span><small>{r.skill.description}</small></td>
                       <td>{gov.levels[r.level]}</td>
                       <td>{r.status === 'review' ? <span className="sgov-badge sgov-badge-wait">In review{r.target !== undefined ? ` for ${gov.levels[r.target]}` : ''}</span> : 'Active'}</td>
                       <td>{r.checks === 'none' ? <span className="sgov-none" aria-label="No review yet">–</span> : <span className={`sgov-ck-${r.checks}`}><span className="sgov-ck-dot" role="img" aria-label={`Review: ${r.checks}`}>{CHECK_MARK[r.checks]}</span></span>}</td>

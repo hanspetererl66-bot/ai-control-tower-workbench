@@ -429,7 +429,7 @@ export default function ManageView({
             renderRow={(s, extra) => (
               <div className="row">
                 <div className="row-main">
-                  <span className="row-title row-title-skill"><SkillIcon name={s.name} />{s.name}</span>
+                  <span className="row-title row-title-skill skill-name"><SkillIcon name={s.name} />{s.name}</span>
                   <span className="row-detail">{s.description}</span>
                   {(() => { const n = skillNotice(s); return n ? <span className={`skill-notice skill-notice-${n.state}`}>{n.text}</span> : null; })()}
                 </div>
