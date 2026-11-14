@@ -204,7 +204,7 @@ test('text size in Spaces: every step is kept, old 130% and 150% move to 125%, n
 });
 
 // ---------------------------------------------------------------- tips (Ontology Manager speech bubbles)
-import { DEFAULT_TIPS, TIP_SIZE_PX, sanitizeTips } from '../src/preferences.ts';
+import { DEFAULT_TIPS, TIP_SIZES, TIP_SIZE_PX, sanitizeTips } from '../src/preferences.ts';
 import { contrastRatio, tipCss } from '../src/preferences-style.ts';
 
 test('tips: defaults are on, normal size, colours follow the skin; broken values fall back', () => {
@@ -281,4 +281,11 @@ test('app background: css only appears when chosen, and text stays readable on e
   assert.match(css, /:root\[data-theme="dark"\]\{--bg:#/);
   assert.match(css, /body\{background-image:linear-gradient/);
   assert.doesNotMatch(css, /#[0-9a-fA-F]{3,6}[^;]*url\(/);
+});
+
+test('tip text size: 9 px is offered as the smallest step, in order, and is applied as a style variable', () => {
+  assert.deepEqual([...TIP_SIZES], ['tiny', 'small', 'normal', 'large', 'xlarge']);
+  assert.deepEqual(TIP_SIZES.map((k) => TIP_SIZE_PX[k]), [9, 12, 13.5, 16, 18.5]);
+  assert.equal(sanitizeTips({ size: 'tiny' }).size, 'tiny');
+  assert.equal(sanitizeTips({ size: '9px' }).size, DEFAULT_TIPS.size, 'anything else falls back');
 });
