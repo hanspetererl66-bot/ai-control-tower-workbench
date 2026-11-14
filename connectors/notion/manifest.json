@@ -2,8 +2,8 @@
   "manifest_version": "0.2",
   "name": "notion",
   "display_name": "Notion",
-  "version": "0.1.0",
-  "description": "Notion (read only): search pages and databases, read a page or the rows of a database through an internal integration. Needs the integration secret; the pages must be shared with the integration.",
+  "version": "0.2.0",
+  "description": "Notion: search pages and databases, read a page or database rows (with filter), create pages and update them (properties, text added at the end) through an internal integration. Nothing is deleted. Needs the integration secret; the pages must be shared with the integration.",
   "author": {
     "name": "AI Control Tower workbench"
   },
@@ -36,14 +36,22 @@
     },
     {
       "name": "notion_query_database",
-      "description": "Read the rows of a database with their properties (first rows, no filter). Read only."
+      "description": "Read the rows of a database with their properties, optionally filtered and sorted. Read only."
+    },
+    {
+      "name": "notion_create_page",
+      "description": "Create a page below a page or as a row in a database (this changes Notion). Ask the person before using it."
+    },
+    {
+      "name": "notion_update_page",
+      "description": "Change properties of a page and/or add text at its end; nothing is deleted or archived (this changes Notion). Ask the person before using it."
     }
   ],
   "user_config": {
     "notion_token": {
       "type": "string",
       "title": "Integration secret",
-      "description": "notion.so/profile/integrations, New integration (internal), copy the secret. Then share each page or database with it (page menu, Connections). Stored as a secret. Read access is enough.",
+      "description": "notion.so/profile/integrations, New integration (internal), enable the capabilities Read content, Insert content and Update content, copy the secret. Then share each page or database with it (page menu, Connections). Stored as a secret.",
       "sensitive": true,
       "required": true
     }

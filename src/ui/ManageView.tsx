@@ -1,3 +1,4 @@
+import ConnectorLogo from './ConnectorLogo';
 import { isLiveConnector } from '../connector-activity';
 import { useCallback, useEffect, useState } from 'react';
 import type { Agent, Extension } from '../acp';
@@ -269,6 +270,7 @@ export default function ManageView({
           <div key={e.configKey} className={`row${isLiveConnector(liveConnectors, e.configKey) ? ' conn-live' : ''}`} data-live={isLiveConnector(liveConnectors, e.configKey) ? 'true' : undefined}>
             <div className="row-main">
               <span className="row-title">
+                <ConnectorLogo name={e.configKey} />
                 {connectorDisplayName(e.configKey)}
                 {!e.enabled && <em className="row-off"> disabled</em>}
                 {isLiveConnector(liveConnectors, e.configKey) && <em className="row-live" role="status"> in use</em>}
@@ -391,7 +393,7 @@ export default function ManageView({
               {open.map((b) => (
                 <div key={b.id} className="row">
                   <div className="row-main">
-                    <span className="row-title">{b.title} <em className="row-off">{b.tools} tools</em></span>
+                    <span className="row-title"><ConnectorLogo name={b.name} />{b.title} <em className="row-off">{b.tools} tools</em></span>
                     <span className="row-detail">{b.description}</span>
                   </div>
                   <div className="row-actions">
@@ -427,7 +429,7 @@ export default function ManageView({
             renderRow={(s, extra) => (
               <div className="row">
                 <div className="row-main">
-                  <span className="row-title row-title-skill"><SkillIcon name={s.name} />{s.name}</span>
+                  <span className="row-title row-title-skill skill-name"><SkillIcon name={s.name} />{s.name}</span>
                   <span className="row-detail">{s.description}</span>
                   {(() => { const n = skillNotice(s); return n ? <span className={`skill-notice skill-notice-${n.state}`}>{n.text}</span> : null; })()}
                 </div>

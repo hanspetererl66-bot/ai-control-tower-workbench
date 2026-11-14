@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   GROUP_BY_KEY, MAX_CUSTOM_DIMS, MAX_JOBS, STATE_LABEL, TARGET_LABEL, UNASSIGNED, WEEKDAYS, cadenceProblems, describeCadence, groupJobs, groupValue, groupValues, jobState,
-  loadDims, newDim, newJob, nextRun, saveDims, toLocalInput, upcoming, withGroup, withoutDim,
-  type Cadence, type GroupDim, type Job, type JobState, type Target, type TargetType,
+  OUTPUT_KINDS, OUTPUT_LABEL, loadDims, newDim, outputLabel, outputProblems, newJob, nextRun, saveDims, toLocalInput, upcoming, withGroup, withoutDim,
+  type Cadence, type GroupDim, type Job, type JobOutput, type JobState, type OutputKind, type Target, type TargetType,
 } from '../jobs';
 import type { LogEntry } from '../job-log';
 import SchedulerActivity from './SchedulerActivity';
@@ -173,6 +173,7 @@ export default function SchedulerView({ jobs, log, targets, runningId, canRun, o
                   <div className="sched-detail">
                     <p className="sched-muted">Created {fmt(job.createdAt)} · {TARGET_LABEL[job.target.type]} “{job.target.label}” · {describeCadence(job.cadence)}</p>
                     {job.note && <p><strong>Instruction:</strong> {job.note}</p>}
+                    <p><strong>Result goes to:</strong> {outputLabel(job.output)}</p>
                     <h3>Groupings</h3>
                     <div className="sched-groupedit">
                       <span className="sched-muted">Functional type: {groupValue(job, dims[0])} (from what the job runs)</span>
@@ -212,6 +213,17 @@ export default function SchedulerView({ jobs, log, targets, runningId, canRun, o
   );
 }
 
+function defaultOutput(kind: OutputKind): JobOutput {
+  switch (kind) {
+    case 'email': return { kind, to: '' };
+    case 'file': return { kind, path: '', format: 'md' };
+    case 'slack': return { kind, channel: '' };
+    case 'notion': return { kind, parent: '', parentType: 'page' };
+    case 'databricks': return { kind, table: '' };
+    default: return { kind: 'chat' };
+  }
+}
+
 function JobForm({ targets, now, dims, jobs, onCancel, onSave }: { targets: Target[]; now: Date; dims: GroupDim[]; jobs: Job[]; onCancel: () => void; onSave: (job: Job) => void }) {
   const firstType = (['agent', 'workflow', 'skill'] as TargetType[]).find((t) => targets.some((x) => x.type === t)) ?? 'agent';
   const [type, setType] = useState<TargetType>(firstType);
@@ -221,13 +233,15 @@ function JobForm({ targets, now, dims, jobs, onCancel, onSave }: { targets: Targ
   const [note, setNote] = useState('');
   const [cadence, setCadence] = useState<Cadence>(() => defaultCadence('daily', now));
   const [groups, setGroups] = useState<Record<string, string>>({});
+  const [output, setOutput] = useState<JobOutput>({ kind: 'chat' });
   const target = options.find((t) => t.id === targetId) ?? options[0];
   const problems = cadenceProblems(cadence, now);
   const preview = problems.length ? [] : upcoming(cadence, now, 3);
-  const canSave = Boolean(target) && problems.length === 0;
+  const outProblems = outputProblems(output);
+  const canSave = Boolean(target) && problems.length === 0 && outProblems.length === 0;
 
   return (
-    <form className="sched-form" onSubmit={(e) => { e.preventDefault(); if (canSave && target) onSave(newJob({ name, target, note: type === 'agent' ? '' : note, cadence, groups }, new Date())); }}>
+    <form className="sched-form" onSubmit={(e) => { e.preventDefault(); if (canSave && target) onSave(newJob({ name, target, note: type === 'agent' ? '' : note, cadence, groups, output }, new Date())); }}>
       <h2>New job</h2>
       <label>Name<input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} placeholder={target ? `${TARGET_LABEL[type]}: ${target.label}` : 'Job name'} /></label>
       <div className="sched-form-grid">
@@ -279,6 +293,32 @@ function JobForm({ targets, now, dims, jobs, onCancel, onSave }: { targets: Targ
           </div>
         )}
         {problems.length > 0 ? <p className="sched-problem" role="alert">{problems[0]}</p> : <p className="sched-muted">Next runs: {preview.map((d) => fmt(d)).join(' · ')}</p>}
+      </fieldset>
+      <fieldset>
+        <legend>Write the result to</legend>
+        <div className="sched-form-grid">
+          <label>Destination
+            <select value={output.kind} onChange={(e) => setOutput(defaultOutput(e.target.value as OutputKind))}>
+              {OUTPUT_KINDS.map((k) => <option key={k} value={k}>{OUTPUT_LABEL[k]}</option>)}
+            </select>
+          </label>
+          {output.kind === 'email' && <label>To<input type="email" value={output.to} maxLength={120} onChange={(e) => setOutput({ kind: 'email', to: e.target.value })} placeholder="name@company.com" /></label>}
+          {output.kind === 'file' && <label>Folder in job-results (optional)<input value={output.path} maxLength={120} onChange={(e) => setOutput({ ...output, path: e.target.value })} placeholder="finance/weekly" spellCheck={false} /></label>}
+          {output.kind === 'file' && <label>Format<select value={output.format} onChange={(e) => setOutput({ ...output, format: e.target.value as 'md' | 'txt' })}><option value="md">Markdown (.md)</option><option value="txt">Plain text (.txt)</option></select></label>}
+          {output.kind === 'slack' && <label>Channel<input value={output.channel} maxLength={80} onChange={(e) => setOutput({ kind: 'slack', channel: e.target.value })} placeholder="#finance-ops or C0123ABCDE" spellCheck={false} /></label>}
+          {output.kind === 'notion' && <label>Parent page or database<input value={output.parent} maxLength={300} onChange={(e) => setOutput({ ...output, parent: e.target.value })} placeholder="notion.so link or id" spellCheck={false} /></label>}
+          {output.kind === 'notion' && <label>Parent is a<select value={output.parentType} onChange={(e) => setOutput({ ...output, parentType: e.target.value as 'page' | 'database' })}><option value="page">Page</option><option value="database">Database</option></select></label>}
+          {output.kind === 'databricks' && <label>Table<input value={output.table} maxLength={120} onChange={(e) => setOutput({ kind: 'databricks', table: e.target.value })} placeholder="catalog.schema.table" spellCheck={false} /></label>}
+        </div>
+        {outProblems.length > 0 && <p className="sched-problem" role="alert">{outProblems[0]}</p>}
+        <p className="sched-muted">{{
+          chat: 'The answer stays in the chat.',
+          email: 'An email draft is created in Gmail with the answer; you check and send it. Needs the Gmail connector.',
+          file: 'Saved as a new file in the job-results folder of the workspace; existing files are never overwritten.',
+          slack: 'Posted to the channel after every run. Needs the Slack connector, and the bot must be in the channel.',
+          notion: 'A new page with the answer is created after every run. Needs the Notion connector, and the page or database must be shared with it.',
+          databricks: 'One row (job_id, job_name, run_at, result) is added to an existing table after every run. Needs the Databricks connector and a SQL warehouse.',
+        }[output.kind]} If writing fails, the run is marked as failed and the note says why.</p>
       </fieldset>
       <fieldset>
         <legend>Groupings (optional)</legend>

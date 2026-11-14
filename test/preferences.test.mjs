@@ -204,7 +204,7 @@ test('text size in Spaces: every step is kept, old 130% and 150% move to 125%, n
 });
 
 // ---------------------------------------------------------------- tips (Ontology Manager speech bubbles)
-import { DEFAULT_TIPS, TIP_SIZE_PX, sanitizeTips } from '../src/preferences.ts';
+import { DEFAULT_TIPS, TIP_SIZES, TIP_SIZE_PX, sanitizeTips } from '../src/preferences.ts';
 import { contrastRatio, tipCss } from '../src/preferences-style.ts';
 
 test('tips: defaults are on, normal size, colours follow the skin; broken values fall back', () => {
@@ -248,4 +248,44 @@ test('icon size: the style rule enlarges only the small icons (12 to 18 px), not
   assert.ok(big.includes(`${ICON_SELECTOR}{zoom:1.4}`));
   for (const n of [12, 15, 18]) assert.ok(ICON_SELECTOR.includes(`svg[width="${n}"]`));
   for (const n of [11, 19, 20, 64, 76]) assert.ok(!ICON_SELECTOR.includes(`svg[width="${n}"]`), `${n} px stays`);
+});
+
+test('app background: tint and pattern are validated, part of the profile and of the look reset', async () => {
+  const { BACKGROUND_TINTS, resetLook, isOriginalLook, profileSettingsOf } = await import('../src/preferences.ts');
+  const p = sanitizePreferences({ bgTint: '#5b7fb5', bgPattern: 'dots' });
+  assert.equal(p.bgTint, '#5B7FB5');
+  assert.equal(p.bgPattern, 'dots');
+  const bad = sanitizePreferences({ bgTint: 'red; x', bgPattern: 'spiral' });
+  assert.equal(bad.bgTint, '');
+  assert.equal(bad.bgPattern, 'none');
+  assert.equal(isOriginalLook(p), false);
+  assert.equal(isOriginalLook(resetLook(p)), true);
+  assert.equal(profileSettingsOf(p).bgPattern, 'dots');
+  assert.equal(BACKGROUND_TINTS.length, 8);
+});
+
+test('app background: css only appears when chosen, and text stays readable on every tint, light and dark', async () => {
+  const { BACKGROUND_TINTS } = await import('../src/preferences.ts');
+  const { backgroundCss, contrastRatio, tintedBackground } = await import('../src/preferences-style.ts');
+  assert.deepEqual(backgroundCss(DEFAULT_PREFERENCES), []);
+  assert.doesNotMatch(buildPreferenceCss(DEFAULT_PREFERENCES), /background-image/);
+  for (const t of [...BACKGROUND_TINTS.map((x) => x.hex), '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#000000', '#FFFFFF']) {
+    const light = tintedBackground(t, false), dark = tintedBackground(t, true);
+    assert.ok(contrastRatio('#1C1C1E', light) >= 4.5, 'light ink on ' + light);
+    assert.ok(contrastRatio('#6B7280', light) >= 4.39, 'light muted on ' + light);
+    assert.ok(contrastRatio('#F2F3F6', dark) >= 4.5, 'dark ink on ' + dark);
+    assert.ok(contrastRatio('#A0A2AC', dark) >= 4.5, 'dark muted on ' + dark);
+  }
+  const css = buildPreferenceCss({ ...DEFAULT_PREFERENCES, bgTint: '#5B7FB5', bgPattern: 'grid' });
+  assert.match(css, /:root\{--bg:#/);
+  assert.match(css, /:root\[data-theme="dark"\]\{--bg:#/);
+  assert.match(css, /body\{background-image:linear-gradient/);
+  assert.doesNotMatch(css, /#[0-9a-fA-F]{3,6}[^;]*url\(/);
+});
+
+test('tip text size: 9 px is offered as the smallest step, in order, and is applied as a style variable', () => {
+  assert.deepEqual([...TIP_SIZES], ['tiny', 'small', 'normal', 'large', 'xlarge']);
+  assert.deepEqual(TIP_SIZES.map((k) => TIP_SIZE_PX[k]), [9, 12, 13.5, 16, 18.5]);
+  assert.equal(sanitizeTips({ size: 'tiny' }).size, 'tiny');
+  assert.equal(sanitizeTips({ size: '9px' }).size, DEFAULT_TIPS.size, 'anything else falls back');
 });

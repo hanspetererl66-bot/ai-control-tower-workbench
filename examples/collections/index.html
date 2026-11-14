@@ -345,6 +345,7 @@ textarea.draft{width:100%;min-height:200px;font:12px/1.6 ui-monospace,SFMono-Reg
 </head>
 <body>
 <header>
+  <span id="wb-customer" data-wb-customer hidden></span>
   <div><div class="logo">Col<b>lections</b></div><div class="sub">Spot late payments early; the account owner decides</div></div>
   <div class="hr"><span class="sub">Acting as</span><span class="seg" id="actor" role="group" aria-label="Acting as"></span><span class="tag amber">draft mode</span><span class="sub" id="sys"></span></div>
 </header>
@@ -831,6 +832,7 @@ function makeJourney() {
       return '<button data-act="actor" data-id="' + k + '" aria-pressed="' + (S.actor === k) + '">' + esc(who(k)) + ' · ' + esc(L.person(k).role) + '</button>';
     }).join('');
     $('#sys').textContent = D.company;
+    $('#wb-customer').textContent = L.customer(S.cid).name;  // the host shows it in the top bar of every Space
     S.seen[S.tab] = true; L.guide.advance(S.g, S);
     $('#guide').innerHTML = vGuide();
     $('#main').innerHTML = VIEWS[S.tab]();

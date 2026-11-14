@@ -84,3 +84,52 @@ test('the bar starts with the SOP: one button asks the chat to read the two wiki
   assert.doesNotMatch(posted[0].prompt, /wikipedia/i, 'the SOP is internal, not from the public Wikipedia');
   assert.equal(open('it-fleet', false).doc.querySelector('.st-sop'), null, 'outside the host there is no chat to ask');
 });
+
+test('review 14.11.2026: the Spaces that are about Muster Industrie AG name the customer for the top bar, and the ticket of the story says how many days are left', () => {
+  for (const slug of ['it-infrastructure', 'it-operations', 'infra-rca']) assert.match(read(`examples/${slug}/index.html`), /<span id="wb-customer" data-wb-customer hidden>Muster Industrie AG<\/span>/, slug);
+  for (const slug of ORDER) assert.match(read(`examples/${slug}/index.html`), /reasons: \['TLS certificate of edge\.muster-industrie\.example expires on 2026-10-24'\]/, `${slug}: the ticket of the story`);
+  assert.doesNotMatch(read('examples/shared/infra-story.html'), /reasons: \['TLS certificate expires in days'\]/);
+});
+
+/** The data a Space embeds (its own JSON block). */
+const dataOf = (slug, id) => JSON.parse(new RegExp(`<script type="application/json" id="${id}">([\\s\\S]*?)</script>`).exec(read(`examples/${slug}/index.html`))[1]);
+const days = (from, to) => Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000);
+
+test('the red thread: one certificate (edge.muster-industrie.example on proxy-edge-01, expires 2026-10-24) in every Space, and the days left fit the reference date of each Space', () => {
+  const EXPIRES = '2026-10-24';
+  // the first days of the story, 19 Oct: Fleet, VM landscape, Alerts, RCA, Auto-fix
+  const fleet = dataOf('it-fleet', 'fleet-data');
+  const muster = fleet.customers.find((c) => c.id === 'musind');
+  const vm = muster.vms.find((v) => v[0] === 'proxy-edge-01');
+  assert.ok(vm, 'the Fleet has the edge proxy of Muster Industrie AG');
+  assert.ok(!muster.vms.some((v) => v[0] === 'musind-int04'), 'the old name is gone');
+  assert.equal(fleet.asOf, '2026-10-19');
+  assert.equal(vm[7], days(fleet.asOf, EXPIRES), 'Fleet: days left');
+  const landscape = dataOf('it-infrastructure', 'vm-data');
+  const edge = landscape.vms?.find?.((v) => v.name === 'proxy-edge-01') ?? JSON.stringify(landscape).match(/"name":"proxy-edge-01"[^}]*"certExpiresInDays":(\d+)/);
+  assert.equal(landscape.asOf, '2026-10-19');
+  assert.equal(Number(edge.certExpiresInDays ?? edge[1]), days(landscape.asOf, EXPIRES), 'VM landscape: days left');
+  const ops = dataOf('it-operations', 'ops-data');
+  const a506 = ops.alerts.find((a) => a.id === 'A-506');
+  assert.equal(a506.host, 'proxy-edge-01'); assert.equal(ops.asOf, '2026-10-19');
+  assert.equal(a506.expiresInDays, days(ops.asOf, EXPIRES), 'Alerts: days left');
+  assert.match(a506.text, new RegExp(`expires in ${a506.expiresInDays} days \\(${EXPIRES}\\)`));
+  assert.equal(dataOf('infra-rca', 'rca-data').asOf, '2026-10-19');
+  assert.equal(dataOf('infra-ops-control', 'ctl-data').asOf, '2026-10-19');
+  // two days later, 21 Oct: Service request, Hotline, Orchestrator (and the wiki page that is read first)
+  const inv = dataOf('infra-ops', 'io-data');
+  const cert = inv.certs.find((c) => c.id === 'mi-edge-prd');
+  assert.equal(cert.notAfter, EXPIRES); assert.deepEqual(cert.vmIds, ['proxy-edge-01']);
+  assert.ok(inv.vms.some((v) => v.id === 'proxy-edge-01' && v.customer === 'mi'));
+  assert.equal(inv.asOf, '2026-10-21'); assert.equal(days(inv.asOf, EXPIRES), 3, 'Service request: 3 days left, two days after the alert');
+  const first = inv.certs.filter((c) => c.customer === 'mi').sort((a, b) => a.notAfter.localeCompare(b.notAfter))[0];
+  assert.equal(first.id, 'mi-edge-prd', 'the ticket of the story takes the certificate of Muster Industrie AG that expires first: the edge certificate');
+  const hot = dataOf('infra-hotline', 'hot-data');
+  assert.equal(hot.requests.find((r) => r.id === 'SR-2090').target, 'proxy-edge-01'); assert.equal(hot.asOf, '2026-10-21');
+  assert.match(hot.requests.find((r) => r.id === 'SR-2090').note, new RegExp(EXPIRES));
+  const orch = dataOf('infra-orchestrator', 'orch-data');
+  assert.equal(orch.asOf, '2026-10-21');
+  assert.ok(!orch.findings.some((f) => f.host === 'proxy-edge-01' && f.kind === 'cert-expiry'), 'the sweep looks ahead at other certificates, not at the one of the story');
+  // the ticket the story hands over, and the one the Service request builds itself, name the same host and day
+  for (const slug of ORDER) assert.match(read(`examples/${slug}/index.html`), /vm: 'proxy-edge-01', kind: 'cert'/, slug);
+});

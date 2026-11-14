@@ -1,11 +1,11 @@
 import { BRIEFING_CATEGORIES, categoryKey } from '../briefing';
 import { useState, type ReactNode } from 'react';
 import {
-  ACCENT_PRESETS, APP_SCALES, ICON_SCALES, CONTRASTS, DEFAULT_TIPS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TIP_SIZES, TIP_SIZE_PX, TONES,
+  ACCENT_PRESETS, APP_SCALES, OVERVIEW_LAYOUTS, TILE_STYLES, BACKGROUND_PATTERNS, BACKGROUND_TINTS, ICON_SCALES, CONTRASTS, DEFAULT_TIPS, DENSITIES, FONTS, LANGUAGES, LENGTHS, PURPOSES, SPACES_DOCKS, SPACES_VIEWS, TIP_SIZES, TIP_SIZE_PX, TONES,
   allProfiles, applyProfile, assistantNote, deleteProfile, exportPreferences, importPreferences, isOriginal, isOriginalLook, resetAll, resetLook, saveProfile,
   type Preferences, type Starter,
 } from '../preferences';
-import { contrastRatio } from '../preferences-style';
+import { BACKGROUND_PATTERN_CSS, contrastRatio } from '../preferences-style';
 import { sectionEffect } from '../settings-help';
 import { DOCK_LABEL } from '../spaces-dock';
 import { SPACE_SCALES } from '../space-scale';
@@ -36,6 +36,32 @@ export function Section({ title, hint, children }: { title: string; hint?: strin
     </div>
   );
 }
+
+/** Pictures instead of words: each option shows a small drawing of what it does (the drawings are in theme.css, class ovp-*). */
+function Looks<T extends string>({ label, value, options, onPick, kind }: { label: string; value: T; options: ReadonlyArray<{ id: T; name: string; text: string }>; onPick: (v: T) => void; kind: 'layout' | 'tile' }) {
+  return (
+    <div className="looks" role="radiogroup" aria-label={label}>
+      {options.map((o) => (
+        <button key={o.id} type="button" role="radio" aria-checked={value === o.id} className={`look ${value === o.id ? 'look-on' : ''}`} onClick={() => onPick(o.id)}>
+          <span className={`ovp ovp-${kind}-${o.id}`} aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
+          <b>{o.name}</b>
+          <small>{o.text}</small>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const OVERVIEW_OPTIONS = [
+  { id: 'grid', name: 'Grid', text: 'Tiles side by side' },
+  { id: 'list', name: 'List', text: 'One row per entry' },
+  { id: 'board', name: 'Board', text: 'Columns, side by side' },
+] as const satisfies ReadonlyArray<{ id: (typeof OVERVIEW_LAYOUTS)[number]; name: string; text: string }>;
+const TILE_OPTIONS = [
+  { id: 'classic', name: 'Classic', text: 'Soft card with a glow' },
+  { id: 'outline', name: 'Outline', text: 'Flat, thin line' },
+  { id: 'bold', name: 'Bold', text: 'Accent band, big title' },
+] as const satisfies ReadonlyArray<{ id: (typeof TILE_STYLES)[number]; name: string; text: string }>;
 
 function Choice<T extends string | number>({ label, value, options, onPick, show }: { label: string; value: T; options: readonly T[]; onPick: (v: T) => void; show?: (v: T) => string }) {
   return (
@@ -166,6 +192,27 @@ export function LookPanel({ prefs, update }: Common) {
           </label>
         </div>
       </Section>
+      <Section title="App background" hint="Tint the background of the app with a colour from the palette or your own, and lay a fine pattern over it. The tint is only a light touch, so text stays readable in light and dark. Spaces keep the colours of the skin.">
+        <div className="prefs-row" role="radiogroup" aria-label="Background colour">
+          <button className={`ghost-btn ${!prefs.bgTint ? 'ghost-btn-on' : ''}`} role="radio" aria-checked={!prefs.bgTint} onClick={() => update((p) => ({ ...p, bgTint: '' }))}>Skin</button>
+          {BACKGROUND_TINTS.map((t) => (
+            <button key={t.id} className={`prefs-swatch ${prefs.bgTint === t.hex.toUpperCase() ? 'prefs-swatch-on' : ''}`} style={{ background: t.hex }} role="radio" aria-checked={prefs.bgTint === t.hex.toUpperCase()} aria-label={t.name} title={t.name} onClick={() => update((p) => ({ ...p, bgTint: t.hex.toUpperCase() }))} />
+          ))}
+          <label className="prefs-row" style={{ margin: 0 }}>
+            <span>Own colour</span>
+            <input type="color" value={prefs.bgTint || '#5B7FB5'} aria-label="Own background colour" onChange={(e) => update((p) => ({ ...p, bgTint: e.target.value.toUpperCase() }))} />
+            {prefs.bgTint && !BACKGROUND_TINTS.some((t) => t.hex.toUpperCase() === prefs.bgTint) && <small>{prefs.bgTint}</small>}
+          </label>
+        </div>
+        <div className="prefs-row" role="radiogroup" aria-label="Background pattern">
+          {BACKGROUND_PATTERNS.map((id) => (
+            <button key={id} type="button" className={`ghost-btn ${prefs.bgPattern === id ? 'ghost-btn-on' : ''}`} role="radio" aria-checked={prefs.bgPattern === id} onClick={() => update((p) => ({ ...p, bgPattern: id }))}>
+              <span aria-hidden="true" style={{ display: 'inline-block', width: 22, height: 14, marginRight: 6, verticalAlign: 'middle', border: '1px solid var(--line)', borderRadius: 3, background: 'var(--bg)', ...(id === 'none' ? {} : { backgroundImage: BACKGROUND_PATTERN_CSS[id].image, backgroundSize: id === 'dots' || id === 'grid' ? '8px 8px' : 'auto' }) }} />
+              {id === 'none' ? 'No pattern' : id[0].toUpperCase() + id.slice(1)}
+            </button>
+          ))}
+        </div>
+      </Section>
       <Section title="Text and layout">
         <Choice label="App text size" value={prefs.appScale} options={APP_SCALES} show={(v) => `${Math.round(v * 100)}%`} onPick={(v) => update((p) => ({ ...p, appScale: v }))} />
         <Choice label="Icon size" value={prefs.iconScale} options={ICON_SCALES} show={(v) => (v === 1 ? 'Standard' : v === 1.2 ? 'Large' : 'Extra large')} onPick={(v) => update((p) => ({ ...p, iconScale: v }))} />
@@ -173,7 +220,7 @@ export function LookPanel({ prefs, update }: Common) {
         <Choice label="Font" value={prefs.font} options={FONTS} show={(v) => FONT_NAMES[v]} onPick={(v) => update((p) => ({ ...p, font: v }))} />
         <Choice label="Density" value={prefs.density} options={DENSITIES} show={(v) => v[0].toUpperCase() + v.slice(1)} onPick={(v) => update((p) => ({ ...p, density: v }))} />
       </Section>
-      <Section title="Tips" hint="The speech bubbles in the Ontology Manager that explain each part. Switch them on or off here, and set their size and colours. An empty colour follows the skin (light or dark).">
+      <Section title="Tips" hint="The speech bubbles that explain each part, in the Ontology Manager and in Spaces that have them (Revenue Recognition). Switch them on or off here, and set their size and colours. An empty colour follows the skin (light or dark).">
         <label className="voice-option">
           <input type="checkbox" role="switch" checked={prefs.tips.enabled} onChange={(e) => update((p) => ({ ...p, tips: { ...p.tips, enabled: e.target.checked } }))} />
           <span>Show tips {prefs.tips.enabled ? '(on)' : '(off)'}</span>
@@ -198,9 +245,21 @@ export function LookPanel({ prefs, update }: Common) {
         </div>
         <div className="prefs-row"><button className="ghost-btn" disabled={JSON.stringify(prefs.tips) === JSON.stringify(DEFAULT_TIPS)} onClick={() => update((p) => ({ ...p, tips: { ...DEFAULT_TIPS } }))}>Back to the original tips</button></div>
       </Section>
+      <Section title="Spaces overview" hint="The page you land on when you open Spaces: the domains, and the Spaces inside a domain. Pick how the page is laid out and how a single tile looks. Both apply at once.">
+        <div className="prefs-row"><label>Page layout</label></div>
+        <Looks kind="layout" label="Page layout" value={prefs.overviewLayout} options={OVERVIEW_OPTIONS} onPick={(v) => update((p) => ({ ...p, overviewLayout: v }))} />
+        <div className="prefs-row"><label>Tile design</label></div>
+        <Looks kind="tile" label="Tile design" value={prefs.tileStyle} options={TILE_OPTIONS} onPick={(v) => update((p) => ({ ...p, tileStyle: v }))} />
+      </Section>
       <Section title="Spaces list" hint="How the list of Spaces looks and which side of the window it sits on. The same choice is in the header of the list.">
         <Choice label="View" value={prefs.spacesView} options={SPACES_VIEWS} show={(v) => (v === 'tree' ? 'Tree' : 'Cards')} onPick={(v) => update((p) => ({ ...p, spacesView: v }))} />
         <Choice label="Position" value={prefs.spacesDock} options={SPACES_DOCKS} show={(v) => DOCK_LABEL[v]} onPick={(v) => update((p) => ({ ...p, spacesDock: v }))} />
+      </Section>
+      <Section title="Casimir" hint="A small dark purple cat with light purple ears and a lovely face that looks over a thin black ledge, shows only 60 % of his face, blinks, follows the pointer with his eyes and pulls a different face now and then (paws on the ledge, yawning, sleeping and snoring, hearts). Drag him anywhere on the screen, click him for a new face. With reduced motion he keeps still.">
+        <label className="voice-option">
+          <input type="checkbox" role="switch" checked={prefs.cat.enabled} onChange={(e) => update((p) => ({ ...p, cat: { ...p.cat, enabled: e.target.checked } }))} />
+          <span>Show Casimir {prefs.cat.enabled ? '(on)' : '(off)'}</span>
+        </label>
       </Section>
       <Section title="Accessibility" hint="High contrast makes lines and secondary text darker and focus rings thicker. Reduced motion switches animations off.">
         <Choice label="Contrast" value={prefs.contrast} options={CONTRASTS} show={(v) => (v === 'high' ? 'High' : 'Normal')} onPick={(v) => update((p) => ({ ...p, contrast: v }))} />

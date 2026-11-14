@@ -52,6 +52,7 @@ import { localTarget, newExtension } from './requirements';
 import { AGENTS_PULLED, PROJECTS_PULLED, schedule as scheduleWorkSync, startWorkSync } from './work-sync-runner';
 import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
+import CatPeek from './ui/CatPeek';
 import StudyBadge from './ui/StudyBadge';
 import Splitter from './ui/Splitter';
 import { DEFAULT_WIDTHS, loadWidths, saveWidths, type PaneWidths } from './pane-width';
@@ -98,6 +99,7 @@ import SpaceDesigner from './ui/SpaceDesigner';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
 import { catalogFromDatabase, lifecycleCalls, promotionCalls, supplementWithExamples, withdrawFlags, type SkillSource } from './skill-health-db';
 import { loadUse } from './chat-tabs';
+import { deliverJobResult } from './job-output';
 import { deliverBriefing, gmailExtension, isFailedAnswer } from './schedule-delivery';
 import { answerHtml } from './export-answer-html';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
@@ -119,7 +121,7 @@ import CoverSheet from './ui/CoverSheet';
 import N8nView from './ui/N8nView';
 import DevelopHub from './ui/DevelopHub';
 import { writeSpaceScale, type SpaceScale } from './space-scale';
-import { DEFAULT_VOICE, ReplySpeaker, type VoiceSettings } from './voice';
+import { DEFAULT_VOICE, ReplySpeaker, startRecording, type Recording, type VoiceSettings } from './voice';
 import { parseNavCommand } from './voice-commands';
 
 const WORKDIR = window.host?.workspacePath ?? '';
@@ -144,6 +146,10 @@ function sharedNote(r: { ok: boolean; state?: 'synced' | 'local' | 'conflict'; d
 export default function App() {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [agentEpoch, setAgentEpoch] = useState(0);
+  // The microphone of the live interview avatar: a Space asks for it, the app records and shows a badge while it is on.
+  const [interviewMic, setInterviewMic] = useState(false);
+  const interviewRec = useRef<Recording | null>(null);
+  function stopInterviewMic() { interviewRec.current?.cancel(); interviewRec.current = null; setInterviewMic(false); }
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   /** Connectors with a tool call that is running right now (normalised names); shown in the connector list while an answer is being made. */
@@ -1162,6 +1168,24 @@ export default function App() {
         return res.data ?? [];
       } : undefined,
       draft: agent && gmail ? (tool: string, args: Record<string, unknown>) => agent.callTool(`${gmail}__${tool}`, args) : undefined,
+      listen: (window as any).host?.voice?.transcribe ? {
+        start: async () => {
+          stopInterviewMic();
+          interviewRec.current = await startRecording(() => stopInterviewMic());
+          setInterviewMic(true);
+        },
+        stop: async () => {
+          const rec = interviewRec.current;
+          interviewRec.current = null;
+          setInterviewMic(false);
+          if (!rec) return '';
+          const { audio, mimeType } = await rec.stop();
+          const res = await (window as any).host.voice.transcribe(audio, mimeType);
+          if (!res?.ok) throw new Error(res?.detail ?? 'Speech recognition is not available.');
+          return String(res.text ?? '').trim();
+        },
+        cancel: stopInterviewMic,
+      } : undefined,
     };
   }
 
@@ -1410,6 +1434,15 @@ export default function App() {
       await send(jobPrompt(job, manual), [], { trigger: manual ? 'manual' : 'schedule' });
       const answer = draft.current;
       if (isFailedAnswer(answer)) { status = 'error'; note = answer.replace(/^\s*⚠️\s*/, '').replace(/\s+/g, ' ').trim().slice(0, 160) || 'No answer. For an agent: is it published in the Studio?'; }
+      else if (job.output && job.output.kind !== 'chat') {
+        // The run itself worked. If writing the result fails, the run is marked failed so it shows up as "Failing" and the note says why.
+        const delivered = await deliverJobResult(job, answer, {
+          callTool: (name, args) => agent.callTool(name, args),
+          extensions: extensionNames,
+          writeFile: (request) => (window.host?.writeJobResult ? window.host.writeJobResult(request) : Promise.resolve({ ok: false, detail: 'Saving files needs the desktop app.' })),
+        });
+        status = delivered.status; note = delivered.note;
+      }
     } catch (error) {
       status = 'error'; note = (error instanceof Error ? error.message : 'The run failed.').slice(0, 160);
     } finally {
@@ -1557,6 +1590,7 @@ export default function App() {
     </p>
   );
   const space = activeSpaces.find((s) => s.slug === selectedSpace) ?? null;
+  useEffect(() => { if (space?.slug !== INTERVIEW_SPACE) stopInterviewMic(); }, [space?.slug]);
   const orderedSpaces = pinFirst(orderSpaces(activeSpaces, spaceOrder), prefs.pinnedSpaces);
 
   /** Reorder starting from what is on screen, so Spaces without a saved position get one too. */
@@ -1861,6 +1895,8 @@ export default function App() {
             spaces: orderedSpaces.filter((x) => effectiveDomain(x, spaces, prefs) === name),
           }))}
           active={overviewDomain}
+          layout={prefs.overviewLayout}
+          tileStyle={prefs.tileStyle}
           onActive={setOverviewDomain}
           onOpen={(slug) => { setSelectedSpace(slug); setSpacesHome(false); }}
           parentOf={(slug) => parentOf(spaces.find((x) => x.slug === slug) ?? { slug }, spaces, prefs)}
@@ -1882,7 +1918,8 @@ export default function App() {
           onSaved={async (slug) => { await refreshSpaces(); setSelectedSpace(slug); setDesignSlug(slug); }}
         />
       ) : view === 'spaces' ? (
-        space ? (
+        space ? (<>
+          {interviewMic ? <div className="mic-badge" role="status" aria-live="polite">● Microphone is on · your voice is turned into text for the interview, no audio is kept</div> : null}
           <SpaceViewer
             key={`${space.slug}-${space.updatedAt}`}
             space={space}
@@ -1894,6 +1931,7 @@ export default function App() {
             onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
+            onTips={(enabled) => updatePrefs((c) => ({ ...c, tips: { ...c.tips, enabled } }))}
             bridgeEnabled={space.slug === RENEWALS_SPACE || space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SPEC_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === ONBOARDING_SPACE || space.slug === HOTLINE_SPACE || space.slug === MONITORING_SPACE || space.slug === SHADOW_SPACE || space.slug === CUSTOMER360_SPACE}
             salesKnowledgeDeps={space.slug === SALES_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             customer360Deps={space.slug === CUSTOMER360_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
@@ -1914,7 +1952,7 @@ export default function App() {
             studioAgents={space.slug === 'ai-control-tower' || space.slug === 'agent-registry' ? registryEntries(studioAgents, buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))), (id) => govLevelOf(agentGov, id), agentGov.levels, (id) => govPendingFor(agentGov, id)?.to ?? null, schedules, identity?.name || identity?.email || '') : undefined}
             onIncomingDelivered={() => setIncoming((current) => { const { [space.slug]: _gone, ...rest } = current; return rest; })}
             bridge={agent ? (tool, args) => agent.callTool(`${space.slug === PRD_SPACE ? prdExtensionFor(tool, extensionNames) : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? FORECAST_EXTENSION : space.slug === PRECLOSE_SPACE ? precloseExtensionFor(tool, FORECAST_EXTENSION) : SUB4ME_EXTENSION}__${tool}`, args) : undefined}
-          />
+          /></>
         ) : (
           <main className="main">
             <div className="empty">
@@ -2148,6 +2186,7 @@ export default function App() {
       )}
 
       {toast && <div className="toast">{toast}</div>}
+      <CatPeek cat={prefs.cat} reduceMotion={prefs.reduceMotion} onMove={(to) => updatePrefs((c) => ({ ...c, cat: { ...c.cat, ...to } }))} />
     </div>
   );
 }

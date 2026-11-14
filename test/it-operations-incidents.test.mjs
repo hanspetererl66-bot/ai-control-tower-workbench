@@ -19,7 +19,7 @@ const alert = (o) => ({ id: 'U-1', service: 'S', severity: 'medium', impact: 'me
 
 test('the sample: seven alerts become four incidents and one quarantined alert; the cause is the alert on the host the others depend on', () => {
   const g = group();
-  assert.deepEqual(g.incidents.map((i) => [i.id, i.members.map((m) => m.id)]), [['I-502', ['A-502', 'A-501']], ['I-504', ['A-504', 'A-503']], ['I-505', ['A-505']], ['I-506', ['A-506']]]);
+  assert.deepEqual(g.incidents.map((i) => [i.id, i.members.map((m) => m.id)]), [['I-502', ['A-502', 'A-501']], ['I-504', ['A-504', 'A-503']], ['I-506', ['A-506']], ['I-505', ['A-505']]]);
   assert.deepEqual(g.quarantined.map((r) => r.id), ['A-507']);
   const gw = g.incidents[0];
   assert.equal(gw.root.id, 'A-502', 'the quota is the cause of the error rate');
@@ -27,6 +27,10 @@ test('the sample: seven alerts become four incidents and one quarantined alert; 
   assert.equal(gw.priority, 100, 'highest alert plus 5, capped at 100');
   assert.equal(gw.route, 'P1');
   assert.equal(gw.severity, 'critical');
+  const cert = g.incidents.find((i) => i.id === 'I-506');
+  assert.equal(cert.priority, 37, 'the certificate: 4 for severity, 3 for impact and 30 for the 5 days left');
+  assert.equal(cert.route, 'P2', 'a certificate that expires in 5 days is a ticket, not something to watch');
+  assert.match(cert.members[0].reasons, /\+30 expires in 5 days/);
   const sync = g.incidents[1];
   assert.equal(sync.priority, 45, 'A-503 has 40 points, plus 5 for the related alert');
   assert.equal(sync.route, 'P2');
@@ -96,7 +100,7 @@ test('page: the Incidents view shows the merged incident with cause and follower
     assert.match(t, /I-502[\s\S]*2 alerts[\s\S]*08:41–08:55/);
     assert.match(t, /Cause: A-502[\s\S]*follows: A-501/);
     assert.match(t, /A-507[\s\S]*Never merged into an incident/);
-    assert.match(p.doc.querySelector('#digest').textContent, /1 incident to page, 1 ticket, 2 to watch, 1 quarantined alert/);
+    assert.match(p.doc.querySelector('#digest').textContent, /1 incident to page, 2 tickets, 1 to watch, 1 quarantined alert/);
     p.doc.querySelector('#v-alerts').click();
     assert.equal(p.doc.querySelector('#rows').children.length, 7);
     assert.deepEqual(p.errors, []);

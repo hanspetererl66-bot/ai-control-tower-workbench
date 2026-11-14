@@ -39,8 +39,8 @@
     }
   },
   "requests": [
-    { "id": "SR-2090", "template": "renew-certificate", "customer": "mi", "target": "proxy-edge-01", "hours": 2, "state": "open", "note": "Ticket OP-2090 of the story: certificate expires in days" },
-    { "id": "SR-2091", "template": "patch-vm", "customer": "mi", "target": "musind-int04", "hours": 4, "state": "open", "note": "Open security patches" },
+    { "id": "SR-2090", "template": "renew-certificate", "customer": "mi", "target": "proxy-edge-01", "hours": 2, "state": "open", "note": "Ticket OP-2090 of the story: the certificate of edge.muster-industrie.example expires on 2026-10-24" },
+    { "id": "SR-2091", "template": "patch-vm", "customer": "mi", "target": "musind-app03", "hours": 4, "state": "open", "note": "Open security patches" },
     { "id": "SR-2092", "template": "move-vm", "customer": "mi", "target": "musind-qas01", "hours": 6, "state": "open", "note": "Move to the new storage cluster" },
     { "id": "SR-2093", "template": "patch-vm", "customer": "bp", "target": "bp-prd-app01", "hours": 4, "state": "open", "note": "Quarterly patch round" },
     { "id": "SR-2094", "template": "move-vm", "customer": "nl", "target": "nl-qas-app01", "hours": 6, "state": "open", "note": "Move to another region" },

@@ -31,19 +31,18 @@ test('clicking the logo opens the cover sheet with the design study wording', ()
   assert.match(app, /onOpenCover=\{\(\) => setCoverOpen\(true\)\}/);
   assert.match(app, /\{coverOpen && <CoverSheet/);
   assert.match(cover, /<h1 className="cover-title">\s*\{COVER_NAME\}\s*<span className="cover-title-line2">\{COVER_SUBTITLE\}<\/span>\s*<span className="cover-title-line2 cover-title-line3">\{COVER_TAGLINE\}<\/span>/, 'name, then the subtitle, then the tagline');
-  assert.match(readFileSync(path.join(root, 'src/product.ts'), 'utf8'), /COVER_SUBTITLE = 'Futuristic Design Study'[\s\S]*COVER_TAGLINE = 'Engineered as MVP'/);
+  assert.match(readFileSync(path.join(root, 'src/product.ts'), 'utf8'), /COVER_SUBTITLE = 'Futuristic Design Study 2026\/2027'[\s\S]*COVER_TAGLINE = 'Engineered as MVP'/);
   const css = readFileSync(path.join(root, 'src/theme.css'), 'utf8');
   assert.match(css, /\.cover-title-line2 \{[^}]*color: var\(--accent\);[^}]*animation: cover-blink/, 'second line is purple and blinks');
   assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.cover-title-line2 \{ animation: none; \}/, 'blinking stops for reduced motion');
   assert.doesNotMatch(cover, /[Pp]rototype/);
   const product = readFileSync(path.join(root, 'src/product.ts'), 'utf8');
-  assert.match(product, /COVER_SUBTITLE = 'Futuristic Design Study'/);
+  assert.match(product, /COVER_SUBTITLE = 'Futuristic Design Study 2026\/2027'/);
   assert.match(product, /COVER_TAGLINE = 'Engineered as MVP'/, 'own line below the title');
-  assert.match(product, /COVER_BY = 'Accenture Germany'/);
+  assert.doesNotMatch(product, /COVER_BY/, 'no company line on the cover');
   assert.doesNotMatch(cover, /from Accenture/, 'no \"from\" before the company name');
-  assert.match(cover, /\{COVER_TAGLINE\}[\s\S]*\{COVER_BY\}/, 'tagline, then the company line');
   assert.match(product, /Demo only · Mockup · no productive system · illustrative sample data/);
-  assert.match(cover, /Author: Hans-Peter Erl/);
+  assert.doesNotMatch(cover, /Author:|Accenture/, 'no author and no company line on the cover');
   assert.match(cover, /COVER_STATUS/);
   assert.match(cover, /Escape/); // closable from the keyboard
 });

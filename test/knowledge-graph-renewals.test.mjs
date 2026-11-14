@@ -15,7 +15,7 @@ const byId = new Map(graph.nodes.map((n) => [n.id, n]));
 const edgeKeys = new Set(graph.edges.map((e) => `${e.source}|${e.type}|${e.target}`));
 
 test('renewals in the graph: every renewal case is a contract node of its customer, with decision date and health', () => {
-  assert.equal(data.cases.length, 21);
+  assert.equal(data.cases.length, 37, 'three customers from the Sub4Me sample data and three that exist only in the Renewals Space');
   for (const c of data.cases) {
     const node = byId.get(`contract:${c.contractId}`);
     assert.ok(node, `contract node for ${c.contractId}`);
@@ -75,11 +75,13 @@ test('renewals in the graph: without the source the graph is the one it was (not
   const known = new Set(plain.nodes.map((n) => n.id));
   const wanted = new Set();
   for (const c of data.cases) {
+    const cust = `customer:${c.customer.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+    if (!known.has(cust)) wanted.add(cust); // customers that only exist in the Renewals Space get a node of their own
     if (!known.has(`contract:${c.contractId}`)) wanted.add(`contract:${c.contractId}`);
     for (const t of c.tickets) if (!known.has(`ticket:${t.id}`)) wanted.add(`ticket:${t.id}`);
     for (const i of c.invoices) wanted.add(`invoice:${i.id}`);
   }
-  assert.equal(plain.nodes.length + wanted.size, graph.nodes.length, 'the renewals add exactly the contracts, tickets and invoices the plain graph does not know');
+  assert.equal(plain.nodes.length + wanted.size, graph.nodes.length, 'the renewals add exactly the customers, contracts, tickets and invoices the plain graph does not know');
 });
 
 test('renewals in the graph: the page carries the graph and styles the new type', () => {
@@ -88,5 +90,5 @@ test('renewals in the graph: the page carries the graph and styles the new type'
   assert.equal(inPage.nodes.length, graph.nodes.length);
   assert.match(html, /invoice:\{c:'amber',s:'square'/);
   assert.match(html, /const SALES = \[[^\]]*'invoice'/);
-  assert.equal(renewalsFromRepo().cases.length, 21);
+  assert.equal(renewalsFromRepo().cases.length, 37);
 });

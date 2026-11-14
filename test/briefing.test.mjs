@@ -87,10 +87,10 @@ test('sales cards: only offers still pending at the deal desk, and overdue next 
 
 test('renewal cards: overdue decision, the ones due within 14 days, and lapsed contracts', () => {
   const [decisions, lapsed] = buildBriefing(data, new Date(2026, 9, 25), all).filter((c) => c.category === 'renewals');
-  assert.equal(decisions.title, '1 Entscheidung überfällig, 5 weitere in 14 Tagen');
+  assert.equal(decisions.title, '1 Entscheidung überfällig, 7 weitere in 14 Tagen');
   assert.equal(decisions.tone, 'red');
   assert.match(decisions.detail, /SuccessFactors/);
-  assert.equal(lapsed.title, '3 Verträge abgelaufen, 357 k€ ohne Vertrag');
+  assert.equal(lapsed.title, '4 Verträge abgelaufen, 667 k€ ohne Vertrag');
   assert.deepEqual(decisions.actions.filter((a) => a.kind === 'open').map((a) => a.space), ['renewals']);
 });
 
@@ -98,7 +98,7 @@ test('two infrastructure cards come from the certificates and the fleet, before 
   const cards = buildBriefing(data, new Date(2026, 9, 25), all);
   assert.deepEqual(cards.map((c) => c.id).filter((id) => id === 'certs' || id === 'fleet'), ['certs', 'fleet']);
   const certs = cards.find((c) => c.id === 'certs');
-  assert.match(certs.title, /^5 Zertifikate laufen in unter 30 Tagen ab, 1 abgelaufen$/);
+  assert.match(certs.title, /^5 Zertifikate laufen in unter 30 Tagen ab, 2 abgelaufen$/);
   assert.equal(certs.tone, 'red');
   assert.match(certs.actions.find((a) => a.kind === 'ask').prompt, /nichts ausführen/);
   const fleet = cards.find((c) => c.id === 'fleet');

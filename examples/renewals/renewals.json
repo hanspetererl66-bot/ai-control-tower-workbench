@@ -20,7 +20,8 @@
       "no-offer": "Early value review before the offer",
       "lapsed": "Win-back call with the technical contact",
       "growth": "Roadmap session for the next scope",
-      "validity": "Validity extension in exchange for a signing date"
+      "validity": "Validity extension in exchange for a signing date",
+      "trend": "Call with the business owner: why is usage falling, and who is the champion now?"
     }
   },
   "note": "Fictional data derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG (scripts/sync-renewals.mjs). The decision date is the contract end minus the notice period: by then the renewal must be agreed or the contract ends.",
@@ -133,6 +134,46 @@
       "invoices": []
     },
     {
+      "customerSince": 2019,
+      "customerAnnualEur": 341000,
+      "id": "R-C-2022-0701",
+      "customerId": "seeland",
+      "customer": "Seeland Retail Group AG",
+      "sapCustomerId": "0010090644",
+      "contractId": "C-2022-0701",
+      "product": "SAP Commerce Cloud",
+      "status": "Lapsed",
+      "end": "2026-06-30",
+      "noticeDays": 90,
+      "decisionDate": "2026-04-01",
+      "autoRenew": false,
+      "annualEur": 310000,
+      "upliftCapPct": 3,
+      "termination": "Expired. The storefront runs on a trial platform.",
+      "used": 0,
+      "licensed": 2500,
+      "unit": "sessions (thousands)",
+      "owner": "Marie Dietrich",
+      "csm": "Felix Arndt",
+      "customerOwner": "Anja Köhler",
+      "offer": {
+        "id": "OFF-2026-0620",
+        "annualEur": 288300,
+        "currentAnnualEur": 310000,
+        "discountPct": 7,
+        "validUntil": "2026-11-20",
+        "stage": "Proposal sent",
+        "probabilityPct": 55,
+        "competitor": "Shopify Plus (trial)",
+        "nextStep": "Send the usage-based option before the change freeze on 2026-11-16",
+        "termMonths": 24,
+        "priceGuaranteeMonths": 24,
+        "approval": "Deal desk approved"
+      },
+      "tickets": [],
+      "invoices": []
+    },
+    {
       "customerSince": 2014,
       "customerAnnualEur": 4540000,
       "id": "R-C-2025-0041",
@@ -175,13 +216,15 @@
           "id": "INV-2026-10708",
           "status": "Open",
           "grossEur": 69020,
-          "due": "2026-10-30"
+          "due": "2026-10-30",
+          "issued": "2026-09-15"
         },
         {
           "id": "INV-2026-10741",
           "status": "Open",
           "grossEur": 76160,
-          "due": "2026-11-24"
+          "due": "2026-11-24",
+          "issued": "2026-10-10"
         }
       ]
     },
@@ -227,7 +270,8 @@
           "id": "TKT-48166",
           "title": "SAP Commerce Cloud: storefront search returns no results after catalog import",
           "priority": "High",
-          "status": "In processing"
+          "status": "In processing",
+          "created": "2026-10-10"
         }
       ],
       "invoices": []
@@ -274,19 +318,22 @@
           "id": "TKT-48213",
           "title": "Joule skill returns empty result for open purchase orders",
           "priority": "High",
-          "status": "In processing"
+          "status": "In processing",
+          "created": "2026-10-12"
         },
         {
           "id": "TKT-48107",
           "title": "BTP AI Core deployment quota exceeded in eu10",
           "priority": "Very high",
-          "status": "Waiting for customer"
+          "status": "Waiting for customer",
+          "created": "2026-10-08"
         },
         {
           "id": "TKT-47888",
           "title": "Ariba approval workflow not triggering for cost centre 4711",
           "priority": "Medium",
-          "status": "In processing"
+          "status": "In processing",
+          "created": "2026-09-29"
         }
       ],
       "invoices": [
@@ -294,13 +341,15 @@
           "id": "INV-2026-10724",
           "status": "Open",
           "grossEur": 66878,
-          "due": "2026-10-31"
+          "due": "2026-10-31",
+          "issued": "2026-10-01"
         },
         {
           "id": "INV-2026-10738",
           "status": "Open",
           "grossEur": 45220,
-          "due": "2026-11-04"
+          "due": "2026-11-04",
+          "issued": "2026-10-05"
         }
       ]
     },
@@ -346,7 +395,8 @@
           "id": "TKT-47932",
           "title": "Document AI: VAT ID not extracted from scanned invoices of two suppliers",
           "priority": "High",
-          "status": "In processing"
+          "status": "In processing",
+          "created": "2026-10-01"
         }
       ],
       "invoices": []
@@ -393,7 +443,8 @@
           "id": "TKT-48097",
           "title": "Document AI: handwritten corrections on scanned batch records are not read",
           "priority": "Medium",
-          "status": "In processing"
+          "status": "In processing",
+          "created": "2026-10-05"
         }
       ],
       "invoices": [
@@ -401,7 +452,8 @@
           "id": "INV-2026-40110",
           "status": "Open",
           "grossEur": 49742,
-          "due": "2026-11-05"
+          "due": "2026-11-05",
+          "issued": "2026-10-06"
         }
       ]
     },
@@ -448,19 +500,145 @@
           "id": "INV-2026-10621",
           "status": "Overdue",
           "grossEur": 86275,
-          "due": "2026-08-31"
+          "due": "2026-08-31",
+          "issued": "2026-08-01"
         },
         {
           "id": "INV-2026-10721",
           "status": "Open",
           "grossEur": 14756,
-          "due": "2026-10-31"
+          "due": "2026-10-31",
+          "issued": "2026-10-01"
         },
         {
           "id": "INV-2026-10735",
           "status": "Open",
           "grossEur": 22491,
-          "due": "2026-11-04"
+          "due": "2026-11-04",
+          "issued": "2026-10-05"
+        }
+      ]
+    },
+    {
+      "customerSince": 2011,
+      "customerAnnualEur": 1102000,
+      "id": "R-C-2023-0610",
+      "customerId": "rheinberg",
+      "customer": "Rheinberg Energie GmbH",
+      "sapCustomerId": "0010090627",
+      "contractId": "C-2023-0610",
+      "product": "SAP S/4HANA for utilities",
+      "status": "Renewal due",
+      "end": "2027-01-31",
+      "noticeDays": 90,
+      "decisionDate": "2026-11-02",
+      "autoRenew": true,
+      "annualEur": 780000,
+      "upliftCapPct": 3,
+      "termination": "Renews for 12 months at the then current price unless terminated 90 days before the end.",
+      "used": 5200,
+      "licensed": 5500,
+      "unit": "users",
+      "owner": "Sabine Lenz",
+      "csm": "Oliver Kranz",
+      "customerOwner": "Thomas Wendt",
+      "offer": {
+        "id": "OFF-2026-0611",
+        "annualEur": 850200,
+        "currentAnnualEur": 780000,
+        "discountPct": 0,
+        "validUntil": "2026-11-09",
+        "stage": "Proposal sent",
+        "probabilityPct": 35,
+        "competitor": "Oracle Utilities (evaluation)",
+        "nextStep": "Executive call with the new CIO before the notice date",
+        "termMonths": 12,
+        "priceGuaranteeMonths": 12,
+        "approval": "Deal desk review open"
+      },
+      "tickets": [
+        {
+          "id": "TKT-51022",
+          "title": "Smart-meter data import drops 12 % of the readings (regulatory report due 2026-11-30)",
+          "priority": "Very high",
+          "status": "In processing",
+          "created": "2026-10-09"
+        }
+      ],
+      "invoices": []
+    },
+    {
+      "customerSince": 2019,
+      "customerAnnualEur": 341000,
+      "id": "R-C-2025-0712",
+      "customerId": "seeland",
+      "customer": "Seeland Retail Group AG",
+      "sapCustomerId": "0010090644",
+      "contractId": "C-2025-0712",
+      "product": "SAP Customer Data Cloud",
+      "status": "Renewal due",
+      "end": "2027-01-31",
+      "noticeDays": 90,
+      "decisionDate": "2026-11-02",
+      "autoRenew": false,
+      "annualEur": 185000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 276,
+      "licensed": 300,
+      "unit": "profiles (thousands)",
+      "owner": "Marie Dietrich",
+      "csm": "Felix Arndt",
+      "customerOwner": "Anja Köhler",
+      "offer": null,
+      "tickets": [],
+      "invoices": []
+    },
+    {
+      "customerSince": 2011,
+      "customerAnnualEur": 1102000,
+      "id": "R-C-2026-0811",
+      "customerId": "rheinberg",
+      "customer": "Rheinberg Energie GmbH",
+      "sapCustomerId": "0010090627",
+      "contractId": "C-2026-0811",
+      "product": "SAP Integration Suite (meter-data interfaces)",
+      "status": "Running",
+      "end": "2026-12-31",
+      "noticeDays": 30,
+      "decisionDate": "2026-12-01",
+      "autoRenew": false,
+      "annualEur": 48000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 9,
+      "licensed": 10,
+      "unit": "interfaces",
+      "owner": "Sabine Lenz",
+      "csm": "Oliver Kranz",
+      "customerOwner": "Thomas Wendt",
+      "offer": {
+        "id": "OFF-2026-0612",
+        "annualEur": 49440,
+        "currentAnnualEur": 48000,
+        "discountPct": 0,
+        "validUntil": "2026-11-25",
+        "stage": "Negotiation",
+        "probabilityPct": 75,
+        "competitor": "None",
+        "nextStep": "Agree a payment plan for the open invoice, then sign",
+        "termMonths": 12,
+        "priceGuaranteeMonths": 12,
+        "approval": "Deal desk approved"
+      },
+      "tickets": [],
+      "invoices": [
+        {
+          "id": "INV-2026-51030",
+          "status": "Overdue",
+          "grossEur": 57120,
+          "due": "2026-09-30",
+          "issued": "2026-08-31"
         }
       ]
     },
@@ -522,7 +700,8 @@
           "id": "INV-2026-30590",
           "status": "Overdue",
           "grossEur": 24990,
-          "due": "2026-09-30"
+          "due": "2026-09-30",
+          "issued": "2026-08-31"
         }
       ],
       "addon": true
@@ -569,13 +748,15 @@
           "id": "TKT-48231",
           "title": "Integration Suite: the connector to the laboratory information system (LIMS) drops messages above 2 MB",
           "priority": "High",
-          "status": "In processing"
+          "status": "In processing",
+          "created": "2026-10-06"
         },
         {
           "id": "TKT-48233",
           "title": "Integration Suite: the certificate of the LIMS endpoint expires on 2026-11-09",
           "priority": "Medium",
-          "status": "Waiting for customer"
+          "status": "Waiting for customer",
+          "created": "2026-10-08"
         }
       ],
       "invoices": [
@@ -583,72 +764,80 @@
           "id": "INV-2026-40890",
           "status": "Overdue",
           "grossEur": 17136,
-          "due": "2026-09-30"
+          "due": "2026-09-30",
+          "issued": "2026-08-31"
         },
         {
           "id": "INV-2026-40912",
           "status": "Overdue",
           "grossEur": 2856,
-          "due": "2026-10-05"
+          "due": "2026-10-05",
+          "issued": "2026-09-05"
         }
       ],
       "addon": true
     },
     {
-      "id": "R-C-2026-0901",
-      "customerId": "muster",
-      "customer": "Muster Industrie AG",
-      "sapCustomerId": "0010048211",
       "customerSince": 2014,
-      "customerAnnualEur": 4540000,
-      "contractId": "C-2026-0901",
-      "product": "SAP Signavio Process Manager add-on",
-      "status": "Running",
-      "end": "2027-01-31",
-      "noticeDays": 60,
-      "decisionDate": "2026-12-02",
-      "autoRenew": false,
-      "annualEur": 24000,
-      "upliftCapPct": 3,
-      "termination": "Ends on the end date; renewal requires a new order.",
-      "used": 41,
-      "licensed": 50,
-      "unit": "seats",
-      "owner": "Mira Hoffmann",
-      "csm": "Jonas Weber",
-      "customerOwner": "Tobias Kraus",
-      "offer": null,
-      "tickets": [],
-      "invoices": [],
-      "addon": true
-    },
-    {
-      "id": "R-C-2026-0903",
-      "customerId": "muster",
-      "customer": "Muster Industrie AG",
-      "sapCustomerId": "0010048211",
-      "customerSince": 2014,
-      "customerAnnualEur": 4540000,
-      "contractId": "C-2026-0903",
-      "product": "BTP extra storage package",
+      "customerAnnualEur": 836000,
+      "id": "R-C-2024-0455",
+      "customerId": "alpenwerke",
+      "customer": "Alpenwerke Maschinenbau AG",
+      "sapCustomerId": "0010090611",
+      "contractId": "C-2024-0455",
+      "product": "SAP Signavio Process Transformation Suite",
       "status": "Running",
       "end": "2027-02-28",
       "noticeDays": 60,
       "decisionDate": "2026-12-30",
       "autoRenew": false,
-      "annualEur": 31500,
+      "annualEur": 98000,
       "upliftCapPct": 3,
       "termination": "Ends on the end date; renewal requires a new order.",
-      "used": 8.2,
-      "licensed": 10,
-      "unit": "TB",
-      "owner": "Mira Hoffmann",
-      "csm": "Jonas Weber",
-      "customerOwner": "Tobias Kraus",
+      "used": 61,
+      "licensed": 75,
+      "unit": "seats",
+      "owner": "Katrin Vogel",
+      "csm": "Lukas Brandt",
+      "customerOwner": "Dr. Markus Hauser",
+      "offer": null,
+      "tickets": [],
+      "invoices": []
+    },
+    {
+      "customerSince": 2011,
+      "customerAnnualEur": 1102000,
+      "id": "R-C-2024-0620",
+      "customerId": "rheinberg",
+      "customer": "Rheinberg Energie GmbH",
+      "sapCustomerId": "0010090627",
+      "contractId": "C-2024-0620",
+      "product": "SAP Customer Experience (CX)",
+      "status": "Running",
+      "end": "2027-02-28",
+      "noticeDays": 60,
+      "decisionDate": "2026-12-30",
+      "autoRenew": false,
+      "annualEur": 210000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 118,
+      "licensed": 200,
+      "unit": "seats",
+      "owner": "Sabine Lenz",
+      "csm": "Oliver Kranz",
+      "customerOwner": "Thomas Wendt",
       "offer": null,
       "tickets": [],
       "invoices": [],
-      "addon": true
+      "usageTrend": [
+        88,
+        81,
+        74,
+        68,
+        63,
+        59
+      ]
     },
     {
       "id": "R-C-2026-0921",
@@ -692,7 +881,8 @@
           "id": "TKT-48235",
           "title": "e-signature add-on: the meaning of the signature is missing in the audit-trail export (21 CFR Part 11)",
           "priority": "Medium",
-          "status": "In processing"
+          "status": "In processing",
+          "created": "2026-10-14"
         }
       ],
       "invoices": [
@@ -700,7 +890,8 @@
           "id": "INV-2026-40910",
           "status": "Open",
           "grossEur": 22134,
-          "due": "2026-11-15"
+          "due": "2026-11-15",
+          "issued": "2026-10-14"
         }
       ],
       "addon": true
@@ -748,43 +939,108 @@
           "id": "INV-2026-10716",
           "status": "Open",
           "grossEur": 49087.5,
-          "due": "2026-10-25"
+          "due": "2026-10-25",
+          "issued": "2026-09-25"
         },
         {
           "id": "INV-2026-10729",
           "status": "Open",
           "grossEur": 114716,
-          "due": "2026-11-01"
+          "due": "2026-11-01",
+          "issued": "2026-10-02"
         }
+      ],
+      "usageTrend": [
+        91,
+        88,
+        84,
+        79,
+        74,
+        69
       ]
     },
     {
-      "id": "R-C-2026-0911",
-      "customerId": "hanse",
-      "customer": "Hanse Handelsgruppe AG",
-      "sapCustomerId": "0010073904",
-      "customerSince": 2019,
-      "customerAnnualEur": 2518550,
-      "contractId": "C-2026-0911",
-      "product": "SAP Analytics Cloud planning add-on",
+      "customerSince": 2014,
+      "customerAnnualEur": 836000,
+      "id": "R-C-2025-0710",
+      "customerId": "alpenwerke",
+      "customer": "Alpenwerke Maschinenbau AG",
+      "sapCustomerId": "0010090611",
+      "contractId": "C-2025-0710",
+      "product": "SAP S/4HANA Cloud, private edition",
       "status": "Running",
       "end": "2027-03-31",
-      "noticeDays": 60,
-      "decisionDate": "2027-01-30",
+      "noticeDays": 90,
+      "decisionDate": "2026-12-31",
       "autoRenew": false,
-      "annualEur": 27900,
+      "annualEur": 520000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date unless renewed in writing 90 days before.",
+      "used": 3880,
+      "licensed": 4000,
+      "unit": "users",
+      "owner": "Katrin Vogel",
+      "csm": "Lukas Brandt",
+      "customerOwner": "Dr. Markus Hauser",
+      "offer": {
+        "id": "OFF-2026-0610",
+        "annualEur": 535600,
+        "currentAnnualEur": 520000,
+        "discountPct": 0,
+        "validUntil": "2026-12-10",
+        "stage": "Negotiation",
+        "probabilityPct": 80,
+        "competitor": "None",
+        "nextStep": "Agree the scope for the Austrian plant with the CIO by 2026-11-13",
+        "termMonths": 36,
+        "priceGuaranteeMonths": 36,
+        "approval": "Deal desk approved"
+      },
+      "tickets": [],
+      "invoices": [],
+      "usageTrend": [
+        72,
+        79,
+        86,
+        91,
+        95,
+        97
+      ]
+    },
+    {
+      "customerSince": 2019,
+      "customerAnnualEur": 341000,
+      "id": "R-C-2025-0720",
+      "customerId": "seeland",
+      "customer": "Seeland Retail Group AG",
+      "sapCustomerId": "0010090644",
+      "contractId": "C-2025-0720",
+      "product": "SAP Emarsys Customer Engagement",
+      "status": "Running",
+      "end": "2027-04-30",
+      "noticeDays": 60,
+      "decisionDate": "2027-03-01",
+      "autoRenew": false,
+      "annualEur": 120000,
       "upliftCapPct": 3,
       "termination": "Ends on the end date; renewal requires a new order.",
-      "used": 96,
-      "licensed": 120,
-      "unit": "users",
-      "owner": "Sven Albrecht",
-      "csm": "Nina Kessler",
-      "customerOwner": "Julia Westphal",
+      "used": 180,
+      "licensed": 300,
+      "unit": "contacts (thousands)",
+      "owner": "Marie Dietrich",
+      "csm": "Felix Arndt",
+      "customerOwner": "Anja Köhler",
       "offer": null,
       "tickets": [],
       "invoices": [],
-      "addon": true
+      "usageTrend": [
+        96,
+        92,
+        80,
+        70,
+        64,
+        60
+      ]
     },
     {
       "id": "R-C-2026-0923",
@@ -815,7 +1071,8 @@
           "id": "TKT-48237",
           "title": "Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance",
           "priority": "Low",
-          "status": "Waiting for customer"
+          "status": "Waiting for customer",
+          "created": "2026-10-12"
         }
       ],
       "invoices": [
@@ -823,10 +1080,193 @@
           "id": "INV-2026-40911",
           "status": "Open",
           "grossEur": 31416,
-          "due": "2026-12-01"
+          "due": "2026-12-01",
+          "issued": "2026-10-14"
         }
       ],
       "addon": true
+    },
+    {
+      "id": "R-C-2026-0901",
+      "customerId": "muster",
+      "customer": "Muster Industrie AG",
+      "sapCustomerId": "0010048211",
+      "customerSince": 2014,
+      "customerAnnualEur": 4540000,
+      "contractId": "C-2026-0901",
+      "product": "SAP Signavio Process Manager add-on",
+      "status": "Running",
+      "end": "2027-05-31",
+      "noticeDays": 60,
+      "decisionDate": "2027-04-01",
+      "autoRenew": false,
+      "annualEur": 24000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 41,
+      "licensed": 50,
+      "unit": "seats",
+      "owner": "Mira Hoffmann",
+      "csm": "Jonas Weber",
+      "customerOwner": "Tobias Kraus",
+      "offer": null,
+      "tickets": [],
+      "invoices": [],
+      "addon": true
+    },
+    {
+      "id": "R-C-2026-0911",
+      "customerId": "hanse",
+      "customer": "Hanse Handelsgruppe AG",
+      "sapCustomerId": "0010073904",
+      "customerSince": 2019,
+      "customerAnnualEur": 2518550,
+      "contractId": "C-2026-0911",
+      "product": "SAP Analytics Cloud planning add-on",
+      "status": "Running",
+      "end": "2027-05-31",
+      "noticeDays": 60,
+      "decisionDate": "2027-04-01",
+      "autoRenew": false,
+      "annualEur": 27900,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 96,
+      "licensed": 120,
+      "unit": "users",
+      "owner": "Sven Albrecht",
+      "csm": "Nina Kessler",
+      "customerOwner": "Julia Westphal",
+      "offer": null,
+      "tickets": [],
+      "invoices": [],
+      "addon": true
+    },
+    {
+      "id": "R-C-2026-0924",
+      "customerId": "lindenau",
+      "customer": "Lindenau Pharma AG",
+      "sapCustomerId": "0010090532",
+      "customerSince": 2017,
+      "customerAnnualEur": 3207050,
+      "contractId": "C-2026-0924",
+      "product": "Joule for Quality (12-month pilot)",
+      "status": "Running",
+      "end": "2027-05-31",
+      "noticeDays": 60,
+      "decisionDate": "2027-04-01",
+      "autoRenew": false,
+      "annualEur": 64000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 24,
+      "licensed": 25,
+      "unit": "seats",
+      "owner": "Clara Neumann",
+      "csm": "Jonas Weber",
+      "customerOwner": "Ralf Kessel",
+      "offer": null,
+      "tickets": [],
+      "invoices": [],
+      "addon": true,
+      "usageTrend": [
+        40,
+        52,
+        66,
+        78,
+        90,
+        96
+      ]
+    },
+    {
+      "customerSince": 2011,
+      "customerAnnualEur": 1102000,
+      "id": "R-C-2025-0640",
+      "customerId": "rheinberg",
+      "customer": "Rheinberg Energie GmbH",
+      "sapCustomerId": "0010090627",
+      "contractId": "C-2025-0640",
+      "product": "SAP Analytics Cloud",
+      "status": "Running",
+      "end": "2027-06-30",
+      "noticeDays": 60,
+      "decisionDate": "2027-05-01",
+      "autoRenew": false,
+      "annualEur": 64000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 70,
+      "licensed": 80,
+      "unit": "users",
+      "owner": "Sabine Lenz",
+      "csm": "Oliver Kranz",
+      "customerOwner": "Thomas Wendt",
+      "offer": null,
+      "tickets": [],
+      "invoices": []
+    },
+    {
+      "customerSince": 2014,
+      "customerAnnualEur": 836000,
+      "id": "R-C-2026-0803",
+      "customerId": "alpenwerke",
+      "customer": "Alpenwerke Maschinenbau AG",
+      "sapCustomerId": "0010090611",
+      "contractId": "C-2026-0803",
+      "product": "SAP Analytics Cloud",
+      "status": "Running",
+      "end": "2027-06-30",
+      "noticeDays": 60,
+      "decisionDate": "2027-05-01",
+      "autoRenew": false,
+      "annualEur": 76000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 45,
+      "licensed": 50,
+      "unit": "users",
+      "owner": "Katrin Vogel",
+      "csm": "Lukas Brandt",
+      "customerOwner": "Dr. Markus Hauser",
+      "offer": null,
+      "tickets": [],
+      "invoices": []
+    },
+    {
+      "id": "R-C-2026-0904",
+      "customerId": "muster",
+      "customer": "Muster Industrie AG",
+      "sapCustomerId": "0010048211",
+      "customerSince": 2014,
+      "customerAnnualEur": 4540000,
+      "contractId": "C-2026-0904",
+      "product": "Joule copilot seats for Sales",
+      "status": "Running",
+      "end": "2027-06-30",
+      "noticeDays": 60,
+      "decisionDate": "2027-05-01",
+      "autoRenew": false,
+      "annualEur": 96000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 132,
+      "licensed": 120,
+      "unit": "seats",
+      "owner": "Mira Hoffmann",
+      "csm": "Jonas Weber",
+      "customerOwner": "Tobias Kraus",
+      "offer": null,
+      "tickets": [],
+      "invoices": [],
+      "addon": true,
+      "usageTrend": [
+        70,
+        78,
+        88,
+        97,
+        104,
+        110
+      ]
     },
     {
       "id": "R-C-2026-0913",
@@ -851,6 +1291,144 @@
       "owner": "Sven Albrecht",
       "csm": "Nina Kessler",
       "customerOwner": "Julia Westphal",
+      "offer": null,
+      "tickets": [],
+      "invoices": [],
+      "addon": true
+    },
+    {
+      "id": "R-C-2026-0903",
+      "customerId": "muster",
+      "customer": "Muster Industrie AG",
+      "sapCustomerId": "0010048211",
+      "customerSince": 2014,
+      "customerAnnualEur": 4540000,
+      "contractId": "C-2026-0903",
+      "product": "BTP extra storage package",
+      "status": "Running",
+      "end": "2027-07-31",
+      "noticeDays": 60,
+      "decisionDate": "2027-06-01",
+      "autoRenew": false,
+      "annualEur": 31500,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 8.2,
+      "licensed": 10,
+      "unit": "TB",
+      "owner": "Mira Hoffmann",
+      "csm": "Jonas Weber",
+      "customerOwner": "Tobias Kraus",
+      "offer": null,
+      "tickets": [],
+      "invoices": [],
+      "addon": true
+    },
+    {
+      "customerSince": 2014,
+      "customerAnnualEur": 836000,
+      "id": "R-C-2025-0731",
+      "customerId": "alpenwerke",
+      "customer": "Alpenwerke Maschinenbau AG",
+      "sapCustomerId": "0010090611",
+      "contractId": "C-2025-0731",
+      "product": "SAP Business Network (Ariba)",
+      "status": "Running",
+      "end": "2027-09-30",
+      "noticeDays": 90,
+      "decisionDate": "2027-07-02",
+      "autoRenew": false,
+      "annualEur": 142000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 940,
+      "licensed": 1000,
+      "unit": "suppliers",
+      "owner": "Katrin Vogel",
+      "csm": "Lukas Brandt",
+      "customerOwner": "Dr. Markus Hauser",
+      "offer": null,
+      "tickets": [],
+      "invoices": []
+    },
+    {
+      "id": "R-C-2026-0914",
+      "customerId": "hanse",
+      "customer": "Hanse Handelsgruppe AG",
+      "sapCustomerId": "0010073904",
+      "customerSince": 2019,
+      "customerAnnualEur": 2518550,
+      "contractId": "C-2026-0914",
+      "product": "SAP Datasphere",
+      "status": "Running",
+      "end": "2027-08-31",
+      "noticeDays": 60,
+      "decisionDate": "2027-07-02",
+      "autoRenew": false,
+      "annualEur": 88000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 14,
+      "licensed": 16,
+      "unit": "TB",
+      "owner": "Sven Albrecht",
+      "csm": "Nina Kessler",
+      "customerOwner": "Julia Westphal",
+      "offer": null,
+      "tickets": [],
+      "invoices": [],
+      "addon": true
+    },
+    {
+      "customerSince": 2019,
+      "customerAnnualEur": 341000,
+      "id": "R-C-2026-0821",
+      "customerId": "seeland",
+      "customer": "Seeland Retail Group AG",
+      "sapCustomerId": "0010090644",
+      "contractId": "C-2026-0821",
+      "product": "SAP Commerce pricing add-on",
+      "status": "Running",
+      "end": "2027-08-31",
+      "noticeDays": 30,
+      "decisionDate": "2027-08-01",
+      "autoRenew": false,
+      "annualEur": 36000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 38,
+      "licensed": 40,
+      "unit": "users",
+      "owner": "Marie Dietrich",
+      "csm": "Felix Arndt",
+      "customerOwner": "Anja Köhler",
+      "offer": null,
+      "tickets": [],
+      "invoices": []
+    },
+    {
+      "id": "R-C-2026-0905",
+      "customerId": "muster",
+      "customer": "Muster Industrie AG",
+      "sapCustomerId": "0010048211",
+      "customerSince": 2014,
+      "customerAnnualEur": 4540000,
+      "contractId": "C-2026-0905",
+      "product": "Ariba Network enablement",
+      "status": "Running",
+      "end": "2027-09-30",
+      "noticeDays": 60,
+      "decisionDate": "2027-08-01",
+      "autoRenew": false,
+      "annualEur": 58000,
+      "upliftCapPct": 3,
+      "termination": "Ends on the end date; renewal requires a new order.",
+      "used": 47,
+      "licensed": 50,
+      "unit": "suppliers",
+      "owner": "Mira Hoffmann",
+      "csm": "Jonas Weber",
+      "customerOwner": "Tobias Kraus",
       "offer": null,
       "tickets": [],
       "invoices": [],
@@ -886,8 +1464,17 @@
           "id": "INV-2026-30077",
           "status": "Open",
           "grossEur": 261502.5,
-          "due": "2026-10-31"
+          "due": "2026-10-31",
+          "issued": "2026-10-01"
         }
+      ],
+      "usageTrend": [
+        119,
+        113,
+        107,
+        100,
+        95,
+        90
       ]
     },
     {
@@ -919,7 +1506,8 @@
           "id": "TKT-48188",
           "title": "Advanced Track and Trace: serial number requests are rejected for the Swiss market",
           "priority": "High",
-          "status": "Waiting for customer"
+          "status": "Waiting for customer",
+          "created": "2026-10-09"
         }
       ],
       "invoices": [
@@ -927,8 +1515,17 @@
           "id": "INV-2026-40104",
           "status": "Open",
           "grossEur": 492660,
-          "due": "2026-10-31"
+          "due": "2026-10-31",
+          "issued": "2026-10-01"
         }
+      ],
+      "usageTrend": [
+        72,
+        78,
+        85,
+        91,
+        96,
+        100
       ]
     }
   ],
@@ -1015,6 +1612,10 @@
       "owner": "Tom Ahlers",
       "escalation": null,
       "topics": [
+        {
+          "kind": "people",
+          "text": "The Head of Controlling, who championed SAP Analytics Cloud, left in September; her successor has not been introduced yet"
+        },
         {
           "kind": "people",
           "text": "New CFO since September, reviews all software spend"
@@ -1130,6 +1731,188 @@
           "at": "2026-10-13T08:50:00+02:00",
           "count": 2,
           "snippet": "The purchase order was blocked by the audit freeze. Accounts Payable will release the payment next week, please hold the reminder."
+        }
+      ]
+    },
+    {
+      "id": "alpenwerke",
+      "owner": "Katrin Vogel",
+      "escalation": null,
+      "topics": [
+        {
+          "kind": "commercial",
+          "text": "Plans a second plant in Austria in 2027 and wants to extend S/4HANA to it"
+        },
+        {
+          "kind": "people",
+          "text": "New CIO since 2025, a strong SAP sponsor who asked for a three-year roadmap"
+        }
+      ],
+      "annualEur": 836000,
+      "since": 2014,
+      "name": "Alpenwerke Maschinenbau AG",
+      "mails": [
+        {
+          "id": "A-201",
+          "subject": "S/4HANA renewal: extension for the Austrian plant",
+          "status": "waiting-us",
+          "intent": "Renewal",
+          "mood": "positive",
+          "contractId": "C-2025-0710",
+          "offerId": "OFF-2026-0610",
+          "side": "customer",
+          "at": "2026-10-16T09:20:00+02:00",
+          "count": 3,
+          "snippet": "The CIO would like to include the Austrian plant from 2027. Please send us the extended scope and a price for 4,600 users."
+        },
+        {
+          "id": "A-202",
+          "subject": "Signavio: who owns the process model after the reorganisation?",
+          "status": "waiting-customer",
+          "intent": "Renewal",
+          "mood": "neutral",
+          "contractId": "C-2024-0455",
+          "offerId": null,
+          "side": "us",
+          "at": "2026-10-12T14:10:00+02:00",
+          "count": 2,
+          "snippet": "We asked for the new owner of the process models so the renewal talk can start with the right person."
+        },
+        {
+          "id": "A-203",
+          "subject": "Business Network: 60 more suppliers onboarded",
+          "status": "answered",
+          "intent": "Offer",
+          "mood": "positive",
+          "contractId": "C-2025-0731",
+          "offerId": null,
+          "side": "customer",
+          "at": "2026-10-08T11:45:00+02:00",
+          "count": 2,
+          "snippet": "Thank you, the onboarding of the next 60 suppliers worked without problems. Procurement is very happy."
+        }
+      ]
+    },
+    {
+      "id": "rheinberg",
+      "owner": "Sabine Lenz",
+      "escalation": {
+        "level": "Executive",
+        "since": "2026-10-09",
+        "topic": "The smart-meter data import drops 12 % of the readings; the regulatory report is due on 2026-11-30. The new CIO asked for the root cause and a date.",
+        "owner": "Sabine Lenz"
+      },
+      "topics": [
+        {
+          "kind": "people",
+          "text": "New CIO since August runs a vendor consolidation review; SAP is on the list"
+        },
+        {
+          "kind": "commercial",
+          "text": "Wants one contract for the core system and the customer portal, with a price cap of 3 %"
+        }
+      ],
+      "annualEur": 1102000,
+      "since": 2011,
+      "name": "Rheinberg Energie GmbH",
+      "mails": [
+        {
+          "id": "R-201",
+          "subject": "Renewal S/4HANA for utilities: price rise of 9 % is not acceptable",
+          "status": "waiting-us",
+          "intent": "Renewal",
+          "mood": "negative",
+          "contractId": "C-2023-0610",
+          "offerId": "OFF-2026-0611",
+          "side": "customer",
+          "at": "2026-10-17T16:30:00+02:00",
+          "count": 4,
+          "snippet": "A rise of 9 % cannot be explained to our supervisory board while 12 % of the meter readings are missing. Please come back with a proposal at the cap and a date for the fix."
+        },
+        {
+          "id": "R-202",
+          "subject": "Customer Experience: adoption after the reorganisation",
+          "status": "waiting-us",
+          "intent": "Renewal",
+          "mood": "mixed",
+          "contractId": "C-2024-0620",
+          "offerId": null,
+          "side": "customer",
+          "at": "2026-10-14T10:15:00+02:00",
+          "count": 2,
+          "snippet": "Only the new service team uses the system since the reorganisation. We need to decide whether we still need 200 seats."
+        },
+        {
+          "id": "R-203",
+          "subject": "Overdue invoice: Integration Suite for the meter-data interfaces",
+          "status": "waiting-customer",
+          "intent": "Payment",
+          "mood": "neutral",
+          "contractId": "C-2026-0811",
+          "offerId": null,
+          "side": "us",
+          "at": "2026-10-11T09:05:00+02:00",
+          "count": 2,
+          "snippet": "We sent a reminder for the invoice that fell due on 2026-09-30 and offered to split the payment."
+        }
+      ]
+    },
+    {
+      "id": "seeland",
+      "owner": "Marie Dietrich",
+      "escalation": null,
+      "topics": [
+        {
+          "kind": "commercial",
+          "text": "Q4 is peak season: a change freeze for all systems starts on 2026-11-16"
+        },
+        {
+          "kind": "commercial",
+          "text": "Wants to move Commerce Cloud to a usage-based model after a short trial elsewhere"
+        }
+      ],
+      "annualEur": 341000,
+      "since": 2019,
+      "name": "Seeland Retail Group AG",
+      "mails": [
+        {
+          "id": "S-201",
+          "subject": "Commerce Cloud: would you take us back with a usage-based price?",
+          "status": "waiting-us",
+          "intent": "Offer",
+          "mood": "mixed",
+          "contractId": "C-2022-0701",
+          "offerId": "OFF-2026-0620",
+          "side": "customer",
+          "at": "2026-10-15T13:40:00+02:00",
+          "count": 3,
+          "snippet": "The trial on the other platform did not scale during the sale weekend. We would come back if the price follows our traffic. Can you send an offer before the freeze?"
+        },
+        {
+          "id": "S-202",
+          "subject": "Customer Data Cloud: who signs the renewal?",
+          "status": "waiting-us",
+          "intent": "Renewal",
+          "mood": "neutral",
+          "contractId": "C-2025-0712",
+          "offerId": null,
+          "side": "customer",
+          "at": "2026-10-13T08:55:00+02:00",
+          "count": 1,
+          "snippet": "Our notice deadline is at the beginning of November. Please send the renewal offer so that Legal can review it before the freeze."
+        },
+        {
+          "id": "S-203",
+          "subject": "Emarsys: contacts after the clean-up",
+          "status": "answered",
+          "intent": "Offer",
+          "mood": "neutral",
+          "contractId": "C-2025-0720",
+          "offerId": null,
+          "side": "us",
+          "at": "2026-10-09T15:20:00+02:00",
+          "count": 2,
+          "snippet": "After the list clean-up 180,000 of the 300,000 contacts are active. We can right-size the package at the renewal."
         }
       ]
     }

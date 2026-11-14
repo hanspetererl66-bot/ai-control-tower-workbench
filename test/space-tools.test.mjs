@@ -92,3 +92,48 @@ test('the Spaces list and the side body leave room for the Design Study badge at
   assert.ok(reserved(rule('.list')) >= bottom + badgeHeight, '.list reserves space for the badge');
   assert.ok(reserved(rule('.side-body')) >= bottom + badgeHeight, '.side-body reserves space for the badge');
 });
+
+test('a Space marks its customer with data-wb-customer, as attribute value or as text, and the host shows it in one place', () => {
+  const el = (attr, text) => ({ getAttribute: (n) => (n === 'data-wb-customer' ? attr : null), textContent: text });
+  const doc = (e) => ({ querySelector: (sel) => (sel === '[data-wb-customer]' ? e : null) });
+  assert.equal(raw.customerOf(doc(el('Kestrel Versicherung AG', ''))), 'Kestrel Versicherung AG', 'attribute value');
+  assert.equal(raw.customerOf(doc(el('', '  Lindenau   GmbH\n'))), 'Lindenau GmbH', 'text, whitespace tidied');
+  assert.equal(raw.customerOf(doc(el('', '   '))), null, 'empty');
+  assert.equal(raw.customerOf(doc(null)), null, 'no marker');
+  assert.equal(raw.customerOf(doc(el('x'.repeat(200), ''))).length, 80, 'at most 80 characters');
+  const viewer = readFileSync(new URL('../src/ui/SpaceViewer.tsx', import.meta.url), 'utf8');
+  assert.match(viewer, /\{tools\.customer && \(\s*<span className="topbar-customer"/);
+  assert.match(viewer, /customer: typeof data\.customer === 'string'/);
+  const css = readFileSync(new URL('../src/theme.css', import.meta.url), 'utf8');
+  assert.match(css, /\.topbar-customer b \{ font-size: 13px; font-weight: 650; color: var\(--ink\)/, 'one size and one colour, from tokens');
+});
+
+test('the Spaces of the Kestrel contract mark their customer from their data', () => {
+  for (const name of ['revenue-recognition', 'order-to-cash-software']) {
+    const page = readFileSync(new URL(`../examples/${name}/index.html`, import.meta.url), 'utf8');
+    assert.match(page, /<span id="wb-customer" data-wb-customer hidden><\/span>/, name);
+    assert.match(page, /getElementById\('wb-customer'\)\.textContent = D\.customer\.name/, name);
+  }
+});
+
+test('a picker labelled Customer counts when a Space has no marker, a change is reported at once and the host takes it', () => {
+  const sel = (label, texts, i) => ({ getAttribute: (n) => (n === 'aria-label' ? label : null), options: texts.map((t) => ({ textContent: t })), selectedIndex: i });
+  const doc = (marker, selects) => ({ querySelector: (q) => (q === '[data-wb-customer]' ? marker : null), querySelectorAll: (q) => (q === 'select' ? selects : []) });
+  assert.equal(raw.customerOf(doc(null, [sel('Customer', ['All customers', ' Lindenau  Pharma AG '], 1)])), 'Lindenau Pharma AG');
+  assert.equal(raw.customerOf(doc(null, [sel('Status', ['Open', 'Done'], 1)])), null, 'only a picker labelled Customer');
+  assert.equal(raw.customerOf(doc({ getAttribute: () => 'Kestrel AG', textContent: '' }, [sel('Customer', ['X'], 0)])), 'Kestrel AG', 'the marker wins');
+  assert.equal(raw.customerOf(doc({ getAttribute: () => '', textContent: '  ' }, [sel('Customer', ['Muster AG'], 0)])), 'Muster AG', 'an empty marker falls back to the picker');
+  assert.match(SPACE_TOOLS_SCRIPT, /window\.parent\.postMessage\(\{ type: 'sp:customer', customer: c \}, '\*'\)/);
+  assert.match(SPACE_TOOLS_SCRIPT, /addEventListener\('change', function \(\) \{ reportCustomer\(\)/);
+  assert.match(readFileSync(new URL('../src/ui/SpaceViewer.tsx', import.meta.url), 'utf8'), /data\.type === 'sp:customer'/);
+});
+
+test('the Spaces that name their customer themselves mark it from their own state', () => {
+  const read = (n) => readFileSync(new URL(`../examples/${n}/index.html`, import.meta.url), 'utf8');
+  for (const n of ['sales', 'call-transcripts', 'collections', 'revenue-recognition', 'order-to-cash-software']) assert.match(read(n), /<span id="wb-customer" data-wb-customer hidden><\/span>/, n);
+  assert.match(read('sales'), /\$\('#wb-customer'\)\.textContent = name;/);
+  assert.match(read('call-transcripts'), /\$\('#wb-customer'\)\.textContent = state\.customer === 'All' \? 'All customers' : state\.customer;/);
+  assert.match(read('collections'), /\$\('#wb-customer'\)\.textContent = L\.customer\(S\.cid\)\.name;/);
+  for (const n of ['renewals', 'customer-360', 'customer-emails', 'customer-ai-briefing', 'sub4me', 'agent-network']) assert.match(read(n), /<select[^>]*aria-label="Customer"/, `${n} has a picker labelled Customer`);
+});
+

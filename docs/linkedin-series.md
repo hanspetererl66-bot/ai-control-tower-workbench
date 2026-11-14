@@ -1,67 +1,117 @@
-# LinkedIn-Serie: Joule X Design Study (Stand 08.11.2026)
+# LinkedIn-Serie: Joule X Design Study (Stand 14.11.2026)
 
 Festgelegte Reihenfolge der Videos, Erzähler, Stilregeln und Aufträge für den Serien-Trailer und Post 13. Das ist Redaktionsplanung, kein App-Code. Die fertigen Videos liegen in `docs/linkedin-series/` (siehe dortige `README.md`).
 
-## Reihenfolge (Stand 09.11.2026 abends, nach Prüfung auf Doppelungen)
+## Reihenfolge (Stand 14.11.2026): 14 Deep Dives (ersetzt den Stand mit 18 Posts)
 
-Veröffentlichung: Serien-Trailer, Post 0, Pre-Trailer, dann Post 1 bis 18. Gegenüber dem Stand vom Nachmittag (19 Posts) sind zwei Posts zusammengelegt und drei Posts zugeschnitten, damit nichts doppelt erzählt wird (Abschnitt "Geprüfte Doppelungen" unten).
+Veröffentlichung: Serien-Trailer, Post 0, Pre-Trailer, dann Post 1 bis 14. Jeder Post ist ein Deep Dive zu **einem** Thema. Entscheidung von Hans-Peter am 14.11.2026. Die Zahl in den gesprochenen Intros der Posts 1, 3, 4 und 5 ("in eighteen short stories") muss auf "fourteen" geändert werden.
 
-| Nr. | Post | bisher | Stand |
+| Nr. | Deep Dive | Inhalt | Bestand |
 |---|---|---|---|
-| Serien-Trailer | Hook für die ganze Serie | – | neu zu bauen mit 18 Folgen (Auftrag unten) |
-| 0 | Joule Work, Joule Studio und Joule Studio 2.0 als neuer Experience Layer | 0 | fertig, 38 s |
-| Pre-Trailer | "Under the hood": Stack, endet mit "The next post describes the first edition" | Pre | fertig |
-| **Kapitel A: Die Werkbank** | | | |
-| 1 | Design-Study-Tour inkl. Skills | 1 | fertig |
-| 2 | Chatfenster | 2 | fertig |
-| 3 | Chat-Einstellungen und Arbeitsprofile (Harness) | 11 | **kürzen**: der Teil "ein Symbol, alles was mitgeht" und "Sprache, Länge, Ton" entfällt (steht in Post 2), bleiben Profile, Personas und Befehle, Memory, Daten und Audit |
-| 4 | Spaces (inkl. Übersicht mit Bewegung, Unter-Spaces, Skins) | 3 | fertig; Übersicht und Skins (09.11.) prüfen, ob ein Zusatzclip nötig ist |
-| **Kapitel B: HR** | | | |
-| 5 | Recruiting (US-Fall, inkl. Hiring Approvals) | 4 | fertig |
-| 6 | **Onboarding** (23 Schritte in fünf Phasen, fünf Kandidaten, Übergabe aus Hiring Approvals) | neu | neu zu bauen |
-| **Kapitel C: Automatisieren und Skills** | | | |
-| 7 | Scheduler | 5 | fertig |
-| 8 | Skill management | 6 | fertig |
-| **Kapitel D: Finance** | | | |
-| 9 | **Von Vertrag zu Cash und Umsatz**: Order-to-Cash für ein Softwareunternehmen (14 Schritte, sieben Systeme, n8n-Prozess, drei Freigaben) und Revenue Recognition (derselbe Fall C-4410, Zeitplan, Buchungen) | neu (zwei Posts zu einem) | neu zu bauen |
-| 10 | Financial Pre-Close mit Daten aus Databricks | 7 | fertig |
-| 11 | TabPFN-Zahlungsverzug-Prognose | 9 | fertig |
-| **Kapitel E: Sales** | | | |
-| 12 | Sales und Renewals (Sicht des Account Managers) | 10 | fertig; Renewals-Teil neu aufnehmen (fünf Reiter, animierte Kundenkarte, 09.11.) |
-| 13 | **Customer Journey über drei Spaces**: Customer 360 (Lindenau), E-Mail-Space, Übergaben der Journey-Leiste; nur kurz zurück in Sales (Knowledge-Graph, Execute in Chat Window) | neu | neu zu bauen; Inbox und Meetings **nicht** nochmal erklären (Post 12) |
-| **Kapitel F: Governance und Plattform** | | | |
-| 14 | **AI Governance**: Einstieg Build, Register, Run, Prove mit Agent observability, Agent registry und Agent compliance | neu | neu zu bauen |
-| 15 | n8n Performance Dashboard | 8 | **kürzen**: der Teil Admin console (Ontologies, Solution register, Skill management) entfällt, weil Skill management Post 8 ist und die Registry in Post 14 vorkommt |
-| **Kapitel G: Bauen mit Absicht** | | | |
-| 16 | Jira-, Notion-, Slack- und Teams-Integration im Agentic-Engineering-Prozess | 12 | fertig |
-| 17 | Prozessinterview und Erstellung des n8n-Workflows (per Sprache) | 13 | noch zu bauen (Auftrag unten) |
-| **Finale** | | | |
-| 18 | IT Infrastructure Operations: Zertifikat läuft ab, vom SOP im Infra Wiki bis zum Nachweis (neun Spaces, ca. 8 Minuten Story) | 14 | Video neu schneiden: der Ablauf wurde am 08./09.11. umgebaut |
+| 1 | Tour | Überblick über die App, ein Satz zu den Einstellungen als Vorschau | fertig, Intro anpassen |
+| 2 | Chat und Einstellungen | Chatfenster, Kontext-Symbol, Arbeitsprofile, die Einstellungen (elf Reiter), Mail und Diagramme im Chat | Chatfenster-Post und Profil-Post zusammenschneiden, Einstellungen und Neues ergänzen |
+| 3 | Spaces | Spaces-Liste und Unter-Spaces, Space Designer mit Datenquellen, Space Analysis, Skins | Spaces-Post umschneiden, Designer neu |
+| 4 | Skills und Scheduler | Skill-Tabelle, vier Genehmigungsstationen, Health, Marketplace, Zeitplan mit Ausgabeziel | zwei fertige Posts verschmelzen, Neues ergänzen |
+| 5 | Ontology Manager | gemeinsamer Wortschatz, Wissensgraph, Begriffe im Space und im Chat | neu |
+| 6 | Von der Stelle zum ersten Tag | Recruiting, Hiring Approvals, Onboarding | Recruiting fertig, Onboarding neu |
+| 7 | Revenue Recognition | fünf Schritte, Behandlungen nach Softwareart, Zeitplan, Buchungen; kurzer Auftakt aus Order-to-Cash | neu |
+| 8 | Financial Pre-Close | fünf Reiter, Daten aus Databricks, Rückstellungsvorschläge | fertig, umschneiden |
+| 9 | Zahlungsverzug früh erkennen | TabPFN-Prognose und Collections, vom Hinweis zur Entscheidung | TabPFN-Post fertig, Collections neu |
+| 10 | Sales und Kunde | Pipeline und Gates, Customer 360, Knowledge Graph, Sales-Journey | Sales-Teil fertig, Rest neu |
+| 11 | Renewals | Heute-Ansicht, Autopilot mit Freigaben, Win-back, Briefing, Übergabe an Order-to-Cash | neu |
+| 12 | Vom Wunsch zur Spezifikation | Prozessinterview per Sprache, Requirement collection, PRD Builder, Spec Builder | Requirement-collection-Post fertig, Rest neu |
+| 13 | AI Governance | Build, Register, Run, Prove; Observability, Agent Network, n8n Performance Dashboard | Dashboard fertig, Rest neu |
+| 14 | Autonomous Operations (Finale) | vom auslaufenden Zertifikat bis zu Orchestrator, Ursachenanalyse und Hotline | Infra-Post fertig, umschneiden |
 
-Aus der Serie entfallen: Überblick Chat/Workflow/Agent/Skill und der Ontology Manager (er kam zuletzt nur noch als Teil der Admin console in Post 15 vor; mit dem Zuschnitt dort gibt es keinen Ontology-Teil mehr). Der Joule Design Study Space wurde am 09.11. aus dem Repo entfernt; das berührt die Videos nicht. Kandidaten für eine spätere Staffel: Sub4Me, Ontologies und Solution register als eigener Post, Quellen-Testbett (Jira/Slack).
+Entfallen: Überblick Chat/Workflow/Agent/Skill; Admin console als eigener Teil (Skills, Registry und Ontology sind jetzt eigene Themen); der Joule Design Study Space (09.11. entfernt).
 
-## Geprüfte Doppelungen (Grundlage: Sprechertexte der fertigen Posts und Statusnotizen)
-| Fund | Entscheidung |
-|---|---|
-| Post 8 (n8n + Admin console) zeigt in der Admin console Skill management, Solution register und Ontologies. Skill management ist Post 6, die Registry kommt mit Post 14 (AI Governance), die Admin-Kachel Agent observability ist seit 09.11. entfernt. | Admin-Teil aus dem n8n-Post streichen (neu Post 15, nur Dashboard). |
-| Post 11 (Chat-Einstellungen) wiederholt das Kontext-Symbol aus Post 2: Memory, Gruppe, Persona, Space, "Was mit jeder Nachricht geht", Sprache/Länge/Ton. | Post 11 kürzen und direkt hinter Post 2 setzen (neu Post 3), Schwerpunkt Arbeitsprofile. |
-| Order-to-Cash Software und Revenue Recognition erzählen denselben Fall (Vertrag C-4410, Kestrel Versicherung AG, gleicher Rechenkern). | Ein Post: erst der Ablauf über sieben Systeme, am Ende der Schritt Umsatz, dann Revenue Recognition mit Zeitplan und Buchungen. Fall nur einmal einführen. |
-| Neue Sales Journey (Sales, Customer 360, E-Mail) überschneidet sich mit Post 10 in Sales (Inbox, Meetings, Deal-Drawer). | Post 12 (Sales und Renewals) bleibt der Sales-Post; der Journey-Post zeigt Customer 360, E-Mail und die Übergaben, Sales nur als Ziel. |
-| Post 1 (Tour) nennt Spaces, Unter-Spaces, "Change with Joule", Skills, Scheduler, Skins; Post 3/4, 6 und 7 vertiefen. | Gewollt (Tour als Vorschau, danach Vertiefung); nicht ändern. Nur darauf achten, dass die Vertiefungen nichts Neues überspringen. |
-| Post 7 (Pre-Close, TabPFN-Rückstellungen) und Post 9 (TabPFN, "same method in Controlling") nennen beide die Rückstellungs-Schätzung. | Gering; Post 10 nur ein Satz, die Methode erklärt Post 11. Nicht schneiden. |
-| Post 12 (Anforderungen) und Post 13 (Prozessinterview) gehören beide zu Develop. | Kein Inhalt doppelt: Quellen lesen gegen Interview führen. In Post 17 nur kurz auf Post 16 zurückverweisen. |
-| Post 4 (Recruiting) endet beim Angebot; Onboarding beginnt beim unterschriebenen Vertrag. | Keine Überschneidung; die Übergabe aus Hiring Approvals ist die Brücke. |
+## Dramaturgie für Manager
+Ziel: Eine Führungskraft versteht nach zwei Minuten, **was sich für ihre Arbeit ändert**, ohne die Technik zu kennen.
 
-## Wäsche, Kater und Musik der neuen Posts (abgenommen am 09.11.2026)
-| Post | Wäscheleine | Kater | Musik / Stimme |
+Regeln für jeden Deep Dive:
+1. **Eine Frage, die ein Manager stellt**, in den ersten zehn Sekunden (nicht den Namen des Space).
+2. **Drei Szenen**, nicht zehn: Problem (ca. 15 s), der eine Moment (ca. 60 s), Kontrolle (ca. 30 s: wer entscheidet, was bleibt nachvollziehbar).
+3. **Ergebnis vor Werkzeug.** Werkzeugnamen (n8n, TabPFN, Databricks, MCP) höchstens in einem halben Satz "under the hood"; im Titel und in der Frage stehen Rollen und Ergebnisse.
+4. **Eine Zahl je Post**, aus den Beispieldaten, mit dem Hinweis "sample data". Keine Zahl ohne Beleg im Space oder in der Doku.
+5. **Immer der Satz "A person decides"** am Ende (steht schon in den fertigen Posts) und genau **eine ehrliche Grenze** (Beispieldaten, nichts angebunden, nicht getestet).
+6. **Länge:** Ziel zwei Minuten, Governance und Finale bis drei.
+7. Letzte Zeile ist die Brücke zum nächsten Post.
+
+| Nr. | Frage des Managers | Botschaft in einem Satz | Die drei Szenen | Wertzeile |
+|---|---|---|---|---|
+| 1 | Wie fühlt sich Arbeit auf SAP künftig an? | Ein Ort, an dem du fragst, siehst und entscheidest. | Rail, Liste, Chat; Spaces nach Bereichen; Skills, Develop, Scheduler und deine Einstellungen als Vorschau | "Work comes to you." |
+| 2 | Weiß der Assistent, was er wissen darf, und tut er nur, was ich erlaube? | Du siehst, was mit jeder Frage mitgeht, und legst die Regeln fest. | Kontext-Symbol (Memory, Gruppe, Persona, Space, "what Joule knows"); Arbeitsprofile, die den Assistenten nur strenger machen; die Einstellungen in drei Gruppen (Aussehen: Skin; Arbeitsregeln: Profile, Work, Assistant, Chat, Memory; Unternehmen: Gruppen, Speicher, Monitoring, Daten und Audit) | "You set the rules. Joule follows." |
+| 3 | Wie komme ich zu meiner eigenen Auswertung, ohne auf die IT zu warten? | Eine Seite für deine Arbeit entsteht in Minuten und bleibt innerhalb der Regeln. | Spaces nach Bereichen; Seite aus Bausteinen und Datenquellen bauen; Space Analysis prüft jede Seite gegen die Regeln | "Self-service, inside the rules." |
+| 4 | Wie wird gute Praxis für alle nutzbar, ohne Wildwuchs? | Aus einem Gespräch wird ein Skill, der geprüft und freigegeben wird. | Skill aus dem Gespräch; vier Genehmigungsstationen mit Rollen; Health und Dubletten, dazu der Zeitplan mit Ausgabeziel | "Reuse, with control." |
+| 5 | Meinen Menschen und Agenten dasselbe, wenn sie "Kunde" oder "Verlängerung" sagen? | Ein gemeinsamer Wortschatz, den man sieht und der Änderungen prüfbar macht. | Begriff, seine Nutzer und die Folgen einer Änderung vor der Freigabe; Begriff im Space mit Definitionskarte; Chat fragt bei Mehrdeutigkeit nach | "One vocabulary for people and agents." |
+| 6 | Wie schnell und fair stellen wir ein, und was passiert am ersten Tag? | Vom Stellenprofil bis zum ersten Tag, ohne dass ein Schritt verloren geht. | Anzeige ohne erfundene Gehaltsangabe, Kandidaten ohne Namen; Freigabe durch vier Rollen; Onboarding in fünf Phasen | "From requisition to day one." |
+| 7 | Wann zählt der Umsatz, und wer entscheidet? | Ein Vertrag, fünf Schritte, und die Ermessensstellen sind sichtbar. | Vertrag und Leistungsbündel; Preisverteilung und Zeitplan (Rechnung gegen Umsatz); Buchungen und Ermessensstellen | "Revenue, explained." |
+| 8 | Sind wir Tage vor dem Abschluss bereit? | Du siehst früh, wo der Abschluss hängt, und prüfst nur Vorschläge. | Prognose mit Bandbreite und Abschlussreife; offene Posten nach Wirkung; Rückstellungsvorschläge, die eine Person freigibt | "No surprises at close." |
+| 9 | Wer zahlt voraussichtlich zu spät, und was tue ich heute? | Vor der Fälligkeit wissen, welche Rechnung kippt und warum. | Liste nach Risiko mit den Gründen; zuerst die eigene Seite prüfen (Lieferung, Ticket, Vertrag); Entscheidung über die Ansprache und Spur der Treffer | "Cash, earlier." |
+| 10 | Wie sehe ich einen Kunden ganz? | Ein Kunde, eine Geschichte, quer durch die Fachseiten. | Pipeline mit Gates und Forecast; Customer 360 mit Zeitleiste und Wissensgraph; Journey-Leiste als Pfad aus fünf Schritten | "One customer, one story." |
+| 11 | Wie verhindern wir, dass bei Hunderten Verlängerungen etwas durchrutscht? | Der Tag beginnt mit dem, was jetzt zählt, und der Autopilot arbeitet nur bis zur nächsten Freigabe. | Heute-Ansicht mit drei Zahlen; Autopilot und Win-back mit Freigaben; Briefing und Übergabe an Order-to-Cash | "Nothing slips." |
+| 12 | Wie wird aus einem Wunsch eine Spezifikation, die man bauen kann? | Sprechen, sammeln, ableiten, nichts in den Quellen ändern. | Interview per Sprache oder Anforderungen aus Jira, Slack, Notion und Linear sammeln; PRD mit Bearbeitung und Bestätigung; Spezifikation und Architektur mit Word-Export | "From wish to blueprint." |
+| 13 | Wissen wir, was unsere Agenten tun, und können wir es belegen? | Entlang des Lebenszyklus sichtbar: Build, Register, Run, Prove. | Einstieg mit vier Kacheln; Spur eines Laufs und Kosten; Agenten, die sich gegenseitig fragen, und das Dashboard für Workflows | "Prove what agents did." |
+| 14 | Kann der IT-Betrieb sich selbst steuern, und wie sicher ist das? | Autonomie wird in Stufen verdient: zuerst vorschlagen, dann mit Freigabe, zuletzt allein. | Zertifikat läuft ab, SOP und Plan; Orchestrator und Ursachenanalyse schlagen vor, Vier-Augen-Freigabe; Schattenmodus vor dem Ernstfall | "Autonomy, step by step." |
+
+Ehrliche Grenzen je Post (für den letzten Satz): Beispieldaten und nichts angebunden in allen. Zusätzlich: Post 9 Prognose auf synthetischen Rechnungsdaten, keine Bonitätsbewertung; Post 11 Nutzen (1.200 Verlängerungen, 1,5 Stunden) ist eine Annahme von Hans-Peter und wird erst durch den Pilot gemessen (ab etwa 6 % gesparter Vorbereitungszeit trägt sich der Assistent, siehe `docs/renewals-pilot.md`); Post 12 Interview ohne echtes Mikrofon in der Desktop-App getestet; Post 14 kein echtes Monitoring, Sprachagent bleibt Demo.
+
+## Hook und Brücke in jedem Post
+Jeder Post beginnt mit einem Hook (erste 3 bis 5 Sekunden, **vor** "Hi, I am …" und vor der Wäscheleine) und endet mit einer Brücke, die eine Frage offen lässt.
+
+Regeln:
+1. **Konkret und überraschend**, nie allgemein ("Heute zeigen wir …" ist kein Hook). Muster: eine Zahl, ein Widerspruch, eine Frage, ein sichtbarer Moment.
+2. **Bild und Wort zusammen:** LinkedIn spielt Videos zuerst stumm ab, und die Serie hat keine Untertitel. Das erste Bild muss deshalb ohne Ton eine Spannung zeigen (großes Wort, Zahl oder eine Bewegung). Entschieden am 14.11.2026: Im Hook ist eine kurze Texteinblendung erlaubt (ein Satz, groß).
+3. **Eingelöst im Post:** Die Antwort auf den Hook kommt im "einen Moment" (Szene 2).
+4. **Zahlen nur aus den Beispieldaten** und im Post als "sample data" gekennzeichnet.
+5. **Brücke:** Der letzte Satz stellt die Frage des nächsten Posts, nicht nur "next post". Im Finale löst sie den Diamanten auf.
+
+| Nr. | Hook (gesprochen, erste Sekunden) | Erstes Bild | Brücke (letzter Satz) |
 |---|---|---|---|
-| 6 Onboarding | ein Willkommens-Shirt und ein Paar Hausschuhe | trägt einen Karton mit dem ersten Arbeitstag, Namensschild am Fell | warmer Indie-Pop, junge weibliche Stimme |
-| 9 Vertrag zu Cash und Umsatz | sieben Handtücher in einer Reihe (sieben Systeme) | schiebt eine Kiste über ein Förderband von links nach rechts, am Ende wiegt er eine Münze auf einer Waage | Marschrhythmus mit Jazz-Schluss; sachlicher männlicher Sprecher |
-| 13 Customer Journey | fünf Wimpel (Today, Understand, Decide, Act, Follow up) | läuft die Wimpel entlang wie eine Schnitzeljagd | Funk, energischer Sprecher |
-| 14 AI Governance | vier Hemden mit Stempeln (Build, Register, Run, Prove) | stempelt ein Dokument mit Siegel | Orchester-Elektro, ruhige, formelle Sprecherin |
-| 17 Prozessinterview | ein Headset und eine Reihe von Sprechblasen | hält ein kleines Mikrofon | ruhige, zuhörende Interviewerin; Musik offen |
+| 1 | "Imagine your whole workday in one window." | Das Fenster öffnet sich: Rail, Liste, Chat bauen sich nacheinander auf. | "But what does the assistant actually know about you?" |
+| 2 | "What does your assistant know about you? Now you can see it." | Das Kontext-Symbol klappt auf, Zeile für Zeile erscheint, was mitgeht. | "Now: a page of your own, without a ticket." |
+| 3 | "Your own dashboard. No ticket. No waiting." | Ein Satz wird getippt, die Seite baut sich auf. | "And what if everyone could reuse what works?" |
+| 4 | "One colleague solved it. Now everyone can. Safely." | Ein Gespräch wird zur Skill-Karte, vier Stempel fallen nacheinander. | "But do all of them mean the same thing?" |
+| 5 | "Ask three people what a renewal is. Get four answers." | Ein Wort, vier verschiedene Karten; sie verschmelzen zu einer. | "Next: from the first posting to the first day." |
+| 6 | "Fifty applications. No names. Decide on skills." | Kandidatenkarten mit geschwärzten Namen; eine Karte hebt sich ab. | "The contract is signed. But when does the revenue count?" |
+| 7 | "You sold it in October. When does the revenue count?" | Eine Rechnungslinie und eine Umsatzlinie laufen auseinander. | "And are you ready to close the books?" |
+| 8 | "Three days before close. Are you ready? Look." | Eine Abschlussreife-Anzeige läuft hoch, rote Punkte blinken. | "Which invoice will be paid late, and by whom?" |
+| 9 | "This invoice will probably be paid late. And here is why." | Die oberste Rechnung, Risiko in Prozent, die Gründe wandern in Zeilen heran. | "And that customer? There is a whole story behind it." |
+| 10 | "One customer. Scattered everywhere. Until now." | Fünf Fenster fliegen zu einem Graphen zusammen. | "Now Monday morning. Which renewals need you first?" |
+| 11 | "Monday morning. Five renewals are red. Where do you start?" | Die Heute-Ansicht mit drei Zahlen; eine Karte pulsiert. | "So how does a wish become something we can build?" |
+| 12 | "Describe your process out loud. Watch it become a plan." | Eine Waveform wird zu Prozessschritten. | "And when it runs, can you prove what it did?" |
+| 13 | "Your agents ran all night. Can you prove what they did?" | Eine Spur von Läufen, ein Siegel wird gesetzt. | "One more: what happens when IT operations run themselves?" |
+| 14 | "A certificate expires at midnight. Who acts?" | Ein Zertifikat zählt Stunden herunter, die Konsole mit vielen Monitoren. | "And where did the diamond go? Which story do you want next?" (Auflösung und Aufruf zur Staffel zwei) |
 
-Sprecherrollen und Namen der neuen Posts sind im Produktionschat gegen die vorhandenen Stimmen (Ben, Muriel, Alicia, Camille, Walter, Grace, Isla, Theo, Lily, Marcus, Nova, Leo) zu prüfen, damit sich keine doppelt.
+Die Zahlen in den Hooks (fünf rote Verlängerungen, "fifty" Bewerbungen, die Risikoprozente) sind Platzhalter aus den Beispieldaten und werden beim Bau gegen die Daten im Space geprüft.
+
+### Gags der neuen Posts (abgenommen am 14.11.2026)
+| Post | Wäscheleine | Casimir | Musik / Stimme |
+|---|---|---|---|
+| 5 Ontology Manager | vier Hemden, auf jedem ein anderes Wort für dasselbe (Customer, Client, Account, Buyer) | kommt mit einem Wörterbuch, das größer ist als er, und steckt allen vier dasselbe Schild an; die Hemden färben sich im selben Lila, der Diamant leuchtet kurz auf | Cembalo-Barock, ruhig und gelehrt; ruhiger, präziser Dozent |
+| 7 Revenue Recognition | – | trägt eine grüne Augenblende, tippt an einem Rechenschieber und hakt bei jedem der fünf Schritte einen Eintrag ab | Swing-Big-Band, gedämpft; trocken humorvolle Stimme |
+| 11 Renewals | Papierflieger (die Verlängerungen) segeln herein | sortiert sie mit einem Stempel in drei Körbe ("today", "this week", "later"); eine kleine Roboter-Maus fängt die Routinefälle auf; die dringenden Fälle pulsieren in Lila (kein Rot); am Ende ist der Korb "today" fast leer | Motown-Soul, fröhlich; energische, freundliche Stimme |
+| 13 AI Governance | Nacht; kleine Papierfiguren (die Agenten) huschen an der Leine vorbei | macht mit Taschenlampe und Schirmmütze die Runde, beleuchtet Zettel mit Spuren (Wer, Was, Wann) und setzt am Ende ein Siegel auf einen Bericht | Film-Noir mit Saxophon; tiefe, ruhige Stimme |
+
+## Wäsche, Kater und Musik: Zuordnung zu den neuen Nummern (Vorschlag, offen)
+| Neu | Übernimmt | Offen |
+|---|---|---|
+| 1 | Tour: ein Shirt (Ben) | – |
+| 2 | Chatfenster: zwei weiße Shirts, Wollknäuel; Profil-Post: Bühne, Scheinwerfer, Bongos | Wäsche und Gag wählen (Vorschlag: Bühne, weil dort der Kater schon den Scheinwerfer hat und die Einstellungen ein Bühnenthema sind) |
+| 3 | Spaces: Wind, Handtücher, Kappe, ABBA-Stil | – |
+| 4 | Skill management: tanzender Kater mit Zylinder; Scheduler: Wecker | Vorschlag: Zylinder-Kater, dazu ein Wecker an der Leine |
+| 5 | siehe Gags der neuen Posts | – |
+| 6 | Recruiting: weiße Socken mit blauem Logo; Onboarding: Willkommens-Shirt, Hausschuhe, Karton | Vorschlag: Recruiting-Gag und der Karton am Schluss |
+| 7 | siehe Gags der neuen Posts | – |
+| 8 | Pre-Close: zwei marineblaue "AI"-Shirts, Fahrrad, Beach-Boys-Stil | – |
+| 9 | TabPFN: sechs Socken, Regen, Schirm, "Singin' in the Rain"-Stil | – |
+| 10 | Sales und Renewals: Gummistiefel, Handtücher, roter Schal, Hip-Hop; Journey: fünf Wimpel | Vorschlag: Gummistiefel-Gag bleibt, Wimpel dazu |
+| 11 | siehe Gags der neuen Posts | – |
+| 12 | Anforderungen: Heißluftballon, südafrikanisch; Interview: Headset, Mikrofon | Vorschlag: Ballon bleibt, Mikrofon dazu |
+| 13 | siehe Gags der neuen Posts; das n8n-Dashboard als Szene, Casimir am Schreibtisch mit Laptop und Brille, nur als kurzer Cameo | – |
+| 14 | Infra: Rücken zum Betrachter an der Konsole, Kraftwerk-Stil | – |
+
+Die Sprecherrollen der neuen Posts sind im Produktionschat gegen die vorhandenen Stimmen (Ben, Muriel, Alicia, Camille, Walter, Grace, Isla, Theo, Lily, Marcus, Nova, Leo) zu prüfen.
 
 ## Intro/Outro und Bildwelt (für alle Videos)
 - 4:5, Englisch, Voice-over, Musik, keine Untertitel. Rahmung: mögliche Designvorschläge im Rahmen eines MVP, kein SAP-Produkt, Beispieldaten.
@@ -69,8 +119,9 @@ Sprecherrollen und Namen der neuen Posts sind im Produktionschat gegen die vorha
 - Trademark-Footer ("Design study · Personal view · Sample data · SAP and Joule are trademarks of SAP SE") am Anfang und am Ende.
 - Accenture-Violett, kein Rot (Ausnahme: der rote Schal in Post 10).
 - Der Kater ist in groben Pixeln gezeichnet, eine eigene Figur ohne Anlehnung an bestehende Maskottchen. Jede Folge hat ihre eigene Wäsche und ihren eigenen Kater-Gag.
+- **Casimir:** Der Kater heißt Casimir und kommt in **jedem** Video vor: Serien-Trailer, Post 0, Pre-Trailer und Post 1 bis 14. Im Intro und im Outro ist er immer zu sehen; dazu hat jeder Post seinen eigenen Auftritt (Gag-Tabellen). Wo noch kein Gag festgelegt ist, gilt als Mindestauftritt: Casimir sitzt an der Wäscheleine und schaut dem Diamanten nach, im Outro folgt er ihm bis zum Mausloch. Im Trailer läuft er durch die Teaser-Montage (kurzer Auftritt in jedem dritten Teaser) und sitzt am Ende vor dem Mausloch. In Post 0 (nur Grafiken) erscheint er klein im Intro und im Outro. Der Name fällt höchstens einmal je Post im Sprechertext (z. B. im Hook oder in der Brücke), im Trailer am Ende ("Casimir knows where the diamond went.").
 
-## Wäsche, Kater und Musik je Folge (bestehende Posts, Nummern wie bisher, "bisher" in der Tabelle oben)
+## Wäsche, Kater und Musik der bestehenden Posts (alte Nummern, Zuordnung zu den neuen Nummern oben)
 
 | Nr. | Wäscheleine | Kater | Musik |
 |---|---|---|---|
@@ -86,36 +137,40 @@ Sprecherrollen und Namen der neuen Posts sind im Produktionschat gegen die vorha
 | 10 | zwei Gummistiefel, zwei weiße Handtücher mit blauem Logo | fährt Fahrrad mit rotem Schal im Wind | deutscher Hip-Hop |
 | 11 | – | steht auf einer Bühne, drei Scheinwerfer gehen nacheinander an und werfen Schatten, am Ende läuft eine Maus über die Bühne | Bongos und Ölfässer, leise beginnend, zum Ende lauter |
 | 12 | – | sitzt im Heißluftballon, am Boden verankert, vor der Wäscheleine rechts vorne, schwebt nach links oben | südafrikanisch |
-| 18 (Infra) | – | sitzt mit dem Rücken zum Betrachter an einer großen Konsole mit vielen Monitoren | Kraftwerk-Stil |
+| 14 (alt, Infra) | – | sitzt mit dem Rücken zum Betrachter an einer großen Konsole mit vielen Monitoren | Kraftwerk-Stil |
 
 Erzähler: Post 1 Ben (männlich), Post 2 Muriel (weiblich, energisch, großer Tonumfang), Post 3 weibliche britische Nachrichtensprecherin, ca. 35. Striche (–) bedeuten: in dieser Planung nicht festgelegt, siehe Voiceover-Datei und Video.
 
-## Auftrag: Serien-Trailer mit 18 Folgen (neu)
-- 4:5, ca. 80 s, keine Untertitel. Intro und Outro wie in den Posts (Footer, Diamant, Mausloch, Accenture-Seite).
+## Auftrag: Serien-Trailer mit 14 Folgen (neu)
+- 4:5, ca. 70 s, keine Untertitel. Intro und Outro wie in den Posts (Footer, Diamant, Mausloch, Accenture-Seite).
 - Stimme: weiblich, mittleren Alters, energiegeladen, empathisch, warm, leicht sinnlich, sehr klar gesprochen, leichter amerikanischer Akzent, weniger synthetisch.
 - Musik: eigener Track, moderner melodischer Afro-House mit Mainstream-Dance-Appeal (Black Coffee, David Guetta), 122 bis 124 BPM; Filter-Intro, Riser, Drop bei der Montage, Break vor der Hook-Frage. Kein bekannter Titel, keine geschützte Melodie.
-- Hook: "Eighteen short stories. One purple diamond." Die Frage nach dem Diamanten wird erst im letzten Post beantwortet.
-- Aufbau: sieben Kapitel (A bis G) plus Finale, je Folge ca. 2,5 s mit unscharfem Screen-Ausschnitt und großer Nummer; Beat-Wechsel zwischen den Kapiteln.
+- Hook: "Fourteen short stories. One purple diamond." Die Frage nach dem Diamanten wird erst im letzten Post beantwortet.
+- Je Teaser ca. 3 s mit unscharfem Screen-Ausschnitt und großer Nummer; Teaser sprechen die Frage des Managers an, nicht den Namen des Space.
 
 | Zeit | Sprechertext |
 |---|---|
 | 0:00–0:08 | "What if working with Joule felt completely different?" |
-| 0:08–0:15 | "Eighteen short stories. One purple diamond. And a few things you won't see coming." |
-| A | 1 "First: a tour of what could be." 2 "Then a chat that listens. Literally." 3 "Set the rules, pick your working profile." 4 "Spaces that turn a request into a live workspace." |
-| B | 5 "Recruiting, the American way." 6 "And the day after the signature? Onboarding, planned to the hour." |
-| C | 7 "Work that starts itself, right on time." 8 "Skills you can actually trust." |
-| D | 9 "From signed contract to cash, and to revenue." 10 "Close the books with data from Databricks." 11 "Know who pays late, before they do." |
-| E | 12 "Sales and renewals, through an account manager's eyes." 13 "One customer, one journey, three spaces." |
-| F | 14 "Build it. Register it. Run it. Prove it." 15 "Know how every workflow performs." |
-| G | 16 "From Jira ticket to working agent." 17 "Describe your process out loud, and watch a workflow appear." |
-| Finale | 18 "And IT operations? They talk back." |
-| 1:08–1:15 | "Which one are you most curious about? Follow along. Episode one is next!" |
-| 1:15–1:25 | Outro: "And where did the diamond go? You'll see." |
+| 0:08–0:15 | "Fourteen short stories. One purple diamond. And a few things you won't see coming." |
+| 1 | "First: a tour of what could be." |
+| 2 | "A chat that shows what it knows. And you set the rules." |
+| 3 | "Your own page, in minutes. Inside the rules." |
+| 4 | "Turn good practice into skills everyone can trust." |
+| 5 | "Do your people and your agents mean the same thing?" |
+| 6 | "From the first posting to the first day." |
+| 7 | "When does revenue count? See it, step by step." |
+| 8 | "Are you ready to close? Know days before." |
+| 9 | "Know who pays late, before they do." |
+| 10 | "One customer. One story." |
+| 11 | "Hundreds of renewals. Nothing slips." |
+| 12 | "From a spoken wish to a build-ready spec." |
+| 13 | "Prove what your agents did." |
+| 14 | "And IT operations? They talk back." |
+| 0:57–1:03 | "Which one are you most curious about? Follow along. Episode one is next!" |
+| 1:03–1:12 | Outro: "And where did the diamond go? You'll see." |
 
-Die Zeiten sind Richtwerte. Alternative bei zu langem Schnitt: nur die sieben Kapitel nennen und die Folgen als Bildflimmern zeigen.
-
-## Auftrag: Post 17 (bisher 13), Prozessinterview und n8n-Workflow
-Gleiches Intro und Outro wie die anderen Posts. Der Post steht jetzt im Kapitel "Bauen mit Absicht" direkt hinter der Integration von Jira, Notion, Slack und Teams (Post 16). Wäsche, Kater-Gag, Erzähler und Musik sind noch festzulegen (Vorschläge: eine eigene Wäsche, ein eigener Gag und eine eigene Stimme, damit sich Post 13 von den Nachbarn abhebt).
+## Auftrag: Prozessinterview und n8n-Workflow (Teil von Post 12, bisher Post 13/17)
+Gleiches Intro und Outro wie die anderen Posts. Das Interview ist jetzt die erste Szene von Post 12 (Vom Wunsch zur Spezifikation) und kein eigener Post mehr; es muss in rund 40 Sekunden erzählt werden. Wäsche, Kater-Gag, Erzähler und Musik sind noch festzulegen (Vorschläge: eine eigene Wäsche, ein eigener Gag und eine eigene Stimme, damit sich Post 13 von den Nachbarn abhebt).
 
 Inhalt (aus der App, Stand `CLAUDE.md`):
 1. **Zwei Wege am Schritt Intent im Workflow-Assistenten:** "Describe it yourself" oder "Interview the person who does the work". Das Interview ist nur für Workflows.

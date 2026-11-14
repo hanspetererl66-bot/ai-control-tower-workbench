@@ -9,6 +9,7 @@ import { DEFAULT_HARNESS_STATE, sanitizeHarnessState, type HarnessState } from '
 import { parseSpaceScale } from './space-scale.ts';
 import { DEFAULT_LAYOUT, isLayout, type LayoutId } from './layouts.ts';
 import { DEFAULT_SKIN, isSkin, type SkinId } from './skins.ts';
+import { DEFAULT_CAT, sanitizeCat, type CatPrefs } from './cat-peek.ts';
 
 export const PREFERENCES_STORAGE_KEY = 'werkbank.preferences.v1';
 export const PREFERENCES_VERSION = 1;
@@ -33,6 +34,20 @@ export const ACCENT_PRESETS = [
   { id: 'orange', name: 'Orange', hex: '#D9480F' },
   { id: 'pink', name: 'Pink', hex: '#C2185B' },
 ] as const;
+
+/** Ready-made tints for the app background: each is mixed into the skin's own background, so text stays readable in light and dark. */
+export const BACKGROUND_TINTS = [
+  { id: 'mist', name: 'Mist', hex: '#5B7FB5' },
+  { id: 'sage', name: 'Sage', hex: '#5E9275' },
+  { id: 'sand', name: 'Sand', hex: '#B59B6A' },
+  { id: 'rose', name: 'Rose', hex: '#B0707A' },
+  { id: 'lilac', name: 'Lilac', hex: '#8A74B8' },
+  { id: 'teal', name: 'Teal', hex: '#4E9A9C' },
+  { id: 'slate', name: 'Slate', hex: '#6C7585' },
+  { id: 'peach', name: 'Peach', hex: '#C48A66' },
+] as const;
+export const BACKGROUND_PATTERNS = ['none', 'dots', 'grid', 'lines', 'diagonal'] as const;
+export type BackgroundPattern = (typeof BACKGROUND_PATTERNS)[number];
 
 export const FONT_STACKS: Record<(typeof FONTS)[number], string> = {
   default: '',
@@ -72,9 +87,9 @@ export const DEFAULT_CHAT_TOOLS: ChatTools = { readAloud: false, privacyBar: fal
  * The tips of the Ontology Manager (speech bubbles that explain each part). `enabled` is the on/off switch; the colours are empty
  * (= follow the skin, light or dark) or one #RRGGBB value each: text, bubble (its fill) and highlight (the tint and frame around the part a tip points at).
  */
-export const TIP_SIZES = ['small', 'normal', 'large', 'xlarge'] as const;
+export const TIP_SIZES = ['tiny', 'small', 'normal', 'large', 'xlarge'] as const;
 export type TipSize = (typeof TIP_SIZES)[number];
-export const TIP_SIZE_PX: Record<TipSize, number> = { small: 12, normal: 13.5, large: 16, xlarge: 18.5 };
+export const TIP_SIZE_PX: Record<TipSize, number> = { tiny: 9, small: 12, normal: 13.5, large: 16, xlarge: 18.5 };
 export type TipsPrefs = { enabled: boolean; size: TipSize; textColor: string; bubbleColor: string; highlightColor: string };
 export const DEFAULT_TIPS: TipsPrefs = { enabled: true, size: 'normal', textColor: '', bubbleColor: '', highlightColor: '' };
 export type Starter = { label: string; prompt: string };
@@ -83,6 +98,13 @@ export type StorageLocation = { id: string; name: string; purpose: (typeof PURPO
 /** How the Spaces list is drawn: cards with a description, or a tree with one line per Space. */
 export const SPACES_VIEWS = ['cards', 'tree'] as const;
 export type SpacesView = (typeof SPACES_VIEWS)[number];
+
+/** Layout of the Spaces overview page (the domains, and the Spaces inside a domain): tiles in a grid, one row per entry, or side-by-side columns. */
+export const OVERVIEW_LAYOUTS = ['grid', 'list', 'board'] as const;
+export type OverviewLayout = (typeof OVERVIEW_LAYOUTS)[number];
+/** Design of a single tile on that page: the soft classic card, a flat outline, or a bold card with an accent band. */
+export const TILE_STYLES = ['classic', 'outline', 'bold'] as const;
+export type TileStyle = (typeof TILE_STYLES)[number];
 
 /** Which side of the window the Spaces list sits on. Left and right keep the list as a column; top and bottom turn it into a bar (domain tabs and chips). */
 export const SPACES_DOCKS = ['left', 'right', 'top', 'bottom'] as const;
@@ -97,9 +119,16 @@ export type ProfileSettings = {
   layout: LayoutId;
   /** The Spaces list as cards or as a tree. */
   spacesView: SpacesView;
+  /** Layout of the Spaces overview page and design of its tiles (see OVERVIEW_LAYOUTS, TILE_STYLES). */
+  overviewLayout: OverviewLayout;
+  tileStyle: TileStyle;
   /** The side of the window the Spaces list sits on. */
   spacesDock: SpacesDock;
   accent: string;
+  /** Tint of the app background: '' (the skin's own) or one #RRGGBB hue that is mixed into it. */
+  bgTint: string;
+  /** A fine pattern over the app background. */
+  bgPattern: BackgroundPattern;
   appScale: number;
   /** One of ICON_SCALES. */
   iconScale: number;
@@ -128,6 +157,8 @@ export type Preferences = ProfileSettings & {
   version: number;
   /** Archived Spaces: hidden from the list and kept on this computer until restored or deleted. Not part of a profile. */
   archivedSpaces: string[];
+  /** Casimir, the cat that peeks over a window edge: on/off and where it sits. Personal, not part of a profile. */
+  cat: CatPrefs;
   /** Terms of the ontology marked in the Spaces (act B): the Spaces and the domains the person switched on. Default off; not part of a profile. */
   termSpaces: string[];
   termDomains: string[];
@@ -149,8 +180,12 @@ export const DEFAULT_PREFERENCES: Preferences = {
   skin: DEFAULT_SKIN,
   layout: DEFAULT_LAYOUT,
   spacesView: 'cards',
+  overviewLayout: 'grid',
+  tileStyle: 'classic',
   spacesDock: 'left',
   accent: '',
+  bgTint: '',
+  bgPattern: 'none',
   appScale: 1,
   iconScale: 1,
   spaceScale: 1.15,
@@ -161,6 +196,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   startView: 'chat',
   pinnedSpaces: [],
   archivedSpaces: [],
+  cat: { ...DEFAULT_CAT },
   termSpaces: [],
   termDomains: [],
   domains: [],
@@ -262,8 +298,12 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
   if (isSkin(v.skin)) out.skin = v.skin;
   if (isLayout(v.layout)) out.layout = v.layout;
   if (SPACES_VIEWS.includes(v.spacesView as never)) out.spacesView = v.spacesView as SpacesView;
+  if (OVERVIEW_LAYOUTS.includes(v.overviewLayout as never)) out.overviewLayout = v.overviewLayout as OverviewLayout;
+  if (TILE_STYLES.includes(v.tileStyle as never)) out.tileStyle = v.tileStyle as TileStyle;
   if (SPACES_DOCKS.includes(v.spacesDock as never)) out.spacesDock = v.spacesDock as SpacesDock;
   if (v.accent === '' || (typeof v.accent === 'string' && HEX.test(v.accent))) out.accent = String(v.accent).toUpperCase();
+  if (v.bgTint === '' || (typeof v.bgTint === 'string' && HEX.test(v.bgTint))) out.bgTint = String(v.bgTint).toUpperCase();
+  if (BACKGROUND_PATTERNS.includes(v.bgPattern as never)) out.bgPattern = v.bgPattern as BackgroundPattern;
   if (APP_SCALES.includes(v.appScale as never)) out.appScale = v.appScale as number;
   if (ICON_SCALES.includes(v.iconScale as never)) out.iconScale = v.iconScale as number;
   if (typeof v.spaceScale === 'number' && Number.isFinite(v.spaceScale) && v.spaceScale >= 0.5 && v.spaceScale <= 1.5) out.spaceScale = parseSpaceScale(v.spaceScale);
@@ -331,6 +371,7 @@ export function sanitizePreferences(value: unknown): Preferences {
     ...base,
     version: PREFERENCES_VERSION,
     archivedSpaces: Array.isArray(v.archivedSpaces) ? list(v.archivedSpaces, (s) => SLUG.test(s), 200) : [],
+    cat: sanitizeCat(v.cat),
     termSpaces: Array.isArray(v.termSpaces) ? list(v.termSpaces, (s) => SLUG.test(s), 200) : [],
     termDomains: Array.isArray(v.termDomains) ? list(v.termDomains, (s) => s.length > 0 && s.length <= 40, 50) : [],
     starters,
@@ -345,8 +386,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, skin, layout, spacesView, spacesDock, accent, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat, tips } = prefs;
-  return { appearance, skin, layout, spacesView, spacesDock, accent, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat }, tips: { ...tips } };
+  const { appearance, skin, layout, spacesView, overviewLayout, tileStyle, spacesDock, accent, bgTint, bgPattern, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat, tips } = prefs;
+  return { appearance, skin, layout, spacesView, overviewLayout, tileStyle, spacesDock, accent, bgTint, bgPattern, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat }, tips: { ...tips } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {
@@ -645,7 +686,7 @@ export function splitArchived<S extends { slug: string }>(spaces: S[], prefs: Pi
 
 // ---------- back to the original ----------
 
-const LOOK_KEYS = ['appearance', 'skin', 'layout', 'accent', 'appScale', 'iconScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
+const LOOK_KEYS = ['appearance', 'skin', 'layout', 'overviewLayout', 'tileStyle', 'accent', 'bgTint', 'bgPattern', 'appScale', 'iconScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
 
 /** Only the look (colour, sizes, font, density, contrast, motion, light/dark) goes back to the original. */
 export function resetLook<T extends Preferences>(prefs: T): T {

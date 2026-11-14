@@ -485,7 +485,7 @@ export default function Composer({
           ))}
           {matches.map((s) => (
             <button key={s.name} className="picker-item" onClick={() => pickSkill(s.name)}>
-              <span className="picker-name"><SkillIcon name={s.name} />/{s.name}</span>
+              <span className="picker-name skill-name"><SkillIcon name={s.name} />/{s.name}</span>
               <span className="picker-desc">{s.description}</span>
             </button>
           ))}
@@ -559,7 +559,7 @@ export default function Composer({
         <div className="chip-wrap">
           <button
             className={`chip chip-icon ${contextOpen ? 'chip-on' : ''}`}
-            title="Add context: files, a Jira ticket, a Notion page or a Slack thread"
+            data-tip="Add context: files, a Jira ticket, a Notion page or a Slack thread"
             aria-label="Add context"
             aria-expanded={contextOpen}
             onClick={() => {
@@ -652,7 +652,7 @@ export default function Composer({
         {starters && (
           <button
             className={`chip chip-icon tabs-toggle ${buttonsShown ? 'tabs-toggle-shown' : 'tabs-toggle-hidden'}`}
-            title={buttonsShown ? 'Hide the buttons under the input' : 'Show the buttons under the input'}
+            data-tip={buttonsShown ? 'Hide the buttons under the input' : 'Show the buttons under the input'}
             aria-label={buttonsShown ? 'Hide buttons' : 'Show buttons'}
             aria-pressed={buttonsShown}
             onClick={toggleButtons}
@@ -663,7 +663,7 @@ export default function Composer({
 
         <button
           className="chip chip-icon"
-          title={agent ? 'Pick a skill (or type / in the input)' : 'Joule is not connected yet, so skills cannot be picked (is a model key set in .env?)'}
+          data-tip={agent ? 'Pick a skill (or type / in the input)' : 'Joule is not connected yet, so skills cannot be picked (is a model key set in .env?)'}
           aria-label="Pick a skill"
           aria-pressed={!!slash}
           onClick={() => {
@@ -681,7 +681,7 @@ export default function Composer({
         {onSaveStarter && (
           <button
             className="chip chip-icon"
-            title="Keep this text as a favourite prompt"
+            data-tip="Keep this text as a favourite prompt"
             aria-label="Save as favourite prompt"
             onClick={() => { const t = text.trim(); if (t && !t.startsWith('/')) onSaveStarter(t); }}
             disabled={!text.trim() || text.trim().startsWith('/')}
@@ -693,7 +693,7 @@ export default function Composer({
         {onNewChat && (
           <button
             className="chip chip-icon"
-            title="New conversation"
+            data-tip="New conversation"
             aria-label="New conversation"
             onClick={onNewChat}
             disabled={busy}
@@ -705,7 +705,7 @@ export default function Composer({
         {onEmail && (
           <button
             className="chip chip-icon"
-            title="E-mail this conversation (opens a new message with the conversation attached)"
+            data-tip="E-mail this conversation (opens a new message with the conversation attached)"
             aria-label="E-mail this conversation"
             onClick={onEmail}
             disabled={!canEmail || busy}
@@ -717,7 +717,7 @@ export default function Composer({
         <div className="chip-wrap">
           <button
             className={`chip chip-icon integrations-trigger ${integrationsOpen ? 'chip-on' : ''}`}
-            title={`Integrations · Web Search ${webSearch ? 'on' : 'off'}`}
+            data-tip={`Integrations · Web Search ${webSearch ? 'on' : 'off'}`}
             aria-label="Integrations"
             aria-expanded={integrationsOpen}
             onClick={() => {

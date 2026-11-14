@@ -6,7 +6,7 @@
 import { createInterface } from 'node:readline';
 import { NotionError, TOOL_DEFINITIONS, createNotionHandlers } from './notion.mjs';
 
-const SERVER_INFO = { name: 'notion', version: '0.1.0' };
+const SERVER_INFO = { name: 'notion', version: '0.2.0' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const send = (message) => process.stdout.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
 const reply = (id, result) => send({ id, result });
@@ -22,7 +22,7 @@ async function handle({ id, method, params }) {
         protocolVersion: SUPPORTED_PROTOCOLS.includes(params?.protocolVersion) ? params.protocolVersion : SUPPORTED_PROTOCOLS[0],
         capabilities: { tools: {} },
         serverInfo: SERVER_INFO,
-        instructions: 'Notion (read only): search the pages and databases shared with the integration, read a page or the rows of a database. Anything the integration cannot see must first be shared with it in Notion (page menu, Connections). Start with notion_check_connection if something fails.',
+        instructions: 'Notion: search the pages and databases shared with the integration, read a page or the rows of a database (with filter), create pages and change a page (properties, text added at the end). Writing changes Notion, so ask the person first; nothing is deleted or archived. Anything the integration cannot see must first be shared with it in Notion (page menu, Connections). Start with notion_check_connection if something fails.',
       });
       return;
     case 'ping': if (isRequest) reply(id, {}); return;

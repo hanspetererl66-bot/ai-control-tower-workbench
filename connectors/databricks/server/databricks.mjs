@@ -1,5 +1,5 @@
 /**
- * Databricks tools for the Databricks connector: Genie questions and read-only SQL over the public REST APIs.
+ * Databricks tools for the Databricks connector: Genie questions and read-only SQL over the public REST APIs, plus one narrow write (databricks_append_result: one row into a result table).
  * No dependencies. fetch and the environment are injected so tests never touch a network.
  * The token is sent only to the configured workspace host and never appears in results or errors.
  */
@@ -81,10 +81,10 @@ export function createDatabricksHandlers({ env = process.env, fetchImpl = global
   };
   const rowsOf = (args) => Math.min(MAX_ROWS, Math.max(1, Number.isInteger(args.row_limit) ? args.row_limit : DEFAULT_ROWS));
 
-  async function runSql(statement, warehouse, limit) {
+  async function runSql(statement, warehouse, limit, parameters) {
     const wh = String(warehouse ?? env.DATABRICKS_WAREHOUSE_ID ?? '').trim();
     if (!/^[A-Za-z0-9]{6,40}$/.test(wh)) throw new DatabricksError('Give a SQL warehouse id (warehouse_id) or set it in the connector settings.');
-    let res = await api('POST', '/api/2.0/sql/statements', { warehouse_id: wh, statement, wait_timeout: '30s', on_wait_timeout: 'CONTINUE', row_limit: limit });
+    let res = await api('POST', '/api/2.0/sql/statements', { warehouse_id: wh, statement, wait_timeout: '30s', on_wait_timeout: 'CONTINUE', row_limit: limit, ...(parameters ? { parameters } : {}) });
     const started = now();
     while (['PENDING', 'RUNNING'].includes(res.status?.state)) {
       if (now() - started > MAX_WAIT_MS) throw new DatabricksError('The query is still running after two minutes; stopped waiting.');
@@ -135,6 +135,21 @@ export function createDatabricksHandlers({ env = process.env, fetchImpl = global
       const statement = assertReadOnly(args.statement);
       return runSql(statement, args.warehouse_id, rowsOf(args));
     },
+    /** The one write this connector has: one row per scheduler run into a result table. Fixed statement, values are bound
+     * parameters, so no free SQL can get through here. The table must exist (columns in docs/scheduler-output.md). */
+    async databricks_append_result(args) {
+      const table = String(args.table ?? '').trim();
+      if (!/^[A-Za-z0-9_]+\.[A-Za-z0-9_]+\.[A-Za-z0-9_]+$/.test(table)) throw new DatabricksError('table must look like catalog.schema.table.');
+      const text = (v, max) => String(v ?? '').slice(0, max);
+      const runAt = new Date(String(args.run_at ?? ''));
+      if (Number.isNaN(runAt.getTime())) throw new DatabricksError('run_at must be a date and time.');
+      const result = text(args.result, 20_000);
+      if (!result.trim()) throw new DatabricksError('result is empty.');
+      const p = (name, value, type = 'STRING') => ({ name, value, type });
+      const out = await runSql(`INSERT INTO ${table} (job_id, job_name, run_at, result) VALUES (:job_id, :job_name, :run_at, :result)`, args.warehouse_id, 1,
+        [p('job_id', text(args.job_id, 80)), p('job_name', text(args.job_name, 120)), p('run_at', runAt.toISOString(), 'TIMESTAMP'), p('result', result)]);
+      return { ok: true, table, statement_id: out.statement_id };
+    },
     async databricks_describe_table(args) {
       const table = String(args.table ?? '').trim();
       if (!/^[A-Za-z0-9_]+(\.[A-Za-z0-9_]+){0,2}$/.test(table)) throw new DatabricksError('table must look like catalog.schema.table.');
@@ -149,4 +164,5 @@ export const TOOL_DEFINITIONS = [
   { name: 'databricks_ask_genie', description: 'Ask a business question in natural language to a Databricks Genie space. Returns the answer text, the SQL Genie used and a result table.', inputSchema: { type: 'object', properties: { question: { type: 'string', description: 'The question, in plain language.' }, space_id: { type: 'string', description: 'Genie space id. Optional when a default is set in the connector settings.' }, row_limit: { type: 'integer', description: 'Rows to return, 1 to 200 (default 50).' } }, required: ['question'], additionalProperties: false } },
   { name: 'databricks_run_sql', description: 'Run ONE read-only SQL statement (SELECT, WITH, SHOW, DESCRIBE, EXPLAIN) on a SQL warehouse. Writes are refused.', inputSchema: { type: 'object', properties: { statement: { type: 'string' }, warehouse_id: { type: 'string', description: 'Optional when a default is set in the connector settings.' }, row_limit: { type: 'integer', description: 'Rows to return, 1 to 200 (default 50).' } }, required: ['statement'], additionalProperties: false } },
   { name: 'databricks_describe_table', description: 'Show the columns of a table (catalog.schema.table).', inputSchema: { type: 'object', properties: { table: { type: 'string' }, warehouse_id: { type: 'string' } }, required: ['table'], additionalProperties: false } },
+  { name: 'databricks_append_result', description: 'Append ONE row (job_id, job_name, run_at, result) to a result table (catalog.schema.table) that already exists. Used by scheduler jobs; changes Databricks. Ask the person before using it.', inputSchema: { type: 'object', properties: { table: { type: 'string' }, job_id: { type: 'string' }, job_name: { type: 'string' }, run_at: { type: 'string', description: 'ISO date and time of the run.' }, result: { type: 'string', description: 'The answer text, up to 20000 characters.' }, warehouse_id: { type: 'string' } }, required: ['table', 'job_id', 'job_name', 'run_at', 'result'], additionalProperties: false } },
 ];
