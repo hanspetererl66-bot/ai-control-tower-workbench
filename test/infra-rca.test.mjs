@@ -137,3 +137,40 @@ test('in the page: run the analysis, read the next best action, accept the root 
   assert.match(text(), /Service request \+ customer call/);
   dom.window.close();
 });
+
+test('an incident can be dragged from the list into the empty field on the right, which picks it and starts the analysis; a click still works', async () => {
+  const dom = new JSDOM(page, { runScripts: 'dangerously', pretendToBeVisual: true });
+  const w = dom.window, d = w.document;
+  await new Promise((r) => setTimeout(r, 100));
+  try {
+    const cards = [...d.querySelectorAll('button.inc')];
+    assert.ok(cards.length >= 2);
+    assert.ok(cards.every((c) => c.getAttribute('draggable') === 'true'));
+    assert.ok(d.querySelector('.dropzone[data-drop]'), 'the right side is the drop zone');
+    assert.match(d.querySelector('.dropzone .empty').textContent, /Drag an incident/);
+    const id = cards[1].dataset.inc;
+    const store = {};
+    const dt = { effectAllowed: '', dropEffect: '', setData: (k, v) => { store[k] = v; }, getData: (k) => store[k] };
+    const fire = (el, type, rel) => { const e = new w.Event(type, { bubbles: true, cancelable: true }); e.dataTransfer = dt; if (rel) e.relatedTarget = rel; el.dispatchEvent(e); return e; };
+    fire(cards[1], 'dragstart');
+    assert.ok(d.body.classList.contains('dragging-inc'));
+    assert.equal(store['text/plain'], id);
+    const over = fire(d.querySelector('.dropzone .empty'), 'dragover');
+    assert.equal(over.defaultPrevented, true, 'a drop is allowed here');
+    assert.ok(d.querySelector('.dropzone').classList.contains('over'));
+    fire(d.querySelector('.dropzone .empty'), 'drop');
+    assert.equal(d.querySelector('.dropzone .empty'), null, 'the analysis is shown instead of the empty field');
+    assert.equal(d.querySelector(`button.inc[data-inc="${id}"]`).getAttribute('aria-pressed'), 'true');
+    assert.ok(!d.body.classList.contains('dragging-inc'));
+    // a drop of something that is not an incident does nothing
+    const before = d.body.innerHTML;
+    fire(d.querySelector('.dropzone'), 'drop');
+    assert.equal(d.body.innerHTML, before);
+  } finally { w.close(); }
+});
+
+test('the drag styles use tokens, and reduced motion stops the nudge', () => {
+  const css = page.slice(page.indexOf('.inc{cursor:grab}'), page.indexOf('</style>', page.indexOf('.inc{cursor:grab}')));
+  assert.match(css, /body\.dragging-inc \.dropzone\.over/);
+  assert.match(css, /@media \(prefers-reduced-motion:reduce\)\{\.dropcue-a\{animation:none\}/);
+});

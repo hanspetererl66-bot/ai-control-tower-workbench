@@ -253,6 +253,16 @@ button.ghost{font:inherit;font-size:12px;color:var(--ink-2);background:var(--sur
 button.ghost:hover{border-color:var(--purple-border)}
 svg.i{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .empty{border:1.5px dashed var(--line);border-radius:var(--radius);padding:44px 28px;text-align:center;color:var(--muted);font-size:13px;background:var(--surface)}
+.inc{cursor:grab}.inc:active{cursor:grabbing}
+.inc.dragging{opacity:.45;transform:scale(.98);box-shadow:none}
+.dropzone{border-radius:var(--radius);transition:background-color .18s,outline-color .18s;outline:2px dashed transparent;outline-offset:6px}
+body.dragging-inc .dropzone{outline-color:var(--purple-border);background:var(--purple-dim)}
+body.dragging-inc .dropzone.over{outline-color:var(--purple);background:color-mix(in srgb,var(--purple) 12%,transparent)}
+body.dragging-inc .dropzone .empty{border-color:var(--purple);color:var(--ink-2)}
+.dropcue{margin:14px 0 0;font-size:13px;font-weight:600;color:var(--purple-ink)}
+.dropcue-a{display:inline-block;animation:dropnudge 1.6s ease-in-out infinite}
+@keyframes dropnudge{0%,100%{transform:translateX(0)}50%{transform:translateX(-6px)}}
+@media (prefers-reduced-motion:reduce){.dropcue-a{animation:none}.dropzone{transition:none}}
 .empty svg.i{width:34px;height:34px;color:var(--purple);margin-bottom:10px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 24px;margin-bottom:18px;box-shadow:var(--shadow)}
 .rise{animation:rise .55s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--d,0ms)}
@@ -1378,7 +1388,7 @@ const dayMs = (d) => Date.parse(d + 'T00:00:00Z');
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function incidentList() {
-  return DATA.incidents.map((i) => `<button type="button" class="inc ${i.priority === 'High' ? 'high' : ''}" data-inc="${i.id}" aria-pressed="${i.id === state.id}"><span class="t">${esc(i.title)}</span><span class="dl"><b>${i.deadlineDays}</b><span>days</span></span><span class="m">${esc(i.id)} · ${esc(custName(i.customer))} · ${esc(i.host)}${i.alert ? ' · alert ' + esc(i.alert) : ''}</span></button>`).join('');
+  return DATA.incidents.map((i) => `<button type="button" class="inc ${i.priority === 'High' ? 'high' : ''}" data-inc="${i.id}" aria-pressed="${i.id === state.id}" draggable="true" title="Click to pick it, or drag it into the field on the right to analyse it"><span class="t">${esc(i.title)}</span><span class="dl"><b>${i.deadlineDays}</b><span>days</span></span><span class="m">${esc(i.id)} · ${esc(custName(i.customer))} · ${esc(i.host)}${i.alert ? ' · alert ' + esc(i.alert) : ''}</span></button>`).join('');
 }
 function pipeline(r) {
   const s = r.searched, signals = r.incident.signals.length;
@@ -1463,8 +1473,8 @@ function sendBack() {
 }
 function save() { if (hosted) window.parent.postMessage({ type: 'wb:state', state: { id: state.id, verdict: state.verdict, ctx: state.ctx, matched: state.matched, ran: !!state.report, accepted: state.accepted, learned: state.learned, notLearned: state.notLearned } }, '*'); }
 function render() {
-  const out = state.report ? reportView(state.report) : `<div class="empty">${ic('search')}<p><b>Pick an incident and start the analysis.</b></p><p>The agent searches the case database and the documentation and comes back with the root cause, the evidence and the next best action.</p></div>`;
-  $('#view').innerHTML = `${ctxBar()}${learningBar()}<div class="layout"><aside class="side"><h2>Incidents</h2><div class="incs">${incidentList()}</div><button class="primary run" data-run="1">${ic('search')} Run the root cause analysis</button></aside><section aria-live="polite">${out}</section></div>`;
+  const out = state.report ? reportView(state.report) : `<div class="empty">${ic('search')}<p><b>Pick an incident and start the analysis.</b></p><p>The agent searches the case database and the documentation and comes back with the root cause, the evidence and the next best action.</p><p class="dropcue"><span class="dropcue-a" aria-hidden="true">←</span> Drag an incident from the list into this field to analyse it</p></div>`;
+  $('#view').innerHTML = `${ctxBar()}${learningBar()}<div class="layout"><aside class="side"><h2>Incidents</h2><div class="incs">${incidentList()}</div><button class="primary run" data-run="1">${ic('search')} Run the root cause analysis</button></aside><section aria-live="polite" class="dropzone" data-drop="1">${out}</section></div>`;
   save();
 }
 function run() {
@@ -1495,9 +1505,27 @@ function learningBar() {
     .concat(state.notLearned.map((n) => `<li>${ic('alert')}<span><b>${esc(n.taskId)}</b> not learned: ${esc(n.reason)}</span></li>`));
   return `<div class="card learn rise" style="margin:0 22px 14px"><p class="eyebrow">What the agent learned</p><ul class="plain">${rows.join('')}</ul><p class="note" style="margin:8px 0 0">A closed request becomes a case only when a person accepted the root cause. Run the analysis again: the new cases are searched too. Nothing is stored beyond this session.</p></div>`;
 }
+function pick(id) { state.id = id; state.report = null; state.verdict = null; if (state.ctx) state.matched = DATA.incidents.find((i) => i.id === state.id).host === state.ctx.target; }
+/* Drag an incident from the list into the field on the right: it is picked and the analysis starts. The mouse is an extra way; a click and the Run button still do the same. */
+let dragId = null;
+const dropId = (e) => { const v = e.dataTransfer && e.dataTransfer.getData ? e.dataTransfer.getData('text/plain') : ''; return DATA.incidents.some((i) => i.id === v) ? v : dragId; };
+document.addEventListener('dragstart', (e) => {
+  const b = e.target.closest ? e.target.closest('[data-inc]') : null; if (!b || !DATA.incidents.some((i) => i.id === b.dataset.inc)) return;
+  dragId = b.dataset.inc; b.classList.add('dragging'); document.body.classList.add('dragging-inc');
+  if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dragId); } catch (err) { /* the id is kept in dragId as well */ } }
+});
+document.addEventListener('dragend', () => { dragId = null; document.body.classList.remove('dragging-inc'); document.querySelectorAll('.inc.dragging, .dropzone.over').forEach((n) => n.classList.remove('dragging', 'over')); });
+document.addEventListener('dragover', (e) => { const z = e.target.closest ? e.target.closest('[data-drop]') : null; if (!z || !dragId) return; e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; z.classList.add('over'); });
+document.addEventListener('dragleave', (e) => { const z = e.target.closest ? e.target.closest('[data-drop]') : null; if (z && !z.contains(e.relatedTarget)) z.classList.remove('over'); });
+document.addEventListener('drop', (e) => {
+  const z = e.target.closest ? e.target.closest('[data-drop]') : null; if (!z) return;
+  const id = dropId(e); if (!id) return;
+  e.preventDefault(); dragId = null; document.body.classList.remove('dragging-inc');
+  pick(id); run(); render();
+});
 document.addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.inc) { state.id = b.dataset.inc; state.report = null; state.verdict = null; if (state.ctx) state.matched = DATA.incidents.find((i) => i.id === state.id).host === state.ctx.target; render(); return; }
+  if (b.dataset.inc) { pick(b.dataset.inc); render(); return; }
   if (b.dataset.run) { run(); render(); return; }
   if (b.dataset.send) { sendBack(); return; }
   if (b.dataset.verdict !== undefined) { state.verdict = b.dataset.verdict || null; noteVerdict(); render(); }

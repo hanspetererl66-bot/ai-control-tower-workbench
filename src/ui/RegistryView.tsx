@@ -1,3 +1,4 @@
+import AdminHero from './AdminHero';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { FLOW, FLOW_LABEL, type FlowStep } from '../flow';
 import {
@@ -51,14 +52,10 @@ export default function RegistryView({ generate, onStop, ready = false, onBack }
 
   return (
     <main className="sh rg">
-      <header className="sh-head">
-        <div>
-          {onBack && <button className="ghost-btn" onClick={onBack} aria-label="Back to the Admin console">← Admin console</button>}
-          <h1>Solution register</h1>
-          <p>{list ? `${list.filter((i) => !i.archived).length} items · agents, workflows and features with their profile and history` : 'Agents, workflows and features with their profile and history'}</p>
-        </div>
+      <AdminHero screen="Solution register" lead="Know what was built," accent="and where it stands." onBack={onBack}
+        lede={list ? `${list.filter((i) => !i.archived).length} items · agents, workflows and features with their profile and history` : 'Agents, workflows and features with their profile and history'}>
         {api && !showExample && <button className="rg-refresh" onClick={() => void load()}>Refresh</button>}
-      </header>
+      </AdminHero>
 
       {showExample && (
         <p className="rg-example" role="status">
