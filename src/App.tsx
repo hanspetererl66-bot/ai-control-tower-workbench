@@ -52,6 +52,7 @@ import { localTarget, newExtension } from './requirements';
 import { AGENTS_PULLED, PROJECTS_PULLED, schedule as scheduleWorkSync, startWorkSync } from './work-sync-runner';
 import { documentNote, isConfirmCommand, type DockFocus } from './dock';
 import JouleDock from './ui/JouleDock';
+import CatPeek from './ui/CatPeek';
 import StudyBadge from './ui/StudyBadge';
 import Splitter from './ui/Splitter';
 import { DEFAULT_WIDTHS, loadWidths, saveWidths, type PaneWidths } from './pane-width';
@@ -2183,6 +2184,7 @@ export default function App() {
       )}
 
       {toast && <div className="toast">{toast}</div>}
+      <CatPeek cat={prefs.cat} reduceMotion={prefs.reduceMotion} onMove={(to) => updatePrefs((c) => ({ ...c, cat: { ...c.cat, ...to } }))} />
     </div>
   );
 }
