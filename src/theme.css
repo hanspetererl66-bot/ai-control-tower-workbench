@@ -6072,6 +6072,32 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 @media (prefers-reduced-motion: reduce) { .sa-fn { transition: none; } }
 .sd-img-prev { display: block; max-width: 100%; max-height: 160px; border-radius: 6px; margin: 6px 0; border: 1px solid var(--line); }
 
+/* Develop hub and Agent Studio entry: the tiles share one set of rows, so that icon, title, brand, text, window (input or list) and button sit at the same height
+   in every tile, however long the text is. Rows: 1 icon, 2 title, 3 brand, 4 text, 5 window, 6 button, 7 link below the button. */
+@supports (grid-template-rows: subgrid) {
+  .develop-cards > .develop-card {
+    display: grid;
+    grid-row: span 7;
+    grid-template-rows: subgrid;
+    row-gap: 7px;
+    justify-items: center;
+    align-items: start;
+    align-content: start;
+  }
+  .develop-cards > .develop-card > .develop-logo { grid-row: 1; }
+  .develop-cards > .develop-card > .develop-card-title { grid-row: 2; }
+  .develop-cards > .develop-card > .develop-card-brand { grid-row: 3; }
+  .develop-cards > .develop-card > .develop-card-text { grid-row: 4; min-height: 0; }
+  .develop-cards > .develop-card > .develop-blocks,
+  .develop-cards > .develop-card > .develop-goal { grid-row: 5; align-self: stretch; margin: 8px 0 6px; }
+  .develop-cards > .develop-card > .develop-go { grid-row: 6; margin-top: 4px; align-self: end; }
+  .develop-cards > .develop-card > .develop-other { grid-row: 7; }
+  /* The input window grows with the row, so it ends where the lists of the other tiles end. */
+  .develop-cards > .develop-card > .develop-goal { grid-template-rows: auto minmax(0, 1fr); margin-top: 8px; }
+  .develop-cards > .develop-card > .develop-goal .dictate-wrap { height: 100%; }
+  .develop-cards > .develop-card > .develop-goal textarea { height: 100%; min-height: 3.6em; }
+}
+
 /* Composer icon buttons: a short hint on hover or keyboard focus, above the button (replaces the slow native title). The text is the data-tip of the button. */
 .chip-icon[data-tip] { position: relative; }
 .chip-icon[data-tip]::after {
