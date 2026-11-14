@@ -33,7 +33,7 @@ const addDays = (s, n) => new Date(day(s) + n * 86400000).toISOString().slice(0,
 /** Customer context that is not in the contract data: escalations and other topics (fictional). */
 export const CUSTOMERS = [
   { id: 'muster', owner: 'Nina Kessler', escalation: { level: 'Management', since: '2026-10-14', topic: 'The AI Core quota blocks the go-live of the purchase-order skill. The CIO asked for a call this week.', owner: 'Nina Kessler' }, topics: [{ kind: 'people', text: 'New head of procurement from 1 November: introduce the renewal plan early' }, { kind: 'commercial', text: 'Asked for a comparison of Joule units and Document AI units' }] },
-  { id: 'hanse', owner: 'Tom Ahlers', escalation: null, topics: [{ kind: 'people', text: 'New CFO since September, reviews all software spend' }, { kind: 'commercial', text: 'Wants to bundle Commerce Cloud and Integration Suite into one contract' }] },
+  { id: 'hanse', owner: 'Tom Ahlers', escalation: null, topics: [{ kind: 'people', text: 'The Head of Controlling, who championed SAP Analytics Cloud, left in September; her successor has not been introduced yet' }, { kind: 'people', text: 'New CFO since September, reviews all software spend' }, { kind: 'commercial', text: 'Wants to bundle Commerce Cloud and Integration Suite into one contract' }] },
   { id: 'lindenau', owner: 'Jonas Weber', escalation: { level: 'Account team', since: '2026-10-12', topic: 'The 2608 upgrade blocks the validation run in QAS (batch release dump). Quality Assurance cannot release the upgrade to PRD before it is fixed.', owner: 'Jonas Weber' }, topics: [{ kind: 'compliance', text: 'Every AI use case needs a validation concept from Quality Assurance before productive use' }, { kind: 'commercial', text: 'Asks to bring supplier qualification for GxP suppliers into the Ariba renewal' }] },
 ];
 
@@ -72,15 +72,15 @@ export const RULES = {
   marginPct: 70,
   lifetimeCapYears: 7,
   retention: { green: 0.95, yellow: 0.85, red: 0.65, lapsed: 0.25 },
-  levers: { usage: 'Adoption workshop with the business owner', ticket: 'Escalate the open ticket to a named engineer', competitor: 'Executive sponsor call and a competitive battlecard', invoice: 'Payment plan agreed with the customer finance team', uplift: 'Explain the price rise with scope and volume, or hold the cap', timing: 'Joint timeline with the customer procurement', 'no-offer': 'Early value review before the offer', lapsed: 'Win-back call with the technical contact', growth: 'Roadmap session for the next scope', validity: 'Validity extension in exchange for a signing date' },
+  levers: { usage: 'Adoption workshop with the business owner', ticket: 'Escalate the open ticket to a named engineer', competitor: 'Executive sponsor call and a competitive battlecard', invoice: 'Payment plan agreed with the customer finance team', uplift: 'Explain the price rise with scope and volume, or hold the cap', timing: 'Joint timeline with the customer procurement', 'no-offer': 'Early value review before the offer', lapsed: 'Win-back call with the technical contact', growth: 'Roadmap session for the next scope', validity: 'Validity extension in exchange for a signing date', trend: 'Call with the business owner: why is usage falling, and who is the champion now?' },
 };
 
 /** Small add-on contracts (illustrative, not in the Sub4Me sample data): they show the automatic path below the threshold. */
 const ADDONS = [
-  { customerId: 'muster', id: 'C-2026-0901', product: 'SAP Signavio Process Manager add-on', annualEur: 24000, end: '2027-01-31', noticeDays: 60, used: 41, licensed: 50, unit: 'seats' },
+  { customerId: 'muster', id: 'C-2026-0901', product: 'SAP Signavio Process Manager add-on', annualEur: 24000, end: '2027-05-31', noticeDays: 60, used: 41, licensed: 50, unit: 'seats' },
   { customerId: 'muster', id: 'C-2026-0902', product: 'SAP Work Zone add-on', annualEur: 12600, end: '2026-12-31', noticeDays: 30, used: 180, licensed: 200, unit: 'users' },
-  { customerId: 'muster', id: 'C-2026-0903', product: 'BTP extra storage package', annualEur: 31500, end: '2027-02-28', noticeDays: 60, used: 8.2, licensed: 10, unit: 'TB' },
-  { customerId: 'hanse', id: 'C-2026-0911', product: 'SAP Analytics Cloud planning add-on', annualEur: 27900, end: '2027-03-31', noticeDays: 60, used: 96, licensed: 120, unit: 'users' },
+  { customerId: 'muster', id: 'C-2026-0903', product: 'BTP extra storage package', annualEur: 31500, end: '2027-07-31', noticeDays: 60, used: 8.2, licensed: 10, unit: 'TB' },
+  { customerId: 'hanse', id: 'C-2026-0911', product: 'SAP Analytics Cloud planning add-on', annualEur: 27900, end: '2027-05-31', noticeDays: 60, used: 96, licensed: 120, unit: 'users' },
   { customerId: 'hanse', id: 'C-2026-0912', product: 'Commerce Cloud sandbox', annualEur: 21000, end: '2026-12-31', noticeDays: 30, used: 2, licensed: 2, unit: 'sandboxes', overdue: { id: 'INV-2026-30590', grossEur: 24990, due: '2026-09-30' } },
   { customerId: 'hanse', id: 'C-2026-0913', product: 'Integration Suite extra connectors', annualEur: 9800, end: '2027-06-30', noticeDays: 30, used: 7, licensed: 8, unit: 'connectors' },
   { customerId: 'lindenau', id: 'C-2026-0921', product: 'SuccessFactors e-signature add-on (21 CFR Part 11)', annualEur: 18600, end: '2027-02-28', noticeDays: 60, used: 38, licensed: 40, unit: 'signers',
@@ -95,6 +95,11 @@ const ADDONS = [
   { customerId: 'lindenau', id: 'C-2026-0923', product: 'BTP extra storage package (batch-record archive)', annualEur: 26400, end: '2027-04-30', noticeDays: 60, used: 6.1, licensed: 8, unit: 'TB',
     tickets: [{ id: 'TKT-48237', title: 'Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance', priority: 'Low', status: 'Waiting for customer' }],
     invoices: [{ id: 'INV-2026-40911', status: 'Open', grossEur: 31416, due: '2026-12-01' }] },
+  // Demo story (illustrative): healthy and growing contracts, so the portfolio is not one shade of yellow.
+  { customerId: 'muster', id: 'C-2026-0904', product: 'Joule copilot seats for Sales', annualEur: 96000, end: '2027-06-30', noticeDays: 60, used: 132, licensed: 120, unit: 'seats' },
+  { customerId: 'muster', id: 'C-2026-0905', product: 'Ariba Network enablement', annualEur: 58000, end: '2027-09-30', noticeDays: 60, used: 47, licensed: 50, unit: 'suppliers' },
+  { customerId: 'hanse', id: 'C-2026-0914', product: 'SAP Datasphere', annualEur: 88000, end: '2027-08-31', noticeDays: 60, used: 14, licensed: 16, unit: 'TB' },
+  { customerId: 'lindenau', id: 'C-2026-0924', product: 'Joule for Quality (12-month pilot)', annualEur: 64000, end: '2027-05-31', noticeDays: 60, used: 24, licensed: 25, unit: 'seats' },
 ];
 
 /** Renewal offers that are not in the Sub4Me sample data (illustrative): they give the manager dashboard more than one offer stage, a price above the cap and a second competitor. */
@@ -105,6 +110,18 @@ const EXTRA_OFFERS = {
   'C-2026-0922': { id: 'OFF-2026-0541', annualEur: 14832, currentAnnualEur: 14400, discountPct: 0, validUntil: '2026-11-20', stage: 'Proposal sent', probabilityPct: 65, competitor: 'None', nextStep: 'Clear the open tickets on the LIMS connector before the deadline', termMonths: 12, priceGuaranteeMonths: 12, approval: 'Deal desk approved' },
   'C-2026-0921': { id: 'OFF-2026-0542', annualEur: 19158, currentAnnualEur: 18600, discountPct: 0, validUntil: '2026-12-15', stage: 'Proposal sent', probabilityPct: 70, competitor: 'None', nextStep: 'Confirm the meaning of the signature in the audit-trail export', termMonths: 12, priceGuaranteeMonths: 12, approval: 'Deal desk approved' },
   'C-2026-0044': { id: 'OFF-2026-0532', annualEur: 252000, currentAnnualEur: 240000, discountPct: 0, validUntil: '2026-11-27', stage: 'Negotiation', probabilityPct: 45, competitor: 'Microsoft Copilot (evaluation)', nextStep: 'Decide with the CFO whether to hold the contract cap', termMonths: 24, priceGuaranteeMonths: 24, approval: 'Pending deal desk (price above the contract cap)' },
+};
+
+/**
+ * Usage over the last six months in percent of the licence (illustrative). The last value is replaced by the real usage of the
+ * contract, so the trend always ends where the snapshot is. They tell what the snapshot hides.
+ */
+const TRENDS = {
+  'C-2024-0702': [119, 113, 107, 100, 95, 90], // Hanse, Analytics Cloud: looks fine (90 %), but fell from 119 %; the champion left
+  'C-2024-0233': [91, 88, 84, 79, 74, 69],     // Muster, BTP: falls while the AI Core quota blocks the go-live
+  'C-2025-0833': [72, 78, 85, 91, 96, 100],    // Lindenau, Advanced Track and Trace: grows fast, room for more
+  'C-2026-0904': [70, 78, 88, 97, 104, 110],   // Muster, Joule copilot seats: over the licence, upsell
+  'C-2026-0924': [40, 52, 66, 78, 90, 96],     // Lindenau, Joule for Quality pilot: a success, expand
 };
 
 export function buildRenewals() {
@@ -140,6 +157,7 @@ export function buildRenewals() {
     });
   }
   for (const c of cases) if (!c.offer && EXTRA_OFFERS[c.contractId]) c.offer = { ...EXTRA_OFFERS[c.contractId] };
+  for (const c of cases) if (TRENDS[c.contractId]) c.usageTrend = [...TRENDS[c.contractId].slice(0, -1), Math.round((c.used / c.licensed) * 100)];
   cases.sort((a, b) => a.decisionDate.localeCompare(b.decisionDate) || a.id.localeCompare(b.id));
   return {
     asOf: AS_OF,

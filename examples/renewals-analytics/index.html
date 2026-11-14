@@ -334,7 +334,8 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
    "no-offer": "Early value review before the offer",
    "lapsed": "Win-back call with the technical contact",
    "growth": "Roadmap session for the next scope",
-   "validity": "Validity extension in exchange for a signing date"
+   "validity": "Validity extension in exchange for a signing date",
+   "trend": "Call with the business owner: why is usage falling, and who is the champion now?"
   }
  },
  "note": "Fictional data derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG (scripts/sync-renewals.mjs). The decision date is the contract end minus the notice period: by then the renewal must be agreed or the contract ends.",
@@ -909,62 +910,6 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
    "addon": true
   },
   {
-   "id": "R-C-2026-0901",
-   "customerId": "muster",
-   "customer": "Muster Industrie AG",
-   "sapCustomerId": "0010048211",
-   "customerSince": 2014,
-   "customerAnnualEur": 4540000,
-   "contractId": "C-2026-0901",
-   "product": "SAP Signavio Process Manager add-on",
-   "status": "Running",
-   "end": "2027-01-31",
-   "noticeDays": 60,
-   "decisionDate": "2026-12-02",
-   "autoRenew": false,
-   "annualEur": 24000,
-   "upliftCapPct": 3,
-   "termination": "Ends on the end date; renewal requires a new order.",
-   "used": 41,
-   "licensed": 50,
-   "unit": "seats",
-   "owner": "Mira Hoffmann",
-   "csm": "Jonas Weber",
-   "customerOwner": "Tobias Kraus",
-   "offer": null,
-   "tickets": [],
-   "invoices": [],
-   "addon": true
-  },
-  {
-   "id": "R-C-2026-0903",
-   "customerId": "muster",
-   "customer": "Muster Industrie AG",
-   "sapCustomerId": "0010048211",
-   "customerSince": 2014,
-   "customerAnnualEur": 4540000,
-   "contractId": "C-2026-0903",
-   "product": "BTP extra storage package",
-   "status": "Running",
-   "end": "2027-02-28",
-   "noticeDays": 60,
-   "decisionDate": "2026-12-30",
-   "autoRenew": false,
-   "annualEur": 31500,
-   "upliftCapPct": 3,
-   "termination": "Ends on the end date; renewal requires a new order.",
-   "used": 8.2,
-   "licensed": 10,
-   "unit": "TB",
-   "owner": "Mira Hoffmann",
-   "csm": "Jonas Weber",
-   "customerOwner": "Tobias Kraus",
-   "offer": null,
-   "tickets": [],
-   "invoices": [],
-   "addon": true
-  },
-  {
    "id": "R-C-2026-0921",
    "customerId": "lindenau",
    "customer": "Lindenau Pharma AG",
@@ -1070,35 +1015,15 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
      "grossEur": 114716,
      "due": "2026-11-01"
     }
+   ],
+   "usageTrend": [
+    91,
+    88,
+    84,
+    79,
+    74,
+    69
    ]
-  },
-  {
-   "id": "R-C-2026-0911",
-   "customerId": "hanse",
-   "customer": "Hanse Handelsgruppe AG",
-   "sapCustomerId": "0010073904",
-   "customerSince": 2019,
-   "customerAnnualEur": 2518550,
-   "contractId": "C-2026-0911",
-   "product": "SAP Analytics Cloud planning add-on",
-   "status": "Running",
-   "end": "2027-03-31",
-   "noticeDays": 60,
-   "decisionDate": "2027-01-30",
-   "autoRenew": false,
-   "annualEur": 27900,
-   "upliftCapPct": 3,
-   "termination": "Ends on the end date; renewal requires a new order.",
-   "used": 96,
-   "licensed": 120,
-   "unit": "users",
-   "owner": "Sven Albrecht",
-   "csm": "Nina Kessler",
-   "customerOwner": "Julia Westphal",
-   "offer": null,
-   "tickets": [],
-   "invoices": [],
-   "addon": true
   },
   {
    "id": "R-C-2026-0923",
@@ -1143,6 +1068,134 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
    "addon": true
   },
   {
+   "id": "R-C-2026-0901",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "contractId": "C-2026-0901",
+   "product": "SAP Signavio Process Manager add-on",
+   "status": "Running",
+   "end": "2027-05-31",
+   "noticeDays": 60,
+   "decisionDate": "2027-04-01",
+   "autoRenew": false,
+   "annualEur": 24000,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 41,
+   "licensed": 50,
+   "unit": "seats",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Tobias Kraus",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0911",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "contractId": "C-2026-0911",
+   "product": "SAP Analytics Cloud planning add-on",
+   "status": "Running",
+   "end": "2027-05-31",
+   "noticeDays": 60,
+   "decisionDate": "2027-04-01",
+   "autoRenew": false,
+   "annualEur": 27900,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 96,
+   "licensed": 120,
+   "unit": "users",
+   "owner": "Sven Albrecht",
+   "csm": "Nina Kessler",
+   "customerOwner": "Julia Westphal",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0924",
+   "customerId": "lindenau",
+   "customer": "Lindenau Pharma AG",
+   "sapCustomerId": "0010090532",
+   "customerSince": 2017,
+   "customerAnnualEur": 3207050,
+   "contractId": "C-2026-0924",
+   "product": "Joule for Quality (12-month pilot)",
+   "status": "Running",
+   "end": "2027-05-31",
+   "noticeDays": 60,
+   "decisionDate": "2027-04-01",
+   "autoRenew": false,
+   "annualEur": 64000,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 24,
+   "licensed": 25,
+   "unit": "seats",
+   "owner": "Clara Neumann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Ralf Kessel",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true,
+   "usageTrend": [
+    40,
+    52,
+    66,
+    78,
+    90,
+    96
+   ]
+  },
+  {
+   "id": "R-C-2026-0904",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "contractId": "C-2026-0904",
+   "product": "Joule copilot seats for Sales",
+   "status": "Running",
+   "end": "2027-06-30",
+   "noticeDays": 60,
+   "decisionDate": "2027-05-01",
+   "autoRenew": false,
+   "annualEur": 96000,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 132,
+   "licensed": 120,
+   "unit": "seats",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Tobias Kraus",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true,
+   "usageTrend": [
+    70,
+    78,
+    88,
+    97,
+    104,
+    110
+   ]
+  },
+  {
    "id": "R-C-2026-0913",
    "customerId": "hanse",
    "customer": "Hanse Handelsgruppe AG",
@@ -1165,6 +1218,90 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
    "owner": "Sven Albrecht",
    "csm": "Nina Kessler",
    "customerOwner": "Julia Westphal",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0903",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "contractId": "C-2026-0903",
+   "product": "BTP extra storage package",
+   "status": "Running",
+   "end": "2027-07-31",
+   "noticeDays": 60,
+   "decisionDate": "2027-06-01",
+   "autoRenew": false,
+   "annualEur": 31500,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 8.2,
+   "licensed": 10,
+   "unit": "TB",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Tobias Kraus",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0914",
+   "customerId": "hanse",
+   "customer": "Hanse Handelsgruppe AG",
+   "sapCustomerId": "0010073904",
+   "customerSince": 2019,
+   "customerAnnualEur": 2518550,
+   "contractId": "C-2026-0914",
+   "product": "SAP Datasphere",
+   "status": "Running",
+   "end": "2027-08-31",
+   "noticeDays": 60,
+   "decisionDate": "2027-07-02",
+   "autoRenew": false,
+   "annualEur": 88000,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 14,
+   "licensed": 16,
+   "unit": "TB",
+   "owner": "Sven Albrecht",
+   "csm": "Nina Kessler",
+   "customerOwner": "Julia Westphal",
+   "offer": null,
+   "tickets": [],
+   "invoices": [],
+   "addon": true
+  },
+  {
+   "id": "R-C-2026-0905",
+   "customerId": "muster",
+   "customer": "Muster Industrie AG",
+   "sapCustomerId": "0010048211",
+   "customerSince": 2014,
+   "customerAnnualEur": 4540000,
+   "contractId": "C-2026-0905",
+   "product": "Ariba Network enablement",
+   "status": "Running",
+   "end": "2027-09-30",
+   "noticeDays": 60,
+   "decisionDate": "2027-08-01",
+   "autoRenew": false,
+   "annualEur": 58000,
+   "upliftCapPct": 3,
+   "termination": "Ends on the end date; renewal requires a new order.",
+   "used": 47,
+   "licensed": 50,
+   "unit": "suppliers",
+   "owner": "Mira Hoffmann",
+   "csm": "Jonas Weber",
+   "customerOwner": "Tobias Kraus",
    "offer": null,
    "tickets": [],
    "invoices": [],
@@ -1202,6 +1339,14 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
      "grossEur": 261502.5,
      "due": "2026-10-31"
     }
+   ],
+   "usageTrend": [
+    119,
+    113,
+    107,
+    100,
+    95,
+    90
    ]
   },
   {
@@ -1243,6 +1388,14 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
      "grossEur": 492660,
      "due": "2026-10-31"
     }
+   ],
+   "usageTrend": [
+    72,
+    78,
+    85,
+    91,
+    96,
+    100
    ]
   }
  ],
@@ -1329,6 +1482,10 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
    "owner": "Tom Ahlers",
    "escalation": null,
    "topics": [
+    {
+     "kind": "people",
+     "text": "The Head of Controlling, who championed SAP Analytics Cloud, left in September; her successor has not been introduced yet"
+    },
     {
      "kind": "people",
      "text": "New CFO since September, reviews all software spend"
@@ -1482,6 +1639,13 @@ function signals(c, asOf) {
     else if (use < 80) add('yellow', 'usage', `${use} % of the ${c.unit} are used: be ready to right-size`);
     else if (use >= 95) add('plus', 'growth', `${use} % of the ${c.unit} are used: room to sell more`);
   }
+  // The trend over the last months: a fall that the snapshot hides, or a fast rise that asks for an expansion.
+  const tr = c.usageTrend;
+  if (tr && tr.length >= 4 && c.status !== 'Lapsed') {
+    const first = tr[0], last = tr[tr.length - 1], months = tr.length - 1;
+    if (first - last >= 20) add('yellow', 'trend', `Usage fell from ${first} % to ${last} % in ${months} months${last >= 80 ? ', although it still looks fine today' : ''}`);
+    else if (last - first >= 20) add('plus', 'trend-up', `Usage rose from ${first} % to ${last} % in ${months} months: room for an expansion`);
+  }
   for (const t of c.tickets) {
     if (t.priority === 'Very high' && t.status !== 'Waiting for customer') add('red', 'ticket', `Very high ticket ${t.id} is open: ${t.title}`);
     else if (t.priority === 'Very high' || t.priority === 'High') add('yellow', 'ticket', `${t.priority} ticket ${t.id} is open (${t.status.toLowerCase()})`);
@@ -1584,6 +1748,8 @@ function actionList(c, sig) {
   if (has('competitor')) add('competitor', 'Prepare the answer to the competitor (battlecard) before the next meeting');
   if (has('uplift')) add('uplift', 'Check the price rise against the cap (pricing guard) and explain it with scope or volume');
   if (has('ticket')) add('ticket', 'Get the open ticket solved or give the customer a date');
+  if (has('trend')) add('trend', 'Find out why usage is falling: call the business owner and check who the champion is');
+  if (has('trend-up') && !has('growth')) add('expand', 'Propose an expansion with the renewal: usage has risen fast');
   if (has('growth')) add('growth', 'Offer more volume in the renewal: usage is close to the limit');
   if (has('usage')) add('right-size', 'Right-size the offer to real usage instead of losing the renewal');
   if (has('validity')) add('validity', 'Extend the offer validity or close before it expires');

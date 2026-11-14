@@ -11,7 +11,7 @@ const ROOT = join(import.meta.dirname, '..');
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const page = read('examples/renewals/index.html');
 const data = JSON.parse(read(DATA_FILE));
-const logic = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, actions, actionKeys, upliftPct, usagePct, daysBetween, retention, lifetimeYears, clv, options, autoCheck, autoEmail, levers, PHASES, phaseOf })`);
+const logic = vm.runInNewContext(`${/<script id="renewal-logic">([\s\S]*?)<\/script>/.exec(page)[1]}; ({ signals, actions, actionList, actionKeys, upliftPct, usagePct, daysBetween, retention, lifetimeYears, clv, options, autoCheck, autoEmail, levers, PHASES, phaseOf })`);
 const byContract = (id) => data.cases.find((c) => c.contractId === id);
 const health = (id) => logic.signals(byContract(id), AS_OF);
 
@@ -43,7 +43,13 @@ test('health rules: the known cases get the expected colours and reasons', () =>
   const sf = health('C-2025-0041');
   assert.equal(sf.health, 'red'); assert.ok(sf.days < 0);
   assert.match(logic.actions(byContract('C-2025-0041'), sf)[0], /written extension/);
-  assert.equal(health('C-2024-0702').health, 'green', 'Analytics Cloud ends in 2027: nothing to do yet');
+  // The hidden loss of the demo: green on the surface (90 % used, no ticket, nothing due), but the trend and the lost champion say otherwise.
+  const hidden = health('C-2024-0702');
+  assert.equal(hidden.health, 'yellow', 'Analytics Cloud looks fine today, but usage fell from 119 % to 90 %');
+  assert.deepEqual([...hidden.signals.map((x) => x.key)], ['trend']);
+  assert.match(hidden.signals[0].text, /fell from 119 % to 90 % in 5 months, although it still looks fine/);
+  assert.match(logic.actions(byContract('C-2024-0702'), hidden)[0], /why usage is falling/);
+  assert.equal(health('C-2026-0914').health, 'green', 'Datasphere: healthy and far from its decision date');
   assert.equal(health('C-2022-0502').health, 'yellow', 'lapsed contract is a win-back candidate, not red');
   assert.equal(logic.upliftPct(byContract('C-2023-0390')), 5.2);
   assert.ok(logic.upliftPct(byContract('C-2023-0390')) > byContract('C-2023-0390').upliftCapPct);
@@ -184,4 +190,33 @@ test('mails: a mail that names an offer and a contract is about the contract the
   assert.match(h202.subject, /Commerce Cloud/);
   assert.match(h202.snippet, /cap of 4 %/, 'the cap of the Commerce Cloud contract');
   assert.equal(data.cases.find((c) => c.contractId === 'C-2024-0611').upliftCapPct, 4);
+});
+
+test('usage trends: they end at the real usage, a fall is a yellow signal, a fast rise is a positive one with an expansion action', () => {
+  const trended = data.cases.filter((c) => c.usageTrend);
+  assert.ok(trended.length >= 5);
+  for (const c of trended) {
+    assert.equal(c.usageTrend.length, 6, c.contractId);
+    assert.equal(c.usageTrend.at(-1), Math.round((c.used / c.licensed) * 100), `${c.contractId}: the trend ends where the snapshot is`);
+  }
+  const keys = (id) => health(id).signals.map((x) => `${x.level}:${x.key}`);
+  assert.ok(keys('C-2024-0233').includes('yellow:trend'), 'BTP falls from 91 % to 69 %');
+  for (const id of ['C-2026-0904', 'C-2026-0924', 'C-2025-0833']) assert.ok(keys(id).includes('plus:trend-up'), id);
+  assert.equal(health('C-2026-0904').health, 'green');
+  assert.ok(logic.actionList(byContract('C-2026-0904'), health('C-2026-0904')).some((a) => a.key === 'growth' || a.key === 'expand'));
+  // The contrast: not everything is yellow any more.
+  const count = (h) => data.cases.filter((c) => health(c.contractId).health === h).length;
+  assert.ok(count('green') >= 6 && count('red') >= 3 && count('yellow') >= 6, `${count('green')} green, ${count('yellow')} yellow, ${count('red')} red`);
+});
+
+test('the case detail draws the usage trend as a small line in tokens only', () => {
+  assert.match(page, /function sparkline\(tr\)/);
+  assert.match(page, /\(c\.usageTrend \? sparkline\(c\.usageTrend\) : ''\)/);
+  const fn = /function sparkline\(tr\) \{[\s\S]*?\n\}/.exec(page)[0];
+  assert.doesNotMatch(fn, /#[0-9a-fA-F]{3,8}\b|rgb\(/);
+  const draw = vm.runInNewContext(`${fn}; sparkline`);
+  const html = draw([119, 113, 107, 100, 95, 90]);
+  assert.match(html, /Usage over 6 months: 119 % to 90 %/);
+  assert.match(html, /stroke="var\(--amber\)"/, 'a fall is drawn in the warning colour');
+  assert.match(draw([40, 52, 66, 78, 90, 96]), /stroke="var\(--green\)"/);
 });
