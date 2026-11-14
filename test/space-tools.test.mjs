@@ -92,3 +92,27 @@ test('the Spaces list and the side body leave room for the Design Study badge at
   assert.ok(reserved(rule('.list')) >= bottom + badgeHeight, '.list reserves space for the badge');
   assert.ok(reserved(rule('.side-body')) >= bottom + badgeHeight, '.side-body reserves space for the badge');
 });
+
+test('a Space marks its customer with data-wb-customer, as attribute value or as text, and the host shows it in one place', () => {
+  const el = (attr, text) => ({ getAttribute: (n) => (n === 'data-wb-customer' ? attr : null), textContent: text });
+  const doc = (e) => ({ querySelector: (sel) => (sel === '[data-wb-customer]' ? e : null) });
+  assert.equal(raw.customerOf(doc(el('Kestrel Versicherung AG', ''))), 'Kestrel Versicherung AG', 'attribute value');
+  assert.equal(raw.customerOf(doc(el('', '  Lindenau   GmbH\n'))), 'Lindenau GmbH', 'text, whitespace tidied');
+  assert.equal(raw.customerOf(doc(el('', '   '))), null, 'empty');
+  assert.equal(raw.customerOf(doc(null)), null, 'no marker');
+  assert.equal(raw.customerOf(doc(el('x'.repeat(200), ''))).length, 80, 'at most 80 characters');
+  const viewer = readFileSync(new URL('../src/ui/SpaceViewer.tsx', import.meta.url), 'utf8');
+  assert.match(viewer, /\{tools\.customer && \(\s*<span className="topbar-customer"/);
+  assert.match(viewer, /customer: typeof data\.customer === 'string'/);
+  const css = readFileSync(new URL('../src/theme.css', import.meta.url), 'utf8');
+  assert.match(css, /\.topbar-customer b \{ font-size: 13px; font-weight: 650; color: var\(--ink\)/, 'one size and one colour, from tokens');
+});
+
+test('the Spaces of the Kestrel contract mark their customer from their data', () => {
+  for (const name of ['revenue-recognition', 'order-to-cash-software']) {
+    const page = readFileSync(new URL(`../examples/${name}/index.html`, import.meta.url), 'utf8');
+    assert.match(page, /<span id="wb-customer" data-wb-customer hidden><\/span>/, name);
+    assert.match(page, /getElementById\('wb-customer'\)\.textContent = D\.customer\.name/, name);
+  }
+});
+

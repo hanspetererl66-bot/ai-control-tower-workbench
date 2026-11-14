@@ -6127,3 +6127,20 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 /* No hint while the panel or menu of the same button is open. */
 .chip-icon[data-tip][aria-expanded="true"]::after { display: none; }
 @media (prefers-reduced-motion: reduce) { .chip-icon[data-tip]::after { transition: none; } }
+
+/* The customer of a Space: always right after the title block of the top bar, in one size and one colour for every Space. */
+.topbar-customer {
+  flex: none;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 280px;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  line-height: 1.2;
+  -webkit-app-region: no-drag;
+}
+.topbar-customer-label { font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.topbar-customer b { font-size: 13px; font-weight: 650; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

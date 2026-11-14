@@ -5,7 +5,12 @@
  *
  * Messages (checked on both sides: the page accepts only its parent, the host only its own frame):
  *   host -> page  { type: 'sp:search', query } | { type: 'sp:filter', filters: { [column label]: value } } | { type: 'sp:clear' }
- *   page -> host  { type: 'sp:state', searchable, count | null, filters: [{ label, values }] }
+ *   page -> host  { type: 'sp:state', searchable, count | null, filters: [{ label, values }], customer: string | null }
+ *
+ * Customer: a Space that belongs to one customer marks the name with the attribute data-wb-customer, either as the
+ * attribute value or as the text of the element (it may be hidden). The page script reports it, and the host shows it
+ * in the same place, size and colour in the top bar of every Space. The element is read again whenever the page changes,
+ * so a customer picker only has to keep that element up to date.
  *
  * What it works on: table rows, list items and cards without nested cards. Filters are derived from table columns that
  * hold a few repeating, non-numeric values (status, priority, severity, product, ...). Pages drawn on a canvas
@@ -13,7 +18,7 @@
  */
 
 export type SpaceFilterOption = { label: string; values: string[] };
-export type SpaceToolsState = { searchable: boolean; count: number | null; filters: SpaceFilterOption[] };
+export type SpaceToolsState = { searchable: boolean; count: number | null; filters: SpaceFilterOption[]; customer: string | null };
 
 const MARK = 'werkbank-space-tools';
 
@@ -27,6 +32,13 @@ export const SPACE_TOOLS_SCRIPT = String.raw`
     return String(s == null ? '' : s).toLowerCase().replace(/ß/g, 'ss').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
   }
   function tokens(query) { return norm(query).split(' ').filter(Boolean); }
+  /** The customer a Space has marked with data-wb-customer (attribute value first, then the text), or null. */
+  function customerOf(root) {
+    var el = root.querySelector('[data-wb-customer]');
+    if (!el) return null;
+    var v = String(el.getAttribute('data-wb-customer') || '').replace(/\s+/g, ' ').trim() || String(el.textContent || '').replace(/\s+/g, ' ').trim();
+    return v ? v.slice(0, 80) : null;
+  }
   function matches(text, query) {
     var t = tokens(query);
     if (!t.length) return true;
@@ -55,7 +67,7 @@ export const SPACE_TOOLS_SCRIPT = String.raw`
     }
     return out;
   }
-  tools.norm = norm; tools.matches = matches; tools.columns = columns;
+  tools.norm = norm; tools.matches = matches; tools.columns = columns; tools.customerOf = customerOf;
   window.__wbTools = tools;
   if (window.__WB_TEST__) return;
 
@@ -182,7 +194,7 @@ export const SPACE_TOOLS_SCRIPT = String.raw`
     }
 
     var filters = Object.keys(filterMap).slice(0, 6).map(function (label) { return { label: label, values: Object.keys(filterMap[label]).sort().slice(0, 12) }; });
-    var message = { type: 'sp:state', searchable: targets.length > 0, count: active ? count : null, filters: filters };
+    var message = { type: 'sp:state', searchable: targets.length > 0, count: active ? count : null, filters: filters, customer: customerOf(document) };
     var json = JSON.stringify(message);
     if (json !== lastSent && window.parent !== window) { lastSent = json; window.parent.postMessage(message, '*'); }
     watch();

@@ -255,7 +255,7 @@ export default function SpaceViewer({
   // Search and filter: the page script (space-tools.ts) does the work, these are its controls.
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Record<string, string>>({});
-  const [tools, setTools] = useState<SpaceToolsState>({ searchable: false, count: null, filters: [] });
+  const [tools, setTools] = useState<SpaceToolsState>({ searchable: false, count: null, filters: [], customer: null });
   const sendTools = (message: Record<string, unknown>) => frame.current?.contentWindow?.postMessage(message, '*');
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -265,7 +265,7 @@ export default function SpaceViewer({
       const filters = data.filters
         .filter((f: any) => f && typeof f.label === 'string' && Array.isArray(f.values))
         .map((f: any) => ({ label: f.label as string, values: f.values.filter((v: unknown) => typeof v === 'string') as string[] }));
-      setTools({ searchable: Boolean(data.searchable), count: typeof data.count === 'number' ? data.count : null, filters });
+      setTools({ searchable: Boolean(data.searchable), count: typeof data.count === 'number' ? data.count : null, filters, customer: typeof data.customer === 'string' && data.customer.trim() ? data.customer.trim().slice(0, 80) : null });
       // A tab without that column no longer offers its filter, so its selection must not keep hiding rows.
       setSelected((current) => {
         const kept = Object.fromEntries(Object.entries(current).filter(([label, value]) => filters.some((f: any) => f.label === label && f.values.includes(value))));
@@ -359,6 +359,12 @@ export default function SpaceViewer({
           <h1 className="topbar-title" title={space.title}>{space.title}</h1>
           <span className="topbar-sub">Updated {relativeTime(space.updatedAt)}</span>
         </div>
+        {tools.customer && (
+          <span className="topbar-customer" title={`Customer: ${tools.customer}`} aria-label={`Customer: ${tools.customer}`}>
+            <span className="topbar-customer-label" aria-hidden="true">Customer</span>
+            <b>{tools.customer}</b>
+          </span>
+        )}
 
         <div className={`space-tools ${tools.filters.length >= 2 ? 'space-tools-wide' : ''}`} role="search">
           <input
