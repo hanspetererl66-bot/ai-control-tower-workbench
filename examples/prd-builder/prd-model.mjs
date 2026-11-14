@@ -98,6 +98,7 @@ function buildPrd({ project, issues, selectedKeys, today }) {
   return L.join('\n') + '\n';
 }
 
+// BEGIN-EDIT (also embedded into the Spec Builder page by npm run sync:spec-builder)
 /* ---- Editing helpers for the text area: the text and the selection in, the new text and selection out. ---- */
 const LIST_KIND = {
   h2: { has: (l) => /^##\s/.test(l) && !/^###/.test(l), prefix: () => '## ' },
@@ -175,5 +176,7 @@ function prdFacts(text) {
     notes: (t.match(/^\*\*R\d+ · [^\n]*\bnote from /gm) || []).length, sources: body(/^sources?$|^source tickets$/i).length, open, words: (t.match(/\S+/g) || []).length, sections: secs.list.length,
   };
 }
+// END-EDIT
+
 // END-MODEL
 export { parseDescription, roleOf, groupByEpic, openQuestions, buildPrd, prioRank, sourceOf, isNote, toggleLines, toggleBold, sections, renumber, moveSection, deleteSection, addSection, prdFacts, TEMPLATES };

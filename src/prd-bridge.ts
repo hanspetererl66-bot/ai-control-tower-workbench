@@ -22,20 +22,23 @@ const str = (v: unknown, n: number) => (typeof v === 'string' ? v.slice(0, n) : 
 export type PrdHost = { exportDocx?: (payload: { title: string; markdown: string }) => Promise<{ ok: boolean; canceled?: boolean; detail?: string; path?: string; bytes?: number }> };
 export const MAX_DOC = 100_000;
 
+/** The answer to a request to save the confirmed document as a Word file (the same for the PRD Builder and the Spec Builder). */
+export async function exportDocxReply(data: Record<string, unknown>, host: PrdHost | undefined, type: string): Promise<Record<string, unknown>> {
+  if (!host?.exportDocx) return { type, ok: false, detail: 'Saving as Word works in the Werkbank app. Open this Space there, or copy the text.' };
+  if (data.confirmed !== true) return { type, ok: false, detail: 'Confirm the document first.' };
+  const markdown = typeof data.markdown === 'string' ? data.markdown : '';
+  if (!markdown.trim()) return { type, ok: false, detail: 'There is nothing to save.' };
+  if (markdown.length > MAX_DOC) return { type, ok: false, detail: `The document is too long (more than ${MAX_DOC / 1000} KB of text).` };
+  try {
+    const r = await host.exportDocx({ title: str(data.title, 120) || 'Document', markdown });
+    return r.canceled ? { type, ok: false, canceled: true } : { type, ok: r.ok === true, path: str(r.path, 500), bytes: typeof r.bytes === 'number' ? r.bytes : 0, detail: r.ok ? '' : str(r.detail, 300) || 'The file could not be saved.' };
+  } catch (e) { return { type, ok: false, detail: e instanceof Error ? e.message.slice(0, 300) : 'The file could not be saved.' }; }
+}
+
 export async function handlePrdMessage(data: unknown, call: BridgeCall | undefined, host?: PrdHost): Promise<Record<string, unknown> | null> {
   if (!isObject(data) || typeof data.type !== 'string' || !data.type.startsWith('prd:')) return null;
   const fail = (message: string) => ({ type: 'prd:error', message });
-  if (data.type === 'prd:export-docx') {
-    if (!host?.exportDocx) return { type: 'prd:exported', ok: false, detail: 'Saving as Word works in the Werkbank app. Open this Space there, or copy the text.' };
-    if (data.confirmed !== true) return { type: 'prd:exported', ok: false, detail: 'Confirm the document first.' };
-    const markdown = typeof data.markdown === 'string' ? data.markdown : '';
-    if (!markdown.trim()) return { type: 'prd:exported', ok: false, detail: 'There is nothing to save.' };
-    if (markdown.length > MAX_DOC) return { type: 'prd:exported', ok: false, detail: `The document is too long (more than ${MAX_DOC / 1000} KB of text).` };
-    try {
-      const r = await host.exportDocx({ title: str(data.title, 120) || 'PRD', markdown });
-      return r.canceled ? { type: 'prd:exported', ok: false, canceled: true } : { type: 'prd:exported', ok: r.ok === true, path: str(r.path, 500), bytes: typeof r.bytes === 'number' ? r.bytes : 0, detail: r.ok ? '' : str(r.detail, 300) || 'The file could not be saved.' };
-    } catch (e) { return { type: 'prd:exported', ok: false, detail: e instanceof Error ? e.message.slice(0, 300) : 'The file could not be saved.' }; }
-  }
+  if (data.type === 'prd:export-docx') return exportDocxReply(data, host, 'prd:exported');
   const noConnector = (name: string) => fail(`The ${name} connector is not connected yet. Import it under Connectors & Skills, or use the demo.`);
   if (data.type === 'prd:linear-teams-request') {
     if (!call) return noConnector('Linear');

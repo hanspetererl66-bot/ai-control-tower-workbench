@@ -355,6 +355,7 @@ textarea.prd{width:100%;min-height:560px;box-sizing:border-box;font:13px/1.55 ui
       <div class="acts final" aria-label="Confirm and save">
         <button class="primary" id="confirmBtn">Confirm the PRD…</button>
         <button class="ghost" id="word" disabled title="Confirm the PRD first">Save as Word (.docx)</button>
+        <button class="ghost" id="tospec" disabled title="Confirm the PRD first">Continue with the specification</button>
         <span class="note" id="confirmnote" role="status">Not confirmed yet. Confirm the document to save it as a Word file.</span>
       </div>
       <div class="cfwrap" id="cfwrap" hidden>
@@ -935,6 +936,7 @@ function buildPrd({ project, issues, selectedKeys, today }) {
   return L.join('\n') + '\n';
 }
 
+// BEGIN-EDIT (also embedded into the Spec Builder page by npm run sync:spec-builder)
 /* ---- Editing helpers for the text area: the text and the selection in, the new text and selection out. ---- */
 const LIST_KIND = {
   h2: { has: (l) => /^##\s/.test(l) && !/^###/.test(l), prefix: () => '## ' },
@@ -1012,6 +1014,7 @@ function prdFacts(text) {
     notes: (t.match(/^\*\*R\d+ · [^\n]*\bnote from /gm) || []).length, sources: body(/^sources?$|^source tickets$/i).length, open, words: (t.match(/\S+/g) || []).length, sections: secs.list.length,
   };
 }
+// END-EDIT
 </script>
 <script>
 (function(){
@@ -1098,6 +1101,7 @@ function docChanged(fromEdit){
 function confirmUi(){
   var ok=!!S.confirmed;
   $('word').disabled=!ok; $('word').title=ok?'Save the confirmed document as a Word file':'Confirm the PRD first';
+  $('tospec').disabled=!ok; $('tospec').title=ok?'Hand the confirmed PRD to the Spec Builder (functional specification and technical solution architecture)':'Confirm the PRD first';
   $('confirmBtn').textContent=ok?'Confirm again…':'Confirm the PRD…';
   if(ok) $('confirmnote').textContent='Confirmed '+S.confirmed.at+'. The Word file contains exactly this version. Any change asks for a new confirmation.';
   else if(S.wasConfirmed) $('confirmnote').textContent='Changed after the confirmation: confirm the document again before saving it.';
@@ -1118,6 +1122,12 @@ $('cfno').onclick=closeConfirm;
 $('cfyes').onclick=function(){ if(!$('cfcheck').checked) return; var d=new Date(); S.confirmed={text:$('prd').value,at:d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}; S.wasConfirmed=true; $('cfwrap').hidden=true; confirmUi(); setStatus('Confirmed. You can save the document as a Word file now.'); $('word').focus(); };
 $('cfwrap').addEventListener('keydown',function(e){ if(e.key==='Escape'){ e.stopPropagation(); closeConfirm(); } });
 $('cfwrap').addEventListener('mousedown',function(e){ if(e.target===$('cfwrap')) closeConfirm(); });
+$('tospec').onclick=function(){
+  if(!S.confirmed) return; var f=prdFacts(S.confirmed.text), payload={type:'spec:from-prd',title:f.title||S.project||'PRD',markdown:S.confirmed.text};
+  if(JSON.stringify(payload).length>38000){ setStatus('The PRD is too long to hand over (more than 38 KB). Take out some requirements or sources.',true); return; }
+  if(window.parent===window){ setStatus('Open this Space in the app to continue with the specification.',true); return; }
+  window.parent.postMessage({type:'wb:handoff',to:'spec-builder',payload:payload,open:true,notice:'The confirmed PRD was handed to the Spec Builder.'},'*'); setStatus('Handed over to the Spec Builder.');
+};
 $('word').onclick=function(){ if(!S.confirmed) return; var f=prdFacts(S.confirmed.text); setStatus('Saving...'); window.parent.postMessage({type:'prd:export-docx',title:f.title||S.project||'PRD',markdown:S.confirmed.text,confirmed:true},'*'); };
 $('regen').onclick=function(){build();};
 
