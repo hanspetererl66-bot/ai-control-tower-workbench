@@ -189,7 +189,7 @@ export default function SpaceViewer({
       const handle = space.slug === CUSTOMER360_SPACE ? (data: unknown) => handleCustomer360Message(data, c360Ref.current ?? {})
         : space.slug === RENEWALS_SPACE ? (data: unknown) => handleRenewalsMessage(data, renewalsRef.current ?? {})
         : space.slug === INTERVIEW_SPACE ? (data: unknown) => handleInterviewMessage(data, interviewRef.current ?? {})
-        : space.slug === PRD_SPACE ? handlePrdMessage
+        : space.slug === PRD_SPACE ? (data: unknown, call: BridgeCall | undefined) => handlePrdMessage(data, call, { exportDocx: window.host?.exportDocx })
         : space.slug === SALES_SPACE ? async (data: unknown, call: BridgeCall | undefined) => (await handleSalesKnowledgeMessage(data, salesKnRef.current ?? {})) ?? handleSalesMessage(data, call)
         : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? handleControlTowerForecastMessage
         : space.slug === PRECLOSE_SPACE ? async (data: unknown, call: BridgeCall | undefined) => (await handlePrecloseForecastMessage(data, call)) ?? handleDatabricksPrecloseMessage(data, call)

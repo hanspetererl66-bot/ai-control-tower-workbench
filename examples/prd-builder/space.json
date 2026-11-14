@@ -1,13 +1,15 @@
 {
   "title": "PRD Builder",
-  "description": "Anforderungen aus Jira, Linear, Slack und Notion laden (eine Quelle oder mehrere zusammen), die relevanten anhaken und daraus ein Product Requirements Document (PRD) erzeugen, mit Quellenschlüssel an jedem Eintrag.",
+  "description": "Anforderungen aus Jira, Linear, Slack und Notion laden (eine Quelle oder mehrere zusammen), die relevanten anhaken, daraus ein Product Requirements Document (PRD) erzeugen, es einfach bearbeiten (Leiste, Gliederung, Rückgängig), bestätigen und als Word-Datei ablegen.",
   "domain": "Sales",
   "insights": [
     "Quellen: Jira und Linear liefern Tickets (Linear gruppiert nach Projekt), Slack liefert die Nachrichten eines Kanals und Notion die Abschnitte einer Seite als Notizen, also Zitate, die noch als Anforderung formuliert werden müssen. Alle Quellen werden nur gelesen, nichts wird zurückgeschrieben.",
     "Mehrere Quellen lassen sich nacheinander laden und landen in einem Dokument; eine Quelle lässt sich über das × wieder herausnehmen. Ohne Connector gibt es eine Demo mit Beispielantworten von Linear, Slack und Notion und den Demo-Backlog der Sales-App.",
     "Das PRD wird nur aus den angehakten Einträgen gebaut: Überblick, Ziele, Nutzer, Anforderungen je Gruppe (Notizen als Zitat), Nicht-Umfang, offene Fragen und Quellen.",
     "Offene Fragen findet der Builder selbst: Tickets ohne Akzeptanzkriterien, ohne Priorität oder ohne Nutzerrolle, und je Notiz die Aufforderung, sie als Anforderung zu formulieren.",
+    "Bearbeiten: Leiste für Überschrift, Unterüberschrift, Fett, Aufzählung, Nummerierung und Zitat auf den markierten Zeilen, Rückgängig und Wiederholen (Strg oder Cmd + Z), dazu eine Gliederung mit Springen, Abschnitt nach oben oder unten, Löschen und Hinzufügen (Ziele, Nicht-Umfang, Annahmen, Erfolgsmaße, Risiken, offene Fragen); die Nummerierung der Abschnitte zählt sich neu.",
+    "Bestätigen und ablegen: „Confirm the PRD“ zeigt Titel, Zahl der Anforderungen, Notizen und Quellen, Länge und die offenen Fragen (mit Warnung, bestätigt wird dann bewusst trotzdem). Erst danach gilt „Save as Word (.docx)“: die App öffnet den Speichern-Dialog, die Datei enthält genau die bestätigte Fassung; jede Änderung nimmt die Bestätigung zurück.",
     "Der Entwurf ist bearbeitbar; Joule kann ihn überarbeiten, ohne dass etwas in den Quellen verändert wird."
   ],
-  "prompt": "Bundled example: PRD Builder (requirements from Jira, Linear, Slack and Notion to a PRD; model and demo data embedded by npm run sync:prd-builder)."
+  "prompt": "Bundled example: PRD Builder (requirements from Jira, Linear, Slack and Notion to a PRD; editing, confirmation and Word export; model and demo data embedded by npm run sync:prd-builder)."
 }

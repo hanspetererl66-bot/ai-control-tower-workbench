@@ -15,6 +15,7 @@ import { createSkillStore } from './skill-store.mjs';
 import { createOntologyStore } from './ontology-store.mjs';
 import { createGovernanceSync, createSharedGovernance } from './ontology-shared.mjs';
 import { joinText, listOf, openSkillPackage, packSkill, SLUG as SKILL_SLUG } from './skill-package.mjs';
+import { docxFileName, markdownToDocx } from './docx.mjs';
 import { copySlug, renameSkillMd } from '../shared/duplicate.mjs';
 import { createVoiceStore, isAppAudioRequest, transcribeWithDeepgram, VoiceError } from './voice.mjs';
 import { ensureGooseConfig } from '../shared/goose-config.mjs';
@@ -760,6 +761,26 @@ ipcMain.handle('skill-export', async (_event, dir) => {
     if (picked.canceled || !picked.filePath) return { ok: false, canceled: true };
     writeFileSync(picked.filePath, zip);
     return { ok: true, path: picked.filePath, files: files.length };
+  } catch (e) {
+    return { ok: false, detail: e?.message ?? String(e) };
+  }
+});
+
+/** Save a document as Word: the page sends the Markdown, the person chooses where it goes (nothing is written without the dialog). */
+ipcMain.handle('document-export-docx', async (_event, payload) => {
+  try {
+    const title = typeof payload?.title === 'string' ? payload.title.slice(0, 200) : '';
+    const markdown = typeof payload?.markdown === 'string' ? payload.markdown : '';
+    if (!markdown.trim()) return { ok: false, detail: 'There is nothing to save.' };
+    const buffer = markdownToDocx(markdown, { title: title || 'Document' });
+    const picked = await dialog.showSaveDialog(mainWindow ?? undefined, {
+      title: 'Save as Word document',
+      defaultPath: join(app.getPath('downloads'), docxFileName(title)),
+      filters: [{ name: 'Word document', extensions: ['docx'] }],
+    });
+    if (picked.canceled || !picked.filePath) return { ok: false, canceled: true };
+    writeFileSync(picked.filePath, buffer);
+    return { ok: true, path: picked.filePath, bytes: buffer.length };
   } catch (e) {
     return { ok: false, detail: e?.message ?? String(e) };
   }

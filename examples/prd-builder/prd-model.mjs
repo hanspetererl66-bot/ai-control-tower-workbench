@@ -97,5 +97,83 @@ function buildPrd({ project, issues, selectedKeys, today }) {
   chosen.forEach((i) => L.push((i.source || 'jira') === 'jira' ? `- ${i.key} · ${i.type || 'Issue'} · ${i.status || '-'} · ${i.priority || '-'} · ${i.summary}` : `- ${i.key} · ${i.type || 'Issue'} · ${sourceOf(i)} · ${i.status || '-'} · ${i.priority || '-'} · ${i.summary}${i.url ? ' · ' + i.url : ''}`));
   return L.join('\n') + '\n';
 }
+
+/* ---- Editing helpers for the text area: the text and the selection in, the new text and selection out. ---- */
+const LIST_KIND = {
+  h2: { has: (l) => /^##\s/.test(l) && !/^###/.test(l), prefix: () => '## ' },
+  h3: { has: (l) => /^###\s/.test(l), prefix: () => '### ' },
+  bullet: { has: (l) => /^[-*]\s/.test(l), prefix: () => '- ' },
+  number: { has: (l) => /^\d+[.)]\s/.test(l), prefix: (i) => `${i + 1}. ` },
+  quote: { has: (l) => /^>\s?/.test(l), prefix: () => '> ' },
+};
+const ANY_PREFIX = /^(#{1,6}\s+|[-*]\s+|\d+[.)]\s+|>\s?)/;
+
+/** Heading, bullet, number or quote on the lines the selection touches; again on lines that already have it takes it off. */
+function toggleLines(text, start, end, kind) {
+  const k = LIST_KIND[kind]; if (!k) return { text, start, end };
+  const e = end > start && text[end - 1] === '\n' ? end - 1 : end;
+  const a = text.lastIndexOf('\n', start - 1) + 1; let b = text.indexOf('\n', e); if (b < 0) b = text.length;
+  const lines = text.slice(a, b).split('\n');
+  const filled = lines.filter((l) => l.trim());
+  const all = filled.length > 0 && filled.every((l) => k.has(l));
+  let n = 0;
+  const out = lines.map((l) => {
+    if (!l.trim()) return l;
+    if (all) return l.replace(ANY_PREFIX, '');
+    return k.prefix(n++) + l.replace(ANY_PREFIX, '');
+  }).join('\n');
+  return { text: text.slice(0, a) + out + text.slice(b), start: a, end: a + out.length };
+}
+
+/** **bold** around the selection (or a placeholder when nothing is selected); on text that is already bold it takes the marks off. */
+function toggleBold(text, start, end) {
+  const m = '**';
+  if (start >= 2 && text.slice(start - 2, start) === m && text.slice(end, end + 2) === m) return { text: text.slice(0, start - 2) + text.slice(start, end) + text.slice(end + 2), start: start - 2, end: end - 2 };
+  const sel = start === end ? 'bold text' : text.slice(start, end);
+  return { text: text.slice(0, start) + m + sel + m + text.slice(end), start: start + 2, end: start + 2 + sel.length };
+}
+
+/** The "## " sections of the document: the text before the first one stays where it is. */
+function sections(text) {
+  const heads = []; let pos = 0;
+  text.split('\n').forEach((line) => { const h = /^##\s+(.*\S)\s*$/.exec(line); if (h && !/^###/.test(line)) heads.push({ title: h[1].replace(/^\d+\.\s+/, ''), start: pos }); pos += line.length + 1; });
+  heads.forEach((h, i) => { h.end = i + 1 < heads.length ? heads[i + 1].start : text.length; });
+  return { pre: heads.length ? text.slice(0, heads[0].start) : text, list: heads };
+}
+/** Numbers the headings that carry a number ("## 4. Requirements") from 1 up in their order again. */
+function renumber(text) { let n = 0; return text.replace(/^##\s+\d+\.\s+(.*)$/gm, (_m, t) => `## ${++n}. ${t}`); }
+const chunkEnd = (t) => (t.endsWith('\n') ? t : t + '\n');
+function moveSection(text, i, dir) {
+  const { pre, list } = sections(text), j = i + dir;
+  if (i < 0 || j < 0 || i >= list.length || j >= list.length) return text;
+  const chunks = list.map((h) => chunkEnd(text.slice(h.start, h.end)));
+  [chunks[i], chunks[j]] = [chunks[j], chunks[i]];
+  return renumber(pre + chunks.join(''));
+}
+function deleteSection(text, i) {
+  const { pre, list } = sections(text); if (i < 0 || i >= list.length) return text;
+  return renumber(pre + list.filter((_h, k) => k !== i).map((h) => chunkEnd(text.slice(h.start, h.end))).join(''));
+}
+const TEMPLATES = {
+  goals: ['Goals', '- To be defined.'], nongoals: ['Non-goals', '- To be defined.'], assumptions: ['Assumptions', '- To be defined.'],
+  metrics: ['Success metrics', '- To be defined: how will we know it worked?'], risks: ['Risks', '- To be defined.'], question: ['Open questions', '- To be answered.'],
+};
+function addSection(text, key) {
+  const t = TEMPLATES[key]; if (!t) return text;
+  const base = text.replace(/\s+$/, '');
+  return renumber(`${base}\n\n## 99. ${t[0]}\n\n${t[1]}\n`);
+}
+
+/** What a person should see before confirming: title, number of requirements and sources, the open questions and the length. */
+function prdFacts(text) {
+  const t = String(text || ''), secs = sections(t);
+  const body = (re) => { const s = secs.list.find((h) => re.test(h.title)); return s ? t.slice(s.start, s.end).split('\n').slice(1).filter((l) => /^-\s/.test(l)).map((l) => l.replace(/^-\s+/, '').trim()) : []; };
+  const open = body(/^open questions?$/i).filter((l) => !/^none found/i.test(l));
+  const first = /^#\s+(.*\S)\s*$/m.exec(t);
+  return {
+    title: first ? first[1].replace(/^product requirements:\s*/i, '') : '', requirements: (t.match(/^\*\*R\d+ · /gm) || []).length,
+    notes: (t.match(/^\*\*R\d+ · [^\n]*\bnote from /gm) || []).length, sources: body(/^sources?$|^source tickets$/i).length, open, words: (t.match(/\S+/g) || []).length, sections: secs.list.length,
+  };
+}
 // END-MODEL
-export { parseDescription, roleOf, groupByEpic, openQuestions, buildPrd, prioRank, sourceOf, isNote };
+export { parseDescription, roleOf, groupByEpic, openQuestions, buildPrd, prioRank, sourceOf, isNote, toggleLines, toggleBold, sections, renumber, moveSection, deleteSection, addSection, prdFacts, TEMPLATES };

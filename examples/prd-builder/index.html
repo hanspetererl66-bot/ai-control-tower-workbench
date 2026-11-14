@@ -266,6 +266,32 @@ h1{margin:0 0 4px;font-size:24px}
 textarea.prd{width:100%;min-height:560px;box-sizing:border-box;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical}
 .acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
 .note{font-size:12px;color:var(--muted)}
+.edtools{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:0 0 8px}
+.edtools button{font:inherit;font-size:12px;padding:4px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer}
+.edtools button:hover:not(:disabled),.edtools button:focus-visible{border-color:var(--purple);color:var(--purple-ink)}
+.edtools button:disabled{opacity:.45;cursor:default}
+.edsep{width:1px;height:18px;background:var(--line);margin:0 4px}
+.outline{margin:0 0 8px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:6px 10px}
+.outline summary{cursor:pointer;font-size:12px;font-weight:650}
+.outline ol{list-style:none;margin:6px 0;padding:0;max-height:190px;overflow:auto}
+.outline li{display:flex;align-items:center;gap:4px;padding:2px 0}
+.outline .olink{flex:1;min-width:0;text-align:left;font:inherit;font-size:12.5px;border:0;background:none;color:var(--ink);cursor:pointer;padding:3px 4px;border-radius:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.outline .olink:hover,.outline .olink:focus-visible{background:var(--purple-dim);color:var(--purple-ink)}
+.outline .ob{font:inherit;font-size:12px;width:24px;height:24px;border:1px solid transparent;border-radius:6px;background:none;color:var(--muted);cursor:pointer}
+.outline .ob:hover:not(:disabled),.outline .ob:focus-visible{border-color:var(--line);color:var(--ink)}
+.outline .ob:disabled{opacity:.35;cursor:default}
+.outline .addsec{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--ink-2)}
+.outline select{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:3px 8px;background:var(--surface);color:var(--ink)}
+.acts.final{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.cfwrap{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--ink) 45%,transparent)}
+.cfwrap[hidden]{display:none}
+.cf{width:min(520px,100%);max-height:90vh;overflow:auto;padding:20px 22px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow-lg)}
+.cf h3{margin:0 0 10px;font-size:16px}
+.cfl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0 0 12px;font-size:13px}
+.cfl dt{color:var(--muted)}.cfl dd{margin:0;font-weight:600}
+.cfwarn{margin:0 0 12px;padding:10px 12px;border:1px solid var(--amber-border);border-radius:10px;background:var(--amber-dim);font-size:12.5px;color:var(--ink-2)}
+.cfwarn ul{margin:6px 0 0;padding-left:18px}
+.cfok{display:flex;gap:8px;align-items:flex-start;margin:0 0 12px;font-size:13px}
 .empty{color:var(--muted);font-size:13px;padding:10px 0}
 .err{color:var(--red);font-size:13px}
 </style>
@@ -303,12 +329,42 @@ textarea.prd{width:100%;min-height:560px;box-sizing:border-box;font:13px/1.55 ui
     </section>
     <section class="pane card" aria-label="Document">
       <h2>2 · The PRD</h2>
+      <div class="edtools" role="toolbar" aria-label="Edit the document">
+        <button type="button" data-ed="h2" title="Heading (toggles on the selected lines)">Heading</button>
+        <button type="button" data-ed="h3" title="Sub heading">Sub heading</button>
+        <button type="button" data-ed="bold" title="Bold (Ctrl or Cmd + B)"><b>B</b></button>
+        <button type="button" data-ed="bullet" title="Bullet list">• List</button>
+        <button type="button" data-ed="number" title="Numbered list">1. List</button>
+        <button type="button" data-ed="quote" title="Quote">Quote</button>
+        <span class="edsep" aria-hidden="true"></span>
+        <button type="button" id="undo" title="Undo (Ctrl or Cmd + Z)" disabled>Undo</button>
+        <button type="button" id="redo" title="Redo (Ctrl or Cmd + Shift + Z)" disabled>Redo</button>
+      </div>
+      <details class="outline" id="outlinebox" open>
+        <summary>Outline <span class="note" id="outlinecount"></span></summary>
+        <ol id="outline" aria-label="Sections of the document"></ol>
+        <label class="addsec">Add a section <select id="addsec" aria-label="Add a section"><option value="">Choose…</option><option value="goals">Goals</option><option value="nongoals">Non-goals</option><option value="assumptions">Assumptions</option><option value="metrics">Success metrics</option><option value="risks">Risks</option><option value="question">Open questions</option></select></label>
+      </details>
       <textarea class="prd" id="prd" spellcheck="false" aria-label="PRD draft (Markdown), editable"></textarea>
       <div class="acts">
         <button class="primary" id="refine">Refine with Joule</button>
         <button class="ghost" id="copy">Copy</button>
         <button class="ghost" id="regen" hidden>Rebuild from selection</button>
         <span class="note" id="note">The draft follows your selection until you edit the text.</span>
+      </div>
+      <div class="acts final" aria-label="Confirm and save">
+        <button class="primary" id="confirmBtn">Confirm the PRD…</button>
+        <button class="ghost" id="word" disabled title="Confirm the PRD first">Save as Word (.docx)</button>
+        <span class="note" id="confirmnote" role="status">Not confirmed yet. Confirm the document to save it as a Word file.</span>
+      </div>
+      <div class="cfwrap" id="cfwrap" hidden>
+        <div class="cf" role="dialog" aria-modal="true" aria-labelledby="cf-h">
+          <h3 id="cf-h">Confirm the PRD</h3>
+          <dl class="cfl" id="cffacts"></dl>
+          <div id="cfopen"></div>
+          <label class="cfok"><input type="checkbox" id="cfcheck"><span id="cfchecktext"></span></label>
+          <div class="acts"><button class="primary" id="cfyes" disabled>Confirm</button><button class="ghost" id="cfno">Back to editing</button></div>
+        </div>
       </div>
     </section>
   </div>
@@ -878,6 +934,84 @@ function buildPrd({ project, issues, selectedKeys, today }) {
   chosen.forEach((i) => L.push((i.source || 'jira') === 'jira' ? `- ${i.key} · ${i.type || 'Issue'} · ${i.status || '-'} · ${i.priority || '-'} · ${i.summary}` : `- ${i.key} · ${i.type || 'Issue'} · ${sourceOf(i)} · ${i.status || '-'} · ${i.priority || '-'} · ${i.summary}${i.url ? ' · ' + i.url : ''}`));
   return L.join('\n') + '\n';
 }
+
+/* ---- Editing helpers for the text area: the text and the selection in, the new text and selection out. ---- */
+const LIST_KIND = {
+  h2: { has: (l) => /^##\s/.test(l) && !/^###/.test(l), prefix: () => '## ' },
+  h3: { has: (l) => /^###\s/.test(l), prefix: () => '### ' },
+  bullet: { has: (l) => /^[-*]\s/.test(l), prefix: () => '- ' },
+  number: { has: (l) => /^\d+[.)]\s/.test(l), prefix: (i) => `${i + 1}. ` },
+  quote: { has: (l) => /^>\s?/.test(l), prefix: () => '> ' },
+};
+const ANY_PREFIX = /^(#{1,6}\s+|[-*]\s+|\d+[.)]\s+|>\s?)/;
+
+/** Heading, bullet, number or quote on the lines the selection touches; again on lines that already have it takes it off. */
+function toggleLines(text, start, end, kind) {
+  const k = LIST_KIND[kind]; if (!k) return { text, start, end };
+  const e = end > start && text[end - 1] === '\n' ? end - 1 : end;
+  const a = text.lastIndexOf('\n', start - 1) + 1; let b = text.indexOf('\n', e); if (b < 0) b = text.length;
+  const lines = text.slice(a, b).split('\n');
+  const filled = lines.filter((l) => l.trim());
+  const all = filled.length > 0 && filled.every((l) => k.has(l));
+  let n = 0;
+  const out = lines.map((l) => {
+    if (!l.trim()) return l;
+    if (all) return l.replace(ANY_PREFIX, '');
+    return k.prefix(n++) + l.replace(ANY_PREFIX, '');
+  }).join('\n');
+  return { text: text.slice(0, a) + out + text.slice(b), start: a, end: a + out.length };
+}
+
+/** **bold** around the selection (or a placeholder when nothing is selected); on text that is already bold it takes the marks off. */
+function toggleBold(text, start, end) {
+  const m = '**';
+  if (start >= 2 && text.slice(start - 2, start) === m && text.slice(end, end + 2) === m) return { text: text.slice(0, start - 2) + text.slice(start, end) + text.slice(end + 2), start: start - 2, end: end - 2 };
+  const sel = start === end ? 'bold text' : text.slice(start, end);
+  return { text: text.slice(0, start) + m + sel + m + text.slice(end), start: start + 2, end: start + 2 + sel.length };
+}
+
+/** The "## " sections of the document: the text before the first one stays where it is. */
+function sections(text) {
+  const heads = []; let pos = 0;
+  text.split('\n').forEach((line) => { const h = /^##\s+(.*\S)\s*$/.exec(line); if (h && !/^###/.test(line)) heads.push({ title: h[1].replace(/^\d+\.\s+/, ''), start: pos }); pos += line.length + 1; });
+  heads.forEach((h, i) => { h.end = i + 1 < heads.length ? heads[i + 1].start : text.length; });
+  return { pre: heads.length ? text.slice(0, heads[0].start) : text, list: heads };
+}
+/** Numbers the headings that carry a number ("## 4. Requirements") from 1 up in their order again. */
+function renumber(text) { let n = 0; return text.replace(/^##\s+\d+\.\s+(.*)$/gm, (_m, t) => `## ${++n}. ${t}`); }
+const chunkEnd = (t) => (t.endsWith('\n') ? t : t + '\n');
+function moveSection(text, i, dir) {
+  const { pre, list } = sections(text), j = i + dir;
+  if (i < 0 || j < 0 || i >= list.length || j >= list.length) return text;
+  const chunks = list.map((h) => chunkEnd(text.slice(h.start, h.end)));
+  [chunks[i], chunks[j]] = [chunks[j], chunks[i]];
+  return renumber(pre + chunks.join(''));
+}
+function deleteSection(text, i) {
+  const { pre, list } = sections(text); if (i < 0 || i >= list.length) return text;
+  return renumber(pre + list.filter((_h, k) => k !== i).map((h) => chunkEnd(text.slice(h.start, h.end))).join(''));
+}
+const TEMPLATES = {
+  goals: ['Goals', '- To be defined.'], nongoals: ['Non-goals', '- To be defined.'], assumptions: ['Assumptions', '- To be defined.'],
+  metrics: ['Success metrics', '- To be defined: how will we know it worked?'], risks: ['Risks', '- To be defined.'], question: ['Open questions', '- To be answered.'],
+};
+function addSection(text, key) {
+  const t = TEMPLATES[key]; if (!t) return text;
+  const base = text.replace(/\s+$/, '');
+  return renumber(`${base}\n\n## 99. ${t[0]}\n\n${t[1]}\n`);
+}
+
+/** What a person should see before confirming: title, number of requirements and sources, the open questions and the length. */
+function prdFacts(text) {
+  const t = String(text || ''), secs = sections(t);
+  const body = (re) => { const s = secs.list.find((h) => re.test(h.title)); return s ? t.slice(s.start, s.end).split('\n').slice(1).filter((l) => /^-\s/.test(l)).map((l) => l.replace(/^-\s+/, '').trim()) : []; };
+  const open = body(/^open questions?$/i).filter((l) => !/^none found/i.test(l));
+  const first = /^#\s+(.*\S)\s*$/m.exec(t);
+  return {
+    title: first ? first[1].replace(/^product requirements:\s*/i, '') : '', requirements: (t.match(/^\*\*R\d+ · /gm) || []).length,
+    notes: (t.match(/^\*\*R\d+ · [^\n]*\bnote from /gm) || []).length, sources: body(/^sources?$|^source tickets$/i).length, open, words: (t.match(/\S+/g) || []).length, sections: secs.list.length,
+  };
+}
 </script>
 <script>
 (function(){
@@ -888,7 +1022,7 @@ function today(){return new Date().toISOString().slice(0,10);}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function setStatus(t,err){var s=$('status');s.textContent=t||'';s.className='st'+(err?' err':'');}
 
-function build(){ $('prd').value=buildPrd({project:S.project||'Project',issues:S.issues,selectedKeys:Object.keys(S.sel).filter(function(k){return S.sel[k];}),today:today()}); S.dirty=false; $('regen').hidden=true; $('note').textContent='The draft follows your selection until you edit the text.'; }
+function build(){ $('prd').value=buildPrd({project:S.project||'Project',issues:S.issues,selectedKeys:Object.keys(S.sel).filter(function(k){return S.sel[k];}),today:today()}); S.dirty=false; $('regen').hidden=true; $('note').textContent='The draft follows your selection until you edit the text.'; docChanged(); }
 function onSelection(){ if(S.dirty){ $('regen').hidden=false; $('note').textContent='You edited the text. Press "Rebuild from selection" to start over from the tickets.'; } else build(); count(); }
 function count(){ var n=0,t=0; S.issues.forEach(function(i){ if(i.type!=='Epic'){t++; if(S.sel[i.key])n++;} }); $('count').textContent=t?n+' of '+t+' requirements selected':''; }
 
@@ -918,7 +1052,73 @@ function selectWhere(fn){ S.sel={}; S.issues.forEach(function(i){ if(i.type!=='E
 $('selAll').onclick=function(){selectWhere(function(){return true;});};
 $('selNone').onclick=function(){selectWhere(function(){return false;});};
 $('selHigh').onclick=function(){selectWhere(function(i){return i.priority==='High'||i.priority==='Highest';});};
-$('prd').addEventListener('input',function(){S.dirty=true;});
+$('prd').addEventListener('input',function(){ S.dirty=true; typed(); });
+
+/* ---------- editing: toolbar, undo and redo, outline ---------- */
+var H={stack:[],i:-1,timer:0};
+function cur(){ var t=$('prd'); return {v:t.value,s:t.selectionStart,e:t.selectionEnd}; }
+function snap(){ var c=cur(), top=H.stack[H.i]; if(top&&top.v===c.v){ top.s=c.s; top.e=c.e; return; } H.stack=H.stack.slice(0,H.i+1); H.stack.push(c); if(H.stack.length>100) H.stack.shift(); H.i=H.stack.length-1; }
+function histButtons(){ $('undo').disabled=H.i<=0; $('redo').disabled=H.i>=H.stack.length-1; }
+function typed(){ clearTimeout(H.timer); H.timer=setTimeout(function(){ snap(); histButtons(); },400); $('undo').disabled=false; docChanged(true); }
+function apply(r){ var t=$('prd'); t.value=r.text; t.focus(); t.setSelectionRange(r.start,r.end); S.dirty=true; snap(); histButtons(); docChanged(true); if(S.dirty){ $('regen').hidden=!S.issues.length; } }
+function restore(k){ if(k<0||k>=H.stack.length) return; clearTimeout(H.timer); H.i=k; var c=H.stack[k], t=$('prd'); t.value=c.v; t.focus(); t.setSelectionRange(c.s,c.e); S.dirty=true; histButtons(); docChanged(true); }
+function undo(){ clearTimeout(H.timer); snap(); restore(H.i-1); }
+function redo(){ restore(H.i+1); }
+function edit(kind){ var t=$('prd'); snap(); apply(kind==='bold'?toggleBold(t.value,t.selectionStart,t.selectionEnd):toggleLines(t.value,t.selectionStart,t.selectionEnd,kind)); }
+document.querySelector('.edtools').addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('button'):null; if(!b||b.disabled) return; if(b.dataset.ed) edit(b.dataset.ed); else if(b.id==='undo') undo(); else if(b.id==='redo') redo(); });
+$('prd').addEventListener('keydown',function(e){
+  var mod=e.metaKey||e.ctrlKey, k=(e.key||'').toLowerCase();
+  if(mod&&k==='z'){ e.preventDefault(); if(e.shiftKey) redo(); else undo(); }
+  else if(mod&&k==='y'){ e.preventDefault(); redo(); }
+  else if(mod&&k==='b'){ e.preventDefault(); edit('bold'); }
+});
+var SECS=[];
+function outline(){
+  var sec=sections($('prd').value); SECS=sec.list;
+  $('outline').innerHTML=SECS.map(function(h,i){ return '<li><button type="button" class="olink" data-go="'+i+'" title="Go to this section">'+esc(h.title)+'</button><button type="button" class="ob" data-mv="-1" data-i="'+i+'" aria-label="Move up: '+esc(h.title)+'"'+(i===0?' disabled':'')+'>↑</button><button type="button" class="ob" data-mv="1" data-i="'+i+'" aria-label="Move down: '+esc(h.title)+'"'+(i===SECS.length-1?' disabled':'')+'>↓</button><button type="button" class="ob" data-del="'+i+'" aria-label="Delete section: '+esc(h.title)+'" title="Delete">✕</button></li>'; }).join('');
+  $('outlinecount').textContent=SECS.length?SECS.length+' sections':'no sections yet';
+}
+$('outline').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('button'):null; if(!b||b.disabled) return; var t=$('prd');
+  if(b.dataset.go!==undefined){ var h=SECS[+b.dataset.go]; if(!h) return; var before=t.value.slice(0,h.start).split('\n').length-1, lh=parseFloat(getComputedStyle(t).lineHeight)||20; t.focus(); t.setSelectionRange(h.start,h.start+t.value.slice(h.start).split('\n')[0].length); t.scrollTop=Math.max(0,before*lh-24); return; }
+  snap();
+  if(b.dataset.mv!==undefined){ var i=+b.dataset.i; apply({text:moveSection(t.value,i,+b.dataset.mv),start:0,end:0}); t.setSelectionRange(0,0); }
+  else if(b.dataset.del!==undefined){ var gone=SECS[+b.dataset.del].title; apply({text:deleteSection(t.value,+b.dataset.del),start:0,end:0}); setStatus('Deleted the section "'+gone+'". Undo brings it back.'); }
+});
+$('addsec').addEventListener('change',function(e){ var k=e.target.value; if(!k) return; var t=$('prd'); snap(); var r=addSection(t.value,k); apply({text:r,start:r.length,end:r.length}); e.target.value=''; t.scrollTop=t.scrollHeight; });
+
+/* ---------- confirm and save as Word ---------- */
+S.confirmed=null;
+function docChanged(fromEdit){
+  outline();
+  if(S.confirmed&&S.confirmed.text!==$('prd').value){ S.confirmed=null; }
+  confirmUi(fromEdit);
+  if(!fromEdit){ H.stack=[]; H.i=-1; snap(); histButtons(); }
+}
+function confirmUi(){
+  var ok=!!S.confirmed;
+  $('word').disabled=!ok; $('word').title=ok?'Save the confirmed document as a Word file':'Confirm the PRD first';
+  $('confirmBtn').textContent=ok?'Confirm again…':'Confirm the PRD…';
+  if(ok) $('confirmnote').textContent='Confirmed '+S.confirmed.at+'. The Word file contains exactly this version. Any change asks for a new confirmation.';
+  else if(S.wasConfirmed) $('confirmnote').textContent='Changed after the confirmation: confirm the document again before saving it.';
+  else $('confirmnote').textContent='Not confirmed yet. Confirm the document to save it as a Word file.';
+}
+function openConfirm(){
+  var t=$('prd').value; if(!t.trim()){ setStatus('There is no document to confirm yet.',true); return; }
+  var f=prdFacts(t), n=f.open.length;
+  $('cffacts').innerHTML='<dt>Title</dt><dd>'+esc(f.title||'(none)')+'</dd><dt>Requirements</dt><dd>'+f.requirements+(f.notes?' (of them '+f.notes+' notes)':'')+'</dd><dt>Sources</dt><dd>'+f.sources+'</dd><dt>Sections</dt><dd>'+f.sections+'</dd><dt>Length</dt><dd>'+f.words+' words</dd><dt>Open questions</dt><dd>'+n+'</dd>';
+  $('cfopen').innerHTML=n?'<div class="cfwarn"><b>'+n+' open question'+(n>1?'s are':' is')+' still in the document.</b><ul>'+f.open.slice(0,5).map(function(q){return '<li>'+esc(q)+'</li>';}).join('')+(n>5?'<li>and '+(n-5)+' more</li>':'')+'</ul></div>':'';
+  $('cfchecktext').textContent=n?'I know about the open questions and confirm the document anyway.':'I have read the document and confirm it.';
+  $('cfcheck').checked=false; $('cfyes').disabled=true; $('cfwrap').hidden=false; $('cfcheck').focus();
+}
+function closeConfirm(){ $('cfwrap').hidden=true; $('confirmBtn').focus(); }
+$('confirmBtn').onclick=openConfirm;
+$('cfcheck').addEventListener('change',function(){ $('cfyes').disabled=!$('cfcheck').checked; });
+$('cfno').onclick=closeConfirm;
+$('cfyes').onclick=function(){ if(!$('cfcheck').checked) return; var d=new Date(); S.confirmed={text:$('prd').value,at:d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}; S.wasConfirmed=true; $('cfwrap').hidden=true; confirmUi(); setStatus('Confirmed. You can save the document as a Word file now.'); $('word').focus(); };
+$('cfwrap').addEventListener('keydown',function(e){ if(e.key==='Escape'){ e.stopPropagation(); closeConfirm(); } });
+$('cfwrap').addEventListener('mousedown',function(e){ if(e.target===$('cfwrap')) closeConfirm(); });
+$('word').onclick=function(){ if(!S.confirmed) return; var f=prdFacts(S.confirmed.text); setStatus('Saving...'); window.parent.postMessage({type:'prd:export-docx',title:f.title||S.project||'PRD',markdown:S.confirmed.text,confirmed:true},'*'); };
 $('regen').onclick=function(){build();};
 
 /* Several sources can be loaded one after the other; loading a source again replaces its part. */
@@ -964,7 +1164,8 @@ window.addEventListener('message',function(e){
   if(d.type==='prd:slack-channels'&&Array.isArray(d.channels)){ $('chans').innerHTML=d.channels.map(function(c){return '<option value="'+esc(c.name)+'">'+esc(c.name)+'</option>';}).join(''); }
   if(d.type==='prd:notion-choices'&&Array.isArray(d.choices)){ $('choices').innerHTML=d.choices.map(function(c){return '<button type="button" data-id="'+esc(c.id)+'">'+esc(c.title)+'</button>';}).join(''); $('choices').hidden=false; setStatus('Pick the page to take over.'); }
   if(d.type==='prd:backlog'&&Array.isArray(d.issues)){ var src=SRC[d.source]?d.source:'jira'; $('choices').hidden=true; var list=d.issues.slice(0,100).map(function(i){ i.source=src; return i; }); load(String(d.project||''),list,'Loaded '+list.filter(function(i){return i.type!=='Epic';}).length+' items from '+SRC[src].label+(d.more?' (not everything, the first part)':'')+'.',src); }
-  if(d.type==='prd:error'){ setStatus(String(d.message||'Jira could not be read.'),true); }
+  if(d.type==='prd:exported'){ if(d.ok) setStatus('Saved as Word: '+String(d.path||'')+(d.bytes?' ('+Math.max(1,Math.round(d.bytes/1024))+' KB)':'')+'.'); else if(d.canceled) setStatus('Saving was cancelled. Nothing was written.'); else setStatus(String(d.detail||'The file could not be saved.'),true); }
+  if(d.type==='prd:error'){ setStatus(String(d.message||'The source could not be read.'),true); }
 });
 window.parent.postMessage({type:'prd:projects-request'},'*');
 })();
