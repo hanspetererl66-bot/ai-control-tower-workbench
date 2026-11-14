@@ -4534,7 +4534,12 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "days": 13,
     "health": "yellow",
     "status": "Running",
-    "annualEur": 180000
+    "annualEur": 180000,
+    "offer": {
+     "id": "OFF-2026-0540",
+     "stage": "Negotiation",
+     "validUntil": "2026-11-30"
+    }
    }
   },
   {
@@ -4552,7 +4557,8 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Region": "MEE",
     "Term ends": "2027-12-31, notice 120 days",
     "Renewal decision": "2027-09-02 (in 318 days)",
-    "Renewal health": "Green"
+    "Renewal health": "Yellow",
+    "Renewal reasons": "High ticket TKT-48188 is open (waiting for customer)"
    },
    "view": {
     "space": "sales",
@@ -4576,7 +4582,7 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "id": "R-C-2025-0833",
     "decision": "2027-09-02",
     "days": 318,
-    "health": "green",
+    "health": "yellow",
     "status": "Running",
     "annualEur": 414000
    }
@@ -5200,7 +5206,7 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Note": "Add-on contract, fictional, only in the Renewals Space",
     "Renewal decision": "2026-12-01 (in 43 days)",
     "Renewal health": "Red",
-    "Renewal reasons": "Invoice INV-2026-40890 is overdue (€17,136, due 2026-09-30); Decision date 2026-12-01 is in 43 days"
+    "Renewal reasons": "Invoice INV-2026-40890 is overdue (€17,136, due 2026-09-30); Invoice INV-2026-40912 is overdue (€2,856, due 2026-10-05)"
    },
    "view": {
     "space": "renewals",
@@ -5213,7 +5219,40 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "health": "red",
     "status": "Running",
     "annualEur": 14400,
-    "addon": true
+    "addon": true,
+    "offer": {
+     "id": "OFF-2026-0541",
+     "stage": "Proposal sent",
+     "validUntil": "2026-11-20"
+    }
+   }
+  },
+  {
+   "id": "ticket:TKT-48231",
+   "type": "ticket",
+   "label": "TKT-48231",
+   "meta": {
+    "Title": "Integration Suite: the connector to the laboratory information system (LIMS) drops messages above 2 MB",
+    "Priority": "High",
+    "Status": "In processing"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "ticket:TKT-48233",
+   "type": "ticket",
+   "label": "TKT-48233",
+   "meta": {
+    "Title": "Integration Suite: the certificate of the LIMS endpoint expires on 2026-11-09",
+    "Priority": "Medium",
+    "Status": "Waiting for customer"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
    }
   },
   {
@@ -5224,6 +5263,20 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Status": "Overdue",
     "Gross amount": "€17,136",
     "Due": "2026-09-30"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-40912",
+   "type": "invoice",
+   "label": "INV-2026-40912",
+   "meta": {
+    "Status": "Overdue",
+    "Gross amount": "€2,856",
+    "Due": "2026-10-05"
    },
    "view": {
     "space": "renewals",
@@ -5301,7 +5354,7 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Note": "Add-on contract, fictional, only in the Renewals Space",
     "Renewal decision": "2026-12-30 (in 72 days)",
     "Renewal health": "Yellow",
-    "Renewal reasons": "Decision date 2026-12-30 is in 72 days; No renewal offer yet"
+    "Renewal reasons": "Decision date 2026-12-30 is in 72 days"
    },
    "view": {
     "space": "renewals",
@@ -5314,7 +5367,40 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "health": "yellow",
     "status": "Running",
     "annualEur": 18600,
-    "addon": true
+    "addon": true,
+    "offer": {
+     "id": "OFF-2026-0542",
+     "stage": "Proposal sent",
+     "validUntil": "2026-12-15"
+    }
+   }
+  },
+  {
+   "id": "ticket:TKT-48235",
+   "type": "ticket",
+   "label": "TKT-48235",
+   "meta": {
+    "Title": "e-signature add-on: the meaning of the signature is missing in the audit-trail export (21 CFR Part 11)",
+    "Priority": "Medium",
+    "Status": "In processing"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-40910",
+   "type": "invoice",
+   "label": "INV-2026-40910",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€22,134",
+    "Due": "2026-11-15"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
    }
   },
   {
@@ -5404,6 +5490,34 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    }
   },
   {
+   "id": "ticket:TKT-48237",
+   "type": "ticket",
+   "label": "TKT-48237",
+   "meta": {
+    "Title": "Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance",
+    "Priority": "Low",
+    "Status": "Waiting for customer"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-40911",
+   "type": "invoice",
+   "label": "INV-2026-40911",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€31,416",
+    "Due": "2026-12-01"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
    "id": "contract:C-2026-0913",
    "type": "contract",
    "label": "C-2026-0913",
@@ -5465,6 +5579,20 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Status": "Open",
     "Gross amount": "€261,503",
     "Due": "2026-10-31"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "ticket:TKT-48188",
+   "type": "ticket",
+   "label": "TKT-48188",
+   "meta": {
+    "Title": "Advanced Track and Trace: serial number requests are rejected for the Swiss market",
+    "Priority": "High",
+    "Status": "Waiting for customer"
    },
    "view": {
     "space": "renewals",
@@ -8705,7 +8833,22 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "type": "HAS_CONTRACT"
   },
   {
+   "source": "ticket:TKT-48231",
+   "target": "contract:C-2026-0922",
+   "type": "ABOUT"
+  },
+  {
+   "source": "ticket:TKT-48233",
+   "target": "contract:C-2026-0922",
+   "type": "ABOUT"
+  },
+  {
    "source": "invoice:INV-2026-40890",
+   "target": "contract:C-2026-0922",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "invoice:INV-2026-40912",
    "target": "contract:C-2026-0922",
    "type": "INVOICE_FOR"
   },
@@ -8723,6 +8866,16 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "source": "customer:lindenau-pharma-ag",
    "target": "contract:C-2026-0921",
    "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "ticket:TKT-48235",
+   "target": "contract:C-2026-0921",
+   "type": "ABOUT"
+  },
+  {
+   "source": "invoice:INV-2026-40910",
+   "target": "contract:C-2026-0921",
+   "type": "INVOICE_FOR"
   },
   {
    "source": "invoice:INV-2026-10716",
@@ -8745,6 +8898,16 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "type": "HAS_CONTRACT"
   },
   {
+   "source": "ticket:TKT-48237",
+   "target": "contract:C-2026-0923",
+   "type": "ABOUT"
+  },
+  {
+   "source": "invoice:INV-2026-40911",
+   "target": "contract:C-2026-0923",
+   "type": "INVOICE_FOR"
+  },
+  {
    "source": "customer:hanse-handelsgruppe-ag",
    "target": "contract:C-2026-0913",
    "type": "HAS_CONTRACT"
@@ -8758,6 +8921,11 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "source": "invoice:INV-2026-30077",
    "target": "contract:C-2024-0702",
    "type": "INVOICE_FOR"
+  },
+  {
+   "source": "ticket:TKT-48188",
+   "target": "contract:C-2025-0833",
+   "type": "ABOUT"
   },
   {
    "source": "invoice:INV-2026-40104",

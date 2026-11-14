@@ -73,6 +73,19 @@ Für BTP storage und Track and Trace gibt es noch kein Angebot, weil die Entsche
 2. **Werte:** Passen die Beträge, Termine und Stufen oben, oder willst du eine andere Verteilung (zum Beispiel ein Angebot über der Obergrenze, damit die Deal-Desk-Hürde sichtbar wird)?
 3. **Sichtbarkeit:** Die neuen Daten erscheinen in der Renewal-Karte (Speichen), im Detail eines Vertrags, in den Gesundheitssignalen und im Briefing. Reicht das, oder soll das Briefing sie ausdrücklich nennen?
 
+## Stand (14.11.2026, Branch `feat/lindenau-data`)
+
+Gebaut mit den Standardwerten des Konzepts (Hans-Peter hatte die drei Entscheidungen nicht beantwortet): der Fix für TKT-48188 im selben PR, die Werte wie oben, Sichtbarkeit überall dort, wo die Renewals-Daten schon hinfließen (Karte, Detail, Gesundheit, Briefing, Dashboard, Graph).
+
+**Gemessen:**
+- Lindenau: Tickets 1 auf 6 (vier neue, TKT-48188 sichtbar, das vorhandene TKT-48097), Rechnungen 3 auf 6, Angebote 1 auf 4. Muster (3 Tickets, 9 Rechnungen) und Hanse (2 und 2) sind unverändert.
+- Gesundheit über alle 21 Fälle: rot 5 (unverändert), gelb 13 auf 14, grün 3 auf 2. **Track and Trace wechselt von grün auf gelb**, weil das offene High-Ticket TKT-48188 jetzt am Vertrag hängt (das ist die Wirkung des Fixes). Bei den anderen Lindenau-Verträgen bleibt die Farbe; der Vertrag Integration Suite hat ein zweites überfälliges Rechnungssignal.
+- Offene Posten Lindenau in der Karte: überfällig 19.992 € (vorher 17.136 €), offen 595.952 €. Die Phase "Offer" zählt keine Verträge mehr (0, vorher 3 "behind"), "Negotiate" bleibt bei 3.
+
+**Weitere Dateien, die der Lauf neu schreibt:** `examples/renewals/renewals.json` und die beiden Seiten mit den eingebetteten Daten (Renewals, Renewal Analytics), das Space Agent Network (`examples/agent-network`, es liest die Renewals-Beispieldaten), der Knowledge Graph (302 Knoten und 672 Kanten statt 294 und 664).
+
+**Nicht gebaut:** Blöcke 4 und 5 (Mails je Vertrag, Nutzungsverlauf).
+
 ## Nicht geprüft
 
 - Nichts davon ist gebaut. Die Tabelle "Warum die Karte dünn ist" stammt aus `renewals.json` und dem Generator (Stand 14.11.2026), nicht aus der App.
