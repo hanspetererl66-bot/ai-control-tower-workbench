@@ -170,7 +170,7 @@ function Overview({ m, catalog, now, onTab, health, onDetail }: { m: ReturnType<
 }
 
 function SkillList({ list, value, onDetail }: { list: CSkill[]; value: (s: CSkill) => string; onDetail: OnDetail }) {
-  return <ul className="sh-list">{list.map((s) => <li key={s.id} className="sh-dbl" title="Double-click for the details" onDoubleClick={() => onDetail({ title: s.name, skills: [s] })}><span>{s.name}<small>{s.department} · {LEVEL_NAMES[s.level]}</small></span><em>{value(s)}</em></li>)}</ul>;
+  return <ul className="sh-list">{list.map((s) => <li key={s.id} className="sh-dbl" title="Double-click for the details" onDoubleClick={() => onDetail({ title: s.name, skills: [s] })}><span><span className="skill-name">{s.name}</span><small>{s.department} · {LEVEL_NAMES[s.level]}</small></span><em>{value(s)}</em></li>)}</ul>;
 }
 
 function Actions({ open, catalog, now, actor, onCatalog, onDetail }: { open: Proposal[]; catalog: Catalog; now: number; actor: string; onCatalog: (c: Catalog) => void; onDetail: OnDetail }) {
@@ -222,7 +222,7 @@ function Duplicates({ catalog, now, actor, onCatalog, onDetail }: { catalog: Cat
               <tbody>{c.ids.map((id) => { const s = byId.get(id)!; return (
                 <tr key={id} className={`sh-dbl ${id === keep ? 'sh-keep' : ''}`} title="Double-click for the details" onDoubleClick={() => onDetail({ title: s.name, skills: [s] })}>
                   <td><input type="radio" name={c.key} checked={id === keep} onChange={() => setMaster({ ...master, [c.key]: id })} aria-label={`Keep ${s.name}`} /></td>
-                  <td>{s.name}<small>{s.description}</small></td><td>{s.owner.split('@')[0]}</td><td>{LEVEL_NAMES[s.level]}</td><td>{s.uses90}</td><td>{s.users90}</td><td>{pct(s.success)}</td><td>{ago(s.lastUsed, now)}</td>
+                  <td><span className="skill-name">{s.name}</span><small>{s.description}</small></td><td>{s.owner.split('@')[0]}</td><td>{LEVEL_NAMES[s.level]}</td><td>{s.uses90}</td><td>{s.users90}</td><td>{pct(s.success)}</td><td>{ago(s.lastUsed, now)}</td>
                 </tr>); })}</tbody></table>
             <div className="sh-bulk">
               <button className="sh-primary" onClick={() => onCatalog(act(catalog, 'deprecate', c.ids.filter((i) => i !== keep), { replacedBy: keep }, now, actor))}>Merge into "{byId.get(keep)?.name}"</button>
@@ -274,7 +274,7 @@ function CatalogTab({ catalog, now, actor, onCatalog, onDetail }: { catalog: Cat
             {shown.map((s) => (
               <tr key={s.id} className="sh-dbl" title="Double-click for the details" onDoubleClick={() => onDetail({ title: s.name, skills: [s] })}>
                 <td><input type="checkbox" checked={sel.includes(s.id)} onChange={() => setSel(sel.includes(s.id) ? sel.filter((x) => x !== s.id) : [...sel, s.id])} aria-label={`Select ${s.name}`} /></td>
-                <td>{s.name}{s.example && <span className="sched-example">Example</span>}<small>{s.department}{s.replacedBy ? ` · replaced by ${catalog.skills.find((x) => x.id === s.replacedBy)?.name ?? '…'}` : ''}{s.sunsetAt && s.state === 'deprecated' ? ` · ends ${date(s.sunsetAt)}` : ''}{s.promotionRequested ? ` · ${LEVEL_NAMES[s.promotionRequested]} requested` : ''}</small></td>
+                <td><span className="skill-name">{s.name}</span>{s.example && <span className="sched-example">Example</span>}<small>{s.department}{s.replacedBy ? ` · replaced by ${catalog.skills.find((x) => x.id === s.replacedBy)?.name ?? '…'}` : ''}{s.sunsetAt && s.state === 'deprecated' ? ` · ends ${date(s.sunsetAt)}` : ''}{s.promotionRequested ? ` · ${LEVEL_NAMES[s.promotionRequested]} requested` : ''}</small></td>
                 <td><span className={`sh-pill sh-h-${health.get(s.id)}`}>{HEALTH_LABEL[health.get(s.id)!]}</span></td>
                 <td>{s.owner.split('@')[0]}</td><td>{LEVEL_NAMES[s.level]}</td><td>{s.uses30}</td><td>{s.uses90}</td><td>{s.users90}</td><td>{ago(s.lastUsed, now)}</td>
                 <td className={reviewDue(s, catalog, now) ? 'sh-late' : ''}>{date(s.reviewedAt)}</td>
@@ -361,7 +361,7 @@ function DetailPanel({ detail, catalog, health, now, onClose, onDetail }: { deta
             {similar.length > 0 && (
               <>
                 <h3>Does almost the same</h3>
-                <ul className="sh-drawer-list">{similar.map((x) => <li key={x.id}><button onClick={() => onDetail({ title: x.name, skills: [x] })}>{x.name}<small>{x.department} · {x.uses90} runs in 90 d</small></button></li>)}</ul>
+                <ul className="sh-drawer-list">{similar.map((x) => <li key={x.id}><button onClick={() => onDetail({ title: x.name, skills: [x] })}><span className="skill-name">{x.name}</span><small>{x.department} · {x.uses90} runs in 90 d</small></button></li>)}</ul>
               </>
             )}
           </>
@@ -369,7 +369,7 @@ function DetailPanel({ detail, catalog, health, now, onClose, onDetail }: { deta
           <ul className="sh-drawer-list">
             {detail.skills.map((x) => (
               <li key={x.id}><button onClick={() => onDetail({ title: x.name, skills: [x] })}>
-                <span>{x.name}{x.example && <span className="sched-example">Example</span>}<small>{x.department} · {LEVEL_NAMES[x.level]} · {x.owner.split('@')[0] || 'no owner'}</small></span>
+                <span><span className="skill-name">{x.name}</span>{x.example && <span className="sched-example">Example</span>}<small>{x.department} · {LEVEL_NAMES[x.level]} · {x.owner.split('@')[0] || 'no owner'}</small></span>
                 <span><span className={`sh-pill sh-h-${health.get(x.id)}`}>{HEALTH_LABEL[health.get(x.id)!]}</span><small>{x.uses30} runs / 30 d · last {ago(x.lastUsed, now)}</small></span>
               </button></li>
             ))}

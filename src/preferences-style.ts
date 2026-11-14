@@ -115,7 +115,7 @@ export function buildPreferenceCss(prefs: Preferences): string {
   const css: string[] = [...skinAppCss(prefs.skin ?? DEFAULT_SKIN), ...layoutAppCss(prefs.layout ?? DEFAULT_LAYOUT)];
   if (prefs.accent) {
     const a = accentVariants(prefs.accent);
-    css.push(`:root{--accent:${a.light};--send:${a.light}}`, `:root[data-theme="dark"]{--accent:${a.dark};--send:${a.dark}}`);
+    css.push(`:root{--accent:${a.light};--send:${a.light};--accent-ink:${a.lightInk}}`, `:root[data-theme="dark"]{--accent:${a.dark};--send:${a.dark};--accent-ink:${a.darkInk}}`);
   }
   css.push(...backgroundCss(prefs), ...tipCss(prefs.tips));
   const stack = FONT_STACKS[prefs.font];
