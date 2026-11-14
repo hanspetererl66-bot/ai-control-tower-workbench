@@ -136,6 +136,13 @@ export function buildPreferenceCss(prefs: Preferences): string {
 
 const MARK = 'werkbank-space-prefs';
 
+/** Dropdown boxes in a Space: lighter and medium grey, from the Space's own tokens. Only colour and weight, so each box keeps its size, border and background; a focused box keeps the focus style of its page. */
+const SPACE_SELECT_RULES = [
+  'html select:not([multiple]):not([size]):not(#wb-sel):not(:focus){color:color-mix(in srgb,var(--ink) 62%,var(--surface));border-color:color-mix(in srgb,var(--ink) 24%,var(--surface));font-weight:400}',
+  'html select:not([multiple]):not([size]):not(#wb-sel):not(:focus):hover:not(:disabled){border-color:color-mix(in srgb,var(--ink) 42%,var(--surface))}',
+  'html select option{color:var(--ink);background:var(--surface)}',
+];
+
 /** Spaces use the design-system tokens: the skin sets the whole palette, the accent then overrides --purple, --purple-mid, --purple-light and --purple-ink (the accent as text). Also reduces motion. */
 export function applySpacePrefs(html: string, prefs: Pick<Preferences, 'accent' | 'reduceMotion' | 'contrast' | 'font'> & { skin?: SkinId; layout?: LayoutId; tips?: Preferences['tips'] }): string {
   const rules: string[] = [...skinSpaceRules(prefs.skin ?? DEFAULT_SKIN), ...layoutSpaceRules(prefs.layout ?? DEFAULT_LAYOUT)];
@@ -146,6 +153,7 @@ export function applySpacePrefs(html: string, prefs: Pick<Preferences, 'accent' 
       `html:root[data-theme="dark"]{--purple:${a.dark};--purple-mid:${a.darkMid};--purple-light:${a.darkWash};--purple-ink:${a.darkInk}}`
     );
   }
+  rules.push(...SPACE_SELECT_RULES);
   rules.push(...spaceTipRules(prefs.tips));
   const stack = FONT_STACKS[prefs.font];
   if (stack) rules.push(`html body,html button,html input,html textarea,html select{font-family:${stack}}`);
