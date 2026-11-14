@@ -10,7 +10,7 @@ The connector `connectors/figma` reads Figma through its REST API. It is **read 
 
 ## Use
 
-- **Start from requirements**, source "Figma": paste a file or frame link (Share, Copy link; `?node-id=` picks one frame) or a file key. The agent reads the **open comments** first (a comment that states a need or a change becomes a requirement) and, where a design states rules, the **text in up to 5 frames**. Several comments saying the same count as mentions with quotes, like Slack and Notion. Clusters, classification and the hand-over work as for the other sources.
+- **Requirement collection**, source "Figma": paste a file or frame link (Share, Copy link; `?node-id=` picks one frame) or a file key. The agent reads the **open comments** first (a comment that states a need or a change becomes a requirement) and, where a design states rules, the **text in up to 5 frames**. Several comments saying the same count as mentions with quotes, like Slack and Notion. Clusters, classification and the hand-over work as for the other sources.
 - Tools: `figma_check_connection`, `figma_list_project_files`, `figma_get_file_outline` (pages and top-level frames), `figma_read_frame_text` (up to 10 frames), `figma_list_comments` (open, resolved or all, with replies).
 
 ## Limits

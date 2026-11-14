@@ -29,6 +29,7 @@ import Composer from './ui/Composer';
 import { chatMail, chatMailtoUrl } from './chat-mail';
 import ConversationList from './ui/ConversationList';
 import ManageView from './ui/ManageView';
+import { liveConnectors } from './connector-activity';
 import SidePanel, { memorySummary, type ContextItem, type GeneratedFile, type SidePanelTab } from './ui/SidePanel';
 import PermissionDialog from './ui/PermissionDialog';
 import Rail, { type View } from './ui/Rail';
@@ -54,7 +55,8 @@ import JouleDock from './ui/JouleDock';
 import StudyBadge from './ui/StudyBadge';
 import Splitter from './ui/Splitter';
 import { DEFAULT_WIDTHS, loadWidths, saveWidths, type PaneWidths } from './pane-width';
-import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
+import { PRD_SPACE, prdExtensionFor } from './prd-bridge';
+import { SPEC_SPACE } from './spec-bridge';
 import { HIRING_SPACE } from './hiring-bridge';
 import { OBSERVABILITY_SPACE } from './observability-bridge';
 import { ONBOARDING_SPACE } from './onboarding-bridge';
@@ -82,6 +84,7 @@ import { loadProjects as loadDevelopProjects } from './develop';
 import SchedulerView from './ui/SchedulerView';
 import { appendEntry, entryOf, loadLog, markSent, pending, saveLog, toRecord, type LogEntry } from './job-log';
 import SkillHealthView from './ui/SkillHealthView';
+import SpaceAnalysisView from './ui/SpaceAnalysisView';
 import OntologyManagerView from './ui/OntologyManagerView';
 import { buildGlossary, buildIndex } from './ontology-glossary';
 import { choiceLabels, choose, pendingChoices, termContext, termsNote, type Ambiguity, type Choices } from './ontology-chat';
@@ -143,6 +146,8 @@ export default function App() {
   const [agentEpoch, setAgentEpoch] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  /** Connectors with a tool call that is running right now (normalised names); shown in the connector list while an answer is being made. */
+  const [liveExt, setLiveExt] = useState<string[]>([]);
   const [conversationState, setConversationState] = useState(() =>
     loadConversationState(window.localStorage)
   );
@@ -826,11 +831,13 @@ export default function App() {
         if (tc.toolName) toolNames.current.set(tc.id, tc.toolName);
         { const used = skillLoadedBy(tc, skillListRef.current.map((k) => k.name)); if (used) countSkillRun([used]); }
         tools.current = [...tools.current, tc];
+        setLiveExt(liveConnectors(tools.current));
         recordFiles(tc.id, tc);
         flush();
       },
       onToolUpdate: (id: string, patch: Partial<ToolCall>) => {
         tools.current = tools.current.map((t) => (t.id === id ? { ...t, ...patch } : t));
+        setLiveExt(liveConnectors(tools.current));
         recordFiles(id, patch);
         flush();
       },
@@ -1786,7 +1793,9 @@ export default function App() {
       ) : view === 'hiring' ? (
         <HiringApprovals onBack={() => { setSelectedSpace(HIRING_SPACE); setSpacesHome(false); setView('spaces'); }} />
       ) : view === 'admin' ? (
-        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} onOpenSkillsAnalytics={openSkillsAnalytics} />
+        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} onOpenAnalysis={() => setView('spaceanalysis')} onOpenSkillsAnalytics={openSkillsAnalytics} />
+      ) : view === 'spaceanalysis' ? (
+        <SpaceAnalysisView spaces={spaces} onBack={() => setView('admin')} onOpenSpace={(slug) => { setSelectedSpace(slug); setSpacesHome(false); setView('spaces'); }} />
       ) : view === 'ontology' ? (
         <OntologyManagerView focusTerm={ontologyFocus} data={ontologyData} onReload={() => void loadOntologies()} onBack={() => setView('admin')} onGovernance={(g) => void changeGovernance(g)} saveNote={ontologyNote} generate={developGenerate} onStop={() => void cancelCurrent()} ready={Boolean(agent) && ontologyData.source.kind === 'catalog'} knownSkills={skillList.map((x) => x.name)} tipsOn={prefs.tips.enabled} onTipsOff={() => updatePrefs((c) => ({ ...c, tips: { ...c.tips, enabled: false } }))} actor={identity?.email ?? ''} />
       ) : view === 'skillhealth' ? (
@@ -1818,6 +1827,7 @@ export default function App() {
           onAgentRestarted={reconnectAgent}
           onImport={(request) => setSkillRequest(request as unknown as InstallRequest)}
           focus={manageFocus}
+          liveConnectors={busy ? liveExt : []}
         />
       ) : view === 'studio' ? (
         <AgentStudio
@@ -1884,10 +1894,12 @@ export default function App() {
             onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === RENEWALS_SPACE || space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === ONBOARDING_SPACE || space.slug === HOTLINE_SPACE || space.slug === MONITORING_SPACE || space.slug === SHADOW_SPACE || space.slug === CUSTOMER360_SPACE}
+            bridgeEnabled={space.slug === RENEWALS_SPACE || space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SPEC_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === ONBOARDING_SPACE || space.slug === HOTLINE_SPACE || space.slug === MONITORING_SPACE || space.slug === SHADOW_SPACE || space.slug === CUSTOMER360_SPACE}
             salesKnowledgeDeps={space.slug === SALES_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             customer360Deps={space.slug === CUSTOMER360_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             interviewDeps={space.slug === INTERVIEW_SPACE ? interviewDeps() : undefined}
+            prdDeps={space.slug === PRD_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
+            specDeps={space.slug === SPEC_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined, exportDocx: window.host?.exportDocx } : undefined}
             renewalsDeps={space.slug === RENEWALS_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined, cases: window.host?.renewalsCases && window.host.renewalsCaseSave && window.host.renewalsCaseReset ? { list: () => window.host!.renewalsCases!(), save: (args) => window.host!.renewalsCaseSave!(args), reset: (args) => window.host!.renewalsCaseReset!(args) } : undefined } : undefined}
             onOpenHiringTools={() => setView('hiring')}
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
@@ -1901,7 +1913,7 @@ export default function App() {
             installedSpaces={space.slug === 'ai-control-tower' ? spaces.map((x) => x.slug) : undefined}
             studioAgents={space.slug === 'ai-control-tower' || space.slug === 'agent-registry' ? registryEntries(studioAgents, buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))), (id) => govLevelOf(agentGov, id), agentGov.levels, (id) => govPendingFor(agentGov, id)?.to ?? null, schedules, identity?.name || identity?.email || '') : undefined}
             onIncomingDelivered={() => setIncoming((current) => { const { [space.slug]: _gone, ...rest } = current; return rest; })}
-            bridge={agent ? (tool, args) => agent.callTool(`${space.slug === PRD_SPACE ? (extensionNames.find((n) => /jira/i.test(n)) ?? JIRA_EXTENSION) : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? FORECAST_EXTENSION : space.slug === PRECLOSE_SPACE ? precloseExtensionFor(tool, FORECAST_EXTENSION) : SUB4ME_EXTENSION}__${tool}`, args) : undefined}
+            bridge={agent ? (tool, args) => agent.callTool(`${space.slug === PRD_SPACE ? prdExtensionFor(tool, extensionNames) : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? FORECAST_EXTENSION : space.slug === PRECLOSE_SPACE ? precloseExtensionFor(tool, FORECAST_EXTENSION) : SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />
         ) : (
           <main className="main">

@@ -56,13 +56,13 @@ test('the Admin console has a fourth tile "Skills analytics" that opens the mark
   assert.match(admin, /aria-label="Skills analytics"/);
   assert.match(admin, /<span className="develop-card-title">Skills analytics<\/span>/);
   assert.match(admin, /onClick=\{onOpenSkillsAnalytics\}>Open Skills analytics</);
-  assert.equal((admin.match(/<section className="develop-card develop-card-block"/g) ?? []).length, 4);
+  assert.equal((admin.match(/<section className="develop-card develop-card-block"/g) ?? []).length, 5, 'with Space Analysis from main');
   const app = read('src/App.tsx');
   assert.match(app, /onOpenSkillsAnalytics=\{openSkillsAnalytics\}/);
   assert.match(app, /setSelectedSpace\('skill-marketplace'\);\s*setSpaceTab\(\{ tab: 'overview', nonce: Date\.now\(\), space: 'skill-marketplace' \}\)/);
   assert.match(app, /The Skill Marketplace Space is not installed/);
   const css = read('src/theme.css');
-  assert.match(css, /\.adm-logo-analytics \{ --adm-tone: var\(--adm-amber\); \}/);
-  assert.match(css, /--adm-amber: #b45309/);
-  assert.match(css, /\[data-theme="dark"\] \{[^}]*--adm-amber: #fbbf24/);
+  assert.match(css, /\.adm-logo-analytics \{ --adm-tone: var\(--adm-rose\); \}/);
+  assert.match(css, /--adm-rose: #be185d/);
+  assert.match(css, /\[data-theme="dark"\] \{[^}]*--adm-rose: #f9a8d4/);
 });

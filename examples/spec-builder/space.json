@@ -1,0 +1,13 @@
+{
+  "title": "Spec Builder",
+  "description": "Aus einem bestätigten PRD entstehen zwei Dokumente: die Functional Specification und die Technical Solution Architecture. Bearbeiten, einzelne Abschnitte von Joule entwerfen lassen, bestätigen und als Word-Datei ablegen.",
+  "domain": "Sales",
+  "insights": [
+    "Das PRD kommt aus dem PRD Builder (Knopf „Continue with the specification“ nach der Bestätigung), per Einfügen oder als Demo-PRD.",
+    "Beide Dokumente entstehen aus dem PRD: jede Anforderung bekommt einen Platz (FR-n) mit Quellenschlüssel, Akzeptanzkriterien und Rückverfolgung; je Anforderungsgruppe gibt es einen Baustein und eine Entscheidung in der Architektur.",
+    "Nichts wird erfunden: was das PRD nicht sagt (Verhalten, Regeln, Daten, Technik, Hosting, Zahlen), steht als „To be specified“ oder „To be decided“ und als offener Punkt im Dokument.",
+    "Bearbeiten wie im PRD Builder (Leiste, Gliederung, Rückgängig). Pro Abschnitt kann Joule einen Entwurf vorschlagen (Knopf „✎ Joule“); er wird als Vorschlag gezeigt und erst nach „Use this text“ übernommen.",
+    "Jedes Dokument wird einzeln bestätigt (mit Warnung, solange Platzhalter und offene Punkte drin sind) und erst dann als Word-Datei abgelegt; jede Änderung nimmt die Bestätigung zurück."
+  ],
+  "prompt": "Bundled example: Spec Builder (a confirmed PRD to a functional specification and a technical solution architecture; model, editing helpers and demo PRD embedded by npm run sync:spec-builder)."
+}

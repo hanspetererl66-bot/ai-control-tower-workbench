@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  CAN_HAND_OVER, CLASSES, signalLine, signalOf, localTarget, CLASS_LABEL, CLASS_RULE, MAX_ITEMS, SOURCES, classBase, clusterPrompt, commentOf, dismissSuggestion, fetchPrompt, handover, isExtension,
+  CAN_HAND_OVER, CLASSES, signalLine, signalOf, localTarget, CLASS_LABEL, CLASS_RULE, MAX_ITEMS, NATURE, NATURE_HINT, SOURCES, countBySource, detectSource, classBase, clusterPrompt, commentOf, dismissSuggestion, fetchPrompt, handover, isExtension,
   mergeRequirements, moveRequirement, overrideClass, parseClusters, parseRequirements, setTarget,
   type Cluster, type Handover, type RegistryRef, type ReqClass, type Requirement, type SourceKind,
 } from '../requirements';
@@ -20,14 +20,16 @@ type Props = {
   /** Takes the hand-over to the right place (Agent Studio, workflow wizard, registry). Returns a line for the person. */
   onHandover: (h: Handover) => Promise<string>;
   onOpenRegistry: () => void;
+  /** Takes the person to the Connectors page, where a source is added or switched on. */
+  onOpenConnectors?: () => void;
 };
 
 /**
- * Tile 0 of Develop: start from requirements that already exist in Jira, Slack or Notion. Four steps: load, tick, cluster (with a check
+ * Tile 0 of Develop: requirement collection, which gathers requirements that already exist in Jira, Slack or Notion. Four steps: load, tick, cluster (with a check
  * of the requirements that were not ticked), hand over. Each cluster carries a comment with class, confidence and reason; the person can
  * change the class. Nothing is written back to the sources.
  */
-export default function SourcesView({ generate, onStop, ready, onBack, onHandover, onOpenRegistry }: Props) {
+export default function SourcesView({ generate, onStop, ready, onBack, onHandover, onOpenRegistry, onOpenConnectors }: Props) {
   const [source, setSource] = useState<SourceKind>('jira');
   const [query, setQuery] = useState('');
   const [reqs, setReqs] = useState<Requirement[]>([]);
@@ -40,6 +42,8 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
   const [busy, setBusy] = useState<'' | 'load' | 'cluster'>('');
   const [note, setNote] = useState('');
   const [done, setDone] = useState<Record<string, string>>({});
+  const [detected, setDetected] = useState<string>('');
+  const [trouble, setTrouble] = useState(false);
 
   const meta = SOURCES.find((s) => s.id === source)!;
   const selected = useMemo(() => reqs.filter((r) => checked.has(r.id)), [reqs, checked]);
@@ -61,9 +65,10 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
     setBusy('load'); setNote('');
     const text = await ask(fetchPrompt(source, query), `Requirements from ${meta.label}`);
     setBusy('');
-    if (text === null) return;
+    if (text === null) { setTrouble(true); return; }
     const got = parseRequirements(text, source);
-    if (!got) { setNote('The answer could not be read. Try again, or narrow the search.'); return; }
+    if (!got) { setNote('The answer could not be read. Try again, or narrow the search.'); setTrouble(true); return; }
+    setTrouble(!got.items.length && Boolean(got.error));
     setReqs((cur) => mergeRequirements(cur, got.items));
     setNote(got.items.length ? `${got.items.length} requirement${got.items.length > 1 ? 's' : ''} read from ${meta.label}.${got.error ? ` ${got.error}` : ''}` : got.error || 'Nothing was found.');
   };
@@ -115,7 +120,7 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
       <header className="sh-head">
         <button className="sh-back" onClick={clusters ? () => { setClusters(null); setNote(''); } : onBack} aria-label="Back">←</button>
         <div>
-          <h1>Start from requirements</h1>
+          <h1>Requirement collection</h1>
           <p>{clusters ? `${clusters.length} cluster${clusters.length === 1 ? '' : 's'} from ${selected.length} requirements` : 'Read them from Jira, Linear, Figma, Slack, Microsoft Teams or Notion, tick the ones that belong together, then let Joule cluster and classify them.'}</p>
         </div>
       </header>
@@ -131,15 +136,22 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
         <>
           <section className="sh-card sx-source">
             <div className="sx-tabs" role="tablist" aria-label="Source">
-              {SOURCES.map((s) => <button key={s.id} role="tab" aria-selected={source === s.id} className={source === s.id ? 'sx-tab-on' : ''} onClick={() => setSource(s.id)}>{s.label}</button>)}
+              {SOURCES.map((s) => <button key={s.id} role="tab" aria-selected={source === s.id} className={source === s.id ? 'sx-tab-on' : ''} onClick={() => { setSource(s.id); setDetected(''); setTrouble(false); }} title={`${s.label}: ${NATURE_HINT[NATURE[s.id]]}`}>{s.label}<small className="sx-nature">{NATURE[s.id]}</small></button>)}
             </div>
             <label className="sx-q">{meta.query}
               <span className="sx-qrow">
-                <input value={query} placeholder={meta.placeholder} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && ready && !busy) void load(); }} />
+                <input value={query} placeholder={meta.placeholder} onChange={(e) => { const v = e.target.value, d = detectSource(v); setQuery(v); setTrouble(false); if (d && d !== source) { setSource(d); setDetected(SOURCES.find((x) => x.id === d)!.label); } else if (!d) setDetected(''); }} onKeyDown={(e) => { if (e.key === 'Enter' && ready && !busy) void load(); }} />
                 {busy === 'load' ? <button onClick={onStop}>Stop</button> : <button className="sh-primary" onClick={() => void load()} disabled={!ready || Boolean(busy)}>Load requirements</button>}
               </span>
             </label>
-            <small className="sh-note">{meta.help} Read only: nothing is changed in {meta.label}.</small>
+            {detected && <small className="sh-note sx-detected" role="status">Looks like {detected}: switched to the {detected} tab.</small>}
+            <small className="sh-note">{meta.help} Read only: nothing is changed in {meta.label}. {NATURE_HINT[NATURE[source]]}</small>
+            {trouble && (
+              <p className="sx-hint" role="alert">
+                Nothing could be read from {meta.label}. Is the {meta.label} connector added and switched on, with its key?{' '}
+                {onOpenConnectors && <button onClick={onOpenConnectors}>Open Connectors</button>}
+              </p>
+            )}
           </section>
 
           {reqs.length > 0 && (
@@ -150,6 +162,14 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
                 <button onClick={() => setChecked(new Set([...checked, ...shown.map((r) => r.id)].slice(0, MAX_ITEMS)))}>Tick shown</button>
                 <button onClick={() => setChecked(new Set())} disabled={checked.size === 0}>Clear</button>
               </div>
+              <div className="sx-chips" role="group" aria-label="Where the list comes from">
+                {countBySource(reqs).map(({ source: id, count }) => (
+                  <span key={id} className="sx-chip">{SOURCES.find((x) => x.id === id)?.label} <b>{count}</b>
+                    <button aria-label={`Remove the ${count} requirements from ${SOURCES.find((x) => x.id === id)?.label}`} title="Remove these from the list" onClick={() => { const gone = new Set(reqs.filter((r) => r.source === id).map((r) => r.id)); setReqs((cur) => cur.filter((r) => !gone.has(r.id))); setChecked((cur) => new Set([...cur].filter((k) => !gone.has(k)))); }}>×</button>
+                  </span>
+                ))}
+                <small className="sh-note">Load from another source to add to this list; the same requirement said in two places is counted twice.</small>
+              </div>
               <ul className="sx-reqs">
                 {shown.map((r) => (
                   <li key={r.id}>
@@ -157,7 +177,7 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
                       <input type="checkbox" checked={checked.has(r.id)} onChange={() => toggle(r.id)} />
                       <span className="sx-key">{r.key}</span>
                       <span className="sx-rtext"><b>{r.title}</b>{r.text && r.text !== r.title && <small>{r.text}</small>}
-                        <small className="sx-meta">{SOURCES.find((s) => s.id === r.source)?.label}{r.author ? ` · ${r.author}` : ''}{r.date ? ` · ${r.date}` : ''}{r.mentions && r.mentions > 1 ? ` · ${r.mentions} mentions` : ''}{r.url && <> · <a href={r.url} target="_blank" rel="noreferrer">open</a></>}</small></span>
+                        <small className="sx-meta">{SOURCES.find((s) => s.id === r.source)?.label} {NATURE[r.source]}{r.author ? ` · ${r.author}` : ''}{r.date ? ` · ${r.date}` : ''}{r.mentions && r.mentions > 1 ? ` · ${r.mentions} mentions` : ''}{r.url && <> · <a href={r.url} target="_blank" rel="noreferrer">open</a></>}</small></span>
                     </label>
                   </li>
                 ))}

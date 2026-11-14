@@ -137,6 +137,7 @@ declare global {
       skillPackInfo?: (dir: string) => Promise<{ ok: boolean; detail?: string; files?: { path: string; bytes: number }[]; text?: string }>;
       duplicateSkill?: (dir: string) => Promise<{ ok: boolean; slug?: string; detail?: string }>;
       exportSkill?: (dir: string) => Promise<{ ok: boolean; canceled?: boolean; detail?: string; path?: string; files?: number }>;
+      exportDocx?: (payload: { title: string; markdown: string }) => Promise<{ ok: boolean; canceled?: boolean; detail?: string; path?: string; bytes?: number }>;
       designerPickDataFile?: () => Promise<{ ok: boolean; canceled?: boolean; detail?: string; name?: string; text?: string }>;
       designerDataView?: (id: string, days: number) => Promise<{ ok: boolean; detail?: string; table?: { columns: string[]; rows: string[][]; sources: string; notes: string[] } }>;
       designerPickImage?: () => Promise<{ ok: boolean; canceled?: boolean; detail?: string; name?: string; kind?: string; data?: string }>;

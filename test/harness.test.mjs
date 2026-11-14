@@ -158,3 +158,16 @@ test('the app checks every tool call and approval request, sends the note and th
   assert.match(contextBar, /sf\.profiles\.length > 1/);
   assert.match(read('src/ui/SidePanel.tsx'), /<HarnessPanel prefs=\{prefs\} onPrefs=\{onPrefs\} \/>/);
 });
+
+test('Pre-close stays closed to Slack; the Slack variant may read Slack but can never post', () => {
+  const call = (name) => ({ toolName: name, rawInput: {} });
+  assert.equal(checkToolCall(get('pre-close'), call('slack__slack_read_channel')).ok, false, 'the plain Pre-close profile does not allow Slack');
+  assert.deepEqual(get('pre-close').connectors, ['ai-control-tower']);
+  const p = get('pre-close-slack');
+  assert.equal(p.permission, 'read-only');
+  for (const t of ['slack_list_channels', 'slack_read_channel', 'slack_read_thread', 'slack_search_messages', 'slack_check_connection']) assert.equal(checkToolCall(p, call(`slack__${t}`)).ok, true, t);
+  const post = checkToolCall(p, call('slack__slack_post_message'));
+  assert.equal(post.ok, false); assert.match(post.reason, /read only/);
+  assert.equal(checkToolCall(p, call('jira__jira_search')).ok, false, 'other connectors stay closed');
+  assert.match(p.persona, /Never post/);
+});
