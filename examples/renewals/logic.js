@@ -303,3 +303,129 @@ function wbAct(st, action, who, ctx, arg) {
   if (action === 'takeover' && (st.status === 'running' || st.status.startsWith('waiting'))) return wbLog({ ...st, status: 'stopped', gate: null }, person, WB_STEPS[Math.min(st.step, WB_STEPS.length - 1)].id, 'Taken over by a person: the autopilot stops.');
   return st;
 }
+
+/* ---------- wow: what the app found, the rescue plan, the price impact, the weekly briefing ---------- */
+const MONTHS_OF = (tr) => tr.length - 1;
+const customerOf = (customers, id) => customers.find((x) => x.id === id) || {};
+const mailAbout = (customers, c) => ((customerOf(customers, c.customerId).mails) || []).find((m) => m.contractId === c.contractId && m.snippet);
+/**
+ * What the app found: the few things nobody asked about, each with its evidence. A rule per kind, the same signals the colours use.
+ * Three problems (a price trap, falling usage, a missing offer, a lost customer) and one chance (usage that keeps rising). At most two per customer.
+ */
+function findings(cases, customers, asOf) {
+  const out = [];
+  for (const c of cases) {
+    const cu = customerOf(customers, c.customerId), base = { contractId: c.contractId, id: c.id, customerId: c.customerId, customer: c.customer, product: c.product, eur: c.annualEur };
+    if (c.status === 'Lapsed') {
+      if (c.offer && c.offer.competitor && c.offer.competitor !== 'None') {
+        const m = mailAbout(customers, c);
+        out.push({ ...base, key: 'winback', rank: 4, tone: 'amber', headline: 'A lost customer is looking at the way back', text: `${c.product} at ${c.customer} lapsed on ${c.end}. The reactivation offer ${c.offer.id} is open until ${c.offer.validUntil}.`, evidence: [`Competitor in play: ${c.offer.competitor}`, m ? `Customer mail: "${m.snippet}"` : `Offer stage: ${c.offer.stage} (${c.offer.probabilityPct} %)`, `${eur(c.annualEur)} a year if they come back`] });
+      }
+      continue;
+    }
+    const sig = signals(c, asOf), has = (k) => sig.signals.some((s) => s.key === k), days = sig.days, up = upliftPct(c), use = usagePct(c), tr = c.usageTrend;
+    const trendText = (sig.signals.find((s) => s.key === 'trend' || s.key === 'trend-up') || {}).text;
+    if (c.autoRenew && c.offer && up !== null && up > c.upliftCapPct && days >= 0 && days <= 30) {
+      const hot = c.tickets.find((t) => t.priority === 'Very high' || t.priority === 'High');
+      out.push({ ...base, key: 'trap', rank: 0, tone: 'red', headline: 'Automatic renewal with a price rise above the cap', text: `${c.product} at ${c.customer} renews on its own in ${days} days at +${up} %. The contract cap is ${c.upliftCapPct} %.`,
+        evidence: [`Price rise ${up} % against a cap of ${c.upliftCapPct} %`, ...(c.offer.competitor && c.offer.competitor !== 'None' ? [`Competitor in play: ${c.offer.competitor}`] : []), ...(hot ? [`${hot.priority} ticket ${hot.id}: ${hot.title}`] : []), ...(cu.escalation ? [`${cu.escalation.level} escalation since ${cu.escalation.since}`] : [])] });
+    } else if (has('trend') && cu.escalation) {
+      out.push({ ...base, key: 'dots', rank: 3, tone: 'red', headline: 'Usage is falling while the customer is in escalation', text: `${c.product} at ${c.customer}: ${trendText}. The customer has an open ${cu.escalation.level.toLowerCase()} escalation.`, evidence: [trendText, cu.escalation.topic, `${eur(c.annualEur)} a year, decision ${c.decisionDate}`] });
+    } else if (has('trend') && use !== null && use >= 80) {
+      const people = (cu.topics || []).find((t) => t.kind === 'people') || (cu.topics || [])[0];
+      out.push({ ...base, key: 'hidden', rank: 1, tone: 'amber', headline: 'Looks fine, but usage has been falling', text: `${c.product} at ${c.customer} shows ${use} % usage and no warning today. Over ${MONTHS_OF(tr)} months it fell from ${tr[0]} % to ${tr[tr.length - 1]} %.`, evidence: [trendText, ...(people ? [people.text] : []), 'No ticket and no overdue invoice: nobody would have reported it'] });
+    } else if (!c.offer && !c.autoRenew && days >= 0 && days <= 21) {
+      const m = mailAbout(customers, c);
+      out.push({ ...base, key: 'clock', rank: 2, tone: 'red', headline: `${days} days left and no offer yet`, text: `${c.product} at ${c.customer} (${eur(c.annualEur)} a year) has its decision date on ${c.decisionDate}.`, evidence: ['Without an offer the customer decides without us', ...(m ? [`Customer mail: "${m.snippet}"`] : []), `Contract ends ${c.end}, notice period ${c.noticeDays} days`] });
+    } else if (has('trend-up') && use !== null) {
+      out.push({ ...base, key: 'expand', rank: 3, tone: 'green', headline: 'Ready for more: usage keeps rising', text: `${c.product} at ${c.customer}: usage rose from ${tr[0]} % to ${tr[tr.length - 1]} % in ${MONTHS_OF(tr)} months. An expansion of about ${eur(roundK(c.annualEur * 0.15))} a year is within reach.`, evidence: [trendText, `${use} % of the ${c.unit} are used`, ...(c.offer ? [`Offer ${c.offer.id}: ${c.offer.stage} (${c.offer.probabilityPct} %)`] : ['No renewal offer yet: put the expansion into it'])] });
+    }
+  }
+  // One finding per kind first (the biggest of each), in the order of the ranks; at most two per customer.
+  const sorted = out.filter((x) => x.key !== 'expand').sort((a, b) => a.rank - b.rank || b.eur - a.eur), problems = [], perCustomer = {}, kinds = new Set();
+  for (const f of sorted) { if (kinds.has(f.key) || (perCustomer[f.customerId] || 0) >= 2) continue; kinds.add(f.key); perCustomer[f.customerId] = (perCustomer[f.customerId] || 0) + 1; problems.push(f); }
+  const chance = out.filter((x) => x.key === 'expand').sort((a, b) => b.eur - a.eur)[0];
+  return [...problems.slice(0, 3), ...(chance ? [chance] : [])];
+}
+/** Signals a plan can clear: a person can solve the ticket, clear the invoice, write the offer, hold the cap. The others (competitor, usage, trend) stay and are worked on. */
+const PLAN_CLEARS = ['invoice', 'ticket', 'no-offer', 'uplift', 'validity'];
+/**
+ * The rescue plan of one renewal: the steps, the colour and the numbers before and after, and a mail draft. Nothing is sent.
+ * After the plan the cleared signals are gone and a red date becomes yellow (the signing date is agreed); the rest stays as it is.
+ */
+function rescuePlan(c, customers, rules, asOf) {
+  const sig = signals(c, asOf), keep = [], lapsed = c.status === 'Lapsed';
+  // A lapsed contract is not rescued by a price: the offer on the table is a reactivation (often with more scope), the plan is the follow-up.
+  for (const s of sig.signals) { if (!lapsed && PLAN_CLEARS.includes(s.key)) continue; keep.push(s.key === 'timing' && s.level === 'red' ? { ...s, level: 'yellow', text: `${s.text} (signing date agreed)` } : s); }
+  const afterHealth = keep.some((s) => s.level === 'red') ? 'red' : keep.some((s) => s.level === 'yellow') ? 'yellow' : 'green';
+  const cur = c.offer ? c.offer.currentAnnualEur : c.annualEur, cap = c.upliftCapPct, within = roundK(cur * (1 + cap / 100));
+  const has = (k) => sig.signals.some((s) => s.key === k);
+  // Only a plan that writes an offer changes the price on the table; a renewal with nothing to fix stays as it is.
+  const writesOffer = !lapsed && !c.offer && (has('no-offer') || (!c.autoRenew && sig.days <= 60));
+  const annualAfter = lapsed ? (c.offer ? c.offer.annualEur : c.annualEur) : c.offer ? (upliftPct(c) > cap ? within : c.offer.annualEur) : writesOffer ? within : c.annualEur;
+  const steps = [];
+  if (lapsed) steps.push({ key: 'winback', text: c.offer ? `Follow up the reactivation offer ${c.offer.id} with the technical contact before ${c.offer.validUntil}` : 'Decide with the account team whether a win-back offer is worth it' });
+  if (has('invoice')) steps.push({ key: 'invoice', text: 'Clear the overdue invoice with the customer finance team (offer a payment plan)' });
+  if (has('ticket')) { const t = c.tickets.find((x) => x.priority === 'Very high' || x.priority === 'High') || c.tickets[0]; steps.push({ key: 'ticket', text: `Name an engineer and a date for ticket ${t.id}` }); }
+  if (has('uplift') && !lapsed) steps.push({ key: 'uplift', text: `Hold the contract cap: ${eur(annualAfter)} a year (+${cap} %) instead of ${eur(c.offer.annualEur)}` });
+  if (writesOffer) steps.push({ key: 'no-offer', text: `Send an offer at the cap today: ${eur(within)} a year` });
+  if (has('validity')) steps.push({ key: 'validity', text: 'Extend the offer validity in exchange for a signing date' });
+  if (has('timing') && !lapsed) steps.push({ key: 'timing', text: sig.days < 0 ? 'Agree a written extension and the signing date' : 'Fix the signing date with the customer this week' });
+  if (has('competitor')) steps.push({ key: 'competitor', text: 'Executive sponsor call with a competitive battlecard' });
+  if (has('trend') || has('usage')) steps.push({ key: 'usage', text: 'Call the business owner: why is usage falling, and who is the champion now?' });
+  if (!steps.length) steps.push({ key: 'keep', text: 'Keep on track: confirm the renewal date at the next customer meeting' });
+  // The colour decides the retention; when the colour stays the same but signals were cleared, each cleared signal adds two points (an assumption, said on the page).
+  const cleared = lapsed ? 0 : sig.signals.filter((x) => PLAN_CLEARS.includes(x.key)).length;
+  const pBefore = retention(c, sig.health, rules), pAfter = lapsed ? pBefore : Math.min(0.97, retention(c, afterHealth, rules) + (afterHealth === sig.health ? 0.02 * cleared : 0));
+  const make = (health, p, annual) => ({ health, retentionPct: Math.round(p * 100), expectedEur: Math.round(annual * p), clvEur: clv(annual, p, rules) });
+  const before = make(sig.health, pBefore, c.offer ? c.offer.annualEur : c.annualEur), after = make(afterHealth, pAfter, annualAfter);
+  const mail = rescueMail(c, steps, annualAfter, within, customers);
+  return { steps, before, after, gainEur: after.expectedEur - before.expectedEur, remaining: keep.filter((s) => s.level !== 'plus').map((s) => s.text), mail };
+}
+/** The mail draft that goes with a plan (to the customer's owner, from the account executive). Never sent. */
+function rescueMail(c, steps, annualAfter, within, customers) {
+  const cu = customerOf(customers, c.customerId), keys = steps.map((s) => s.key), lines = [];
+  lines.push(`Dear ${c.customerOwner},`, '', `about the renewal of ${c.product} (${c.contractId}), which ends on ${c.end}: here is what we do on our side, and what we ask of you.`, '');
+  if (keys.includes('ticket')) { const t = c.tickets.find((x) => x.priority === 'Very high' || x.priority === 'High') || c.tickets[0]; lines.push(`- Ticket ${t.id} ("${t.title}"): a named engineer works on it, and you get a date from us by the end of this week.`); }
+  if (keys.includes('invoice')) lines.push('- The open invoice: we are happy to agree a payment plan with your finance team, so that it does not stand in the way of the renewal.');
+  if (keys.includes('uplift')) lines.push(`- Price: we hold the contract cap. The renewal is ${eur(annualAfter)} a year (+${c.upliftCapPct} % against today) and not more.`);
+  if (keys.includes('no-offer')) lines.push(`- Offer: you receive our offer today, ${eur(within)} a year, within the contract cap of ${c.upliftCapPct} %.`);
+  if (keys.includes('validity')) lines.push('- The offer stays valid until we have agreed a signing date.');
+  if (keys.includes('usage')) lines.push('- Usage: let us look together at how your teams work with it today, and who owns it after the changes.');
+  if (keys.includes('competitor')) lines.push('- We would like to show you in a short session why the renewal is the safer and cheaper way for you.');
+  lines.push('', `Could we agree the signing date by ${c.decisionDate}?`, '', `Kind regards,`, c.owner);
+  return { to: `${(c.customerOwner || 'customer').toLowerCase().replace(/[^a-z]+/g, '.').replace(/^\.+|\.+$/g, '')}@${c.customerId}.example`, subject: `Your renewal of ${c.product} (${c.contractId}): our next steps`, body: lines.join('\n') };
+}
+/**
+ * What a price rise does to the renewal: the retention probability falls a little with every percent, faster above the contract cap, and faster still with a competitor.
+ * The base is the colour of the renewal without its price signal. An assumption, shown as such on the page.
+ */
+function priceImpact(c, rules, asOf, upliftPctValue) {
+  const sig = signals(c, asOf), rest = sig.signals.filter((s) => s.key !== 'uplift');
+  const health = rest.some((s) => s.level === 'red') ? 'red' : rest.some((s) => s.level === 'yellow') ? 'yellow' : 'green';
+  const cur = c.offer ? c.offer.currentAnnualEur : c.annualEur, cap = c.upliftCapPct, u = Math.max(0, upliftPctValue);
+  const competitor = !!(c.offer && c.offer.competitor && c.offer.competitor !== 'None');
+  const over = Math.max(0, u - cap);
+  const base = retention(c, health, rules);
+  const p = Math.max(0.2, Math.min(0.97, base - 0.003 * u - (competitor ? 0.022 : 0.012) * over));
+  const annual = roundK(cur * (1 + u / 100));
+  return { upliftPct: u, annualEur: annual, retentionPct: Math.round(p * 100), expectedEur: Math.round(annual * p), clvEur: clv(annual, p, rules), withinCap: u <= cap + 0.05, overCap: Math.round(over * 10) / 10, deltaEur: Math.round(annual * p - cur * base) };
+}
+/** The rise (0 to 12 %, steps of half a percent) with the highest expected value a year. */
+function bestPrice(c, rules, asOf) {
+  let best = null;
+  for (let u = 0; u <= 12; u += 0.5) { const r = priceImpact(c, rules, asOf, u); if (!best || r.expectedEur > best.expectedEur) best = r; }
+  return best;
+}
+/** One sentence for the week and the mail for the sales manager. The numbers are those of the cases, nothing else. */
+function weeklyBriefing(cases, customers, asOf, rules) {
+  const live = cases.filter((c) => c.status !== 'Lapsed').map((c) => ({ c, sig: signals(c, asOf) }));
+  const stake = live.reduce((a, x) => a + x.c.annualEur, 0), six = live.filter((x) => x.sig.days <= 42), red = live.filter((x) => x.sig.health === 'red'), now = live.filter((x) => x.sig.health === 'red' || x.sig.days <= 14);
+  const atRisk = Math.round(live.reduce((a, x) => a + x.c.annualEur * (1 - retention(x.c, x.sig.health, rules)), 0));
+  const found = findings(cases, customers, asOf);
+  const headline = `${eur(stake)} a year are at stake. ${six.length} decisions fall within six weeks, ${red.length} are red, and ${now.length} need you now.`;
+  const top = red.sort((a, b) => b.c.annualEur - a.c.annualEur).slice(0, 3).map((x) => `- ${x.c.customer}, ${x.c.product}: ${eur(x.c.annualEur)} a year, decision ${x.sig.days < 0 ? 'passed ' + -x.sig.days + ' days ago' : 'in ' + x.sig.days + ' days'}. First: ${actions(x.c, x.sig)[0]}`);
+  const body = ['Hello,', '', `renewals this week: ${headline}`, `Expected loss over the next year at today's colours: ${eur(atRisk)} (assumption: retention by colour).`, '', 'The three biggest red renewals:', ...top, '', 'What the app found that nobody asked for:', ...found.map((f) => `- ${f.headline}: ${f.customer}, ${f.product}.`), '', 'Kind regards'].join('\n');
+  return { headline, stakeEur: stake, sixWeeks: six.length, redCount: red.length, needNow: now.length, atRiskEur: atRisk, mail: { to: 'sales.manager@sap.example', subject: `Renewals this week: ${eur(stake)} at stake, ${red.length} red`, body } };
+}
+
