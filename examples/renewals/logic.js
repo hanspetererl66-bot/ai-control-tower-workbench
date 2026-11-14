@@ -29,6 +29,13 @@ function signals(c, asOf) {
     else if (use < 80) add('yellow', 'usage', `${use} % of the ${c.unit} are used: be ready to right-size`);
     else if (use >= 95) add('plus', 'growth', `${use} % of the ${c.unit} are used: room to sell more`);
   }
+  // The trend over the last months: a fall that the snapshot hides, or a fast rise that asks for an expansion.
+  const tr = c.usageTrend;
+  if (tr && tr.length >= 4 && c.status !== 'Lapsed') {
+    const first = tr[0], last = tr[tr.length - 1], months = tr.length - 1;
+    if (first - last >= 20) add('yellow', 'trend', `Usage fell from ${first} % to ${last} % in ${months} months${last >= 80 ? ', although it still looks fine today' : ''}`);
+    else if (last - first >= 20) add('plus', 'trend-up', `Usage rose from ${first} % to ${last} % in ${months} months: room for an expansion`);
+  }
   for (const t of c.tickets) {
     if (t.priority === 'Very high' && t.status !== 'Waiting for customer') add('red', 'ticket', `Very high ticket ${t.id} is open: ${t.title}`);
     else if (t.priority === 'Very high' || t.priority === 'High') add('yellow', 'ticket', `${t.priority} ticket ${t.id} is open (${t.status.toLowerCase()})`);
@@ -131,6 +138,8 @@ function actionList(c, sig) {
   if (has('competitor')) add('competitor', 'Prepare the answer to the competitor (battlecard) before the next meeting');
   if (has('uplift')) add('uplift', 'Check the price rise against the cap (pricing guard) and explain it with scope or volume');
   if (has('ticket')) add('ticket', 'Get the open ticket solved or give the customer a date');
+  if (has('trend')) add('trend', 'Find out why usage is falling: call the business owner and check who the champion is');
+  if (has('trend-up') && !has('growth')) add('expand', 'Propose an expansion with the renewal: usage has risen fast');
   if (has('growth')) add('growth', 'Offer more volume in the renewal: usage is close to the limit');
   if (has('usage')) add('right-size', 'Right-size the offer to real usage instead of losing the renewal');
   if (has('validity')) add('validity', 'Extend the offer validity or close before it expires');
