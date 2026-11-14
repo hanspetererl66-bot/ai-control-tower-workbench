@@ -223,7 +223,7 @@ export function LookPanel({ prefs, update }: Common) {
         <Choice label="View" value={prefs.spacesView} options={SPACES_VIEWS} show={(v) => (v === 'tree' ? 'Tree' : 'Cards')} onPick={(v) => update((p) => ({ ...p, spacesView: v }))} />
         <Choice label="Position" value={prefs.spacesDock} options={SPACES_DOCKS} show={(v) => DOCK_LABEL[v]} onPick={(v) => update((p) => ({ ...p, spacesDock: v }))} />
       </Section>
-      <Section title="Casimir" hint="A small cat that looks over the edge of the window, shows only 60 % of his face and pulls a different face now and then. Drag him to another edge, click him for a new face. With reduced motion he keeps still.">
+      <Section title="Casimir" hint="A small purple cat that looks over a thin black ledge, shows only 60 % of his face, blinks, follows the pointer with his eyes and pulls a different face now and then (paws on the ledge, yawning, sleeping and snoring, hearts). Drag him anywhere on the screen, click him for a new face. With reduced motion he keeps still.">
         <label className="voice-option">
           <input type="checkbox" role="switch" checked={prefs.cat.enabled} onChange={(e) => update((p) => ({ ...p, cat: { ...p.cat, enabled: e.target.checked } }))} />
           <span>Show Casimir {prefs.cat.enabled ? '(on)' : '(off)'}</span>
