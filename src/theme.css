@@ -6153,3 +6153,13 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 @keyframes cat-breathe { 0%, 100% { transform: none; } 50% { transform: scale(1.015, 1.03); } }
 .cat-peek:focus-visible { outline: 2px solid var(--accent); }
 @media (prefers-reduced-motion: reduce) { .cat-live .cat-svg, .cat-heart, .cat-z { animation: none; } }
+
+/* Dropdown boxes (select), lighter and medium grey, everywhere in the app. Only colour and weight change, so every box keeps its own size,
+   border and background. The :not(#wb-sel) lifts the rule above the many local select rules; a focused box keeps its own focus style. */
+select:not([multiple]):not([size]):not(#wb-sel):not(:focus) {
+  color: color-mix(in srgb, var(--ink) 62%, var(--panel));
+  border-color: color-mix(in srgb, var(--ink) 24%, var(--panel));
+  font-weight: 400;
+}
+select:not([multiple]):not([size]):not(#wb-sel):not(:focus):hover:not(:disabled) { border-color: color-mix(in srgb, var(--ink) 42%, var(--panel)); }
+select option { color: var(--ink); background: var(--panel); }
