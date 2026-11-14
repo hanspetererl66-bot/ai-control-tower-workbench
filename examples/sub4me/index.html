@@ -203,6 +203,32 @@ button.sec:hover{border-color:var(--brand);color:var(--brand)}
 .land-leg i.d{border-radius:0;transform:rotate(45deg);width:9px;height:9px;border:0;background:var(--bad)}
 .land-det{border:1px solid var(--purple-border);background:var(--purple-dim);border-radius:12px;padding:12px 16px}
 .land-det h3{margin:0 0 2px;font-size:15px}
+.land-h .sec{margin-left:auto}
+.land-sum{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 6px}
+.lchip{font:inherit;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+button.lchip{cursor:pointer}button.lchip:hover{border-color:var(--brand)}
+.lchip.warn{border-color:var(--warn);background:var(--warn-dim)}.lchip.bad{border-color:var(--bad);background:var(--bad-dim)}
+.land-leg b.lg-off,.land-leg b.lg-inv{display:inline-grid;place-items:center;width:15px;height:15px;font-size:10px;line-height:1;color:var(--panel)}
+.land-leg b.lg-off{border-radius:4px;background:var(--brand)}.land-leg b.lg-inv{border-radius:50%;background:var(--bad)}
+.land .mk,.land .sat,.land .tk{cursor:pointer;outline:none}
+.land .mk.off rect{fill:var(--brand);stroke:var(--panel);stroke-width:1.5}
+.land .mk text{font-size:10px;font-weight:700;fill:var(--panel);text-anchor:middle;pointer-events:none}
+.land .mk.inv circle{fill:var(--warn);stroke:var(--panel);stroke-width:1.5}.land .mk.inv.bad circle{fill:var(--bad)}
+.land .tk circle{fill:var(--warn);stroke:var(--panel);stroke-width:1.5}.land .tk.bad circle{fill:var(--bad)}
+.land .tk text{font-size:9px;font-weight:700;fill:var(--panel);text-anchor:middle;pointer-events:none}
+.land .mk:hover rect,.land .mk:focus-visible rect,.land .mk:hover circle,.land .mk:focus-visible circle,.land .tk:hover circle,.land .tk:focus-visible circle{stroke:var(--ink);stroke-width:2.5}
+.land .sat:hover circle.t,.land .sat:focus-visible circle.t{stroke:var(--brand-dim)}.land .sat:hover circle.a,.land .sat:focus-visible circle.a{stroke-width:6}
+.land .mk,.land .tk{transform-box:fill-box;transform-origin:center;opacity:0;animation:landpop .5s cubic-bezier(.2,.9,.3,1.2) forwards;animation-delay:1.1s}
+.land .sp{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:landdraw 1s ease-out .15s forwards}
+.land .sat circle.a{animation:landring 1.2s ease-out .4s both}
+.land .gd{opacity:0;animation:landfade .8s ease .05s forwards}
+.land-rel{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;border-top:1px solid var(--line-2);font-size:12.5px}
+.land-rel:first-of-type{border-top:0}
+tr.flash td{animation:landflash 1.8s ease 1}
+@keyframes landdraw{to{stroke-dashoffset:0}}
+@keyframes landfade{to{opacity:1}}
+@keyframes landring{from{stroke-dashoffset:var(--c)}to{stroke-dashoffset:var(--full)}}
+@keyframes landflash{0%,60%{background:var(--purple-dim);box-shadow:inset 0 0 0 2px var(--brand)}100%{background:transparent;box-shadow:none}}
 @keyframes landpop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
 @keyframes landhalo{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.7)}}
 @media(prefers-reduced-motion:reduce){.ck-acts li,.land .node{animation:none;opacity:1;transform:none}.ck-eye i,.land .node .halo,.ck-head .caret{animation:none}.ck-rings .arc{transition:none}}
@@ -4544,9 +4570,18 @@ details.intro .body{margin-top:8px}
   $('cockpit').addEventListener('input', function(e){ if (e.target.id === 'ck-range') { ck.month = Number(e.target.value); ckUpdate(false); } });
 
   /* ---------- Landscape: contracts as an orbit map ---------- */
-  var land = {sel: null};
+  // Contracts circle the customer slowly (one turn in 100 s, all together, so nothing starts to overlap). Distance from the centre is
+  // still the time until the contract ends. Offers, unpaid invoices, AI-unit products and their open tickets sit on the map and open
+  // their page. The orbit stops while the pointer or the keyboard is on the map and with "reduce motion"; Pause stops it for good.
+  var land = {sel: null, t: 0, paused: false, hover: false, last: 0, raf: 0};
+  var LAND_DEG_PER_S = 3.6, LAND_CX = 470, LAND_CY = 350;
+  var landUnpaid = function(c){ return D.invoices.filter(function(i){ return i.contractId === c.id && (i.status === 'Open' || i.status === 'Overdue'); }); };
+  var landOffers = function(c){ return D.offers.filter(function(o){ return o.contractId === c.id; }); };
+  var landTickets = function(p){ return D.tickets.filter(function(t){ return t.product === p.name && ticketOpen(t); }); };
+  var landIsAi = function(c){ return /^AI units/.test(c.product); };
+  var upG = function(x, y, o, inner){ return '<g class="up" data-o="' + o + '" data-x="' + x.toFixed(1) + '" data-y="' + y.toFixed(1) + '">' + inner + '</g>'; };
   function renderLandscape(){
-    var el = $('land'), W = 940, H = 700, cx = 470, cy = 350;
+    var el = $('land'), W = 940, H = 700, cx = LAND_CX, cy = LAND_CY;
     if (!live.length) { el.innerHTML = '<div class="s">No active contracts.</div>'; return; }
     var rOf = function(d){ return 128 + 190 * Math.min(1, Math.sqrt(Math.max(0, d) / 1800)); };
     var maxA = Math.max.apply(null, live.map(function(c){ return c.annualEur; }));
@@ -4560,39 +4595,120 @@ details.intro .body{margin-top:8px}
     if (land.sel === null || !info.some(function(x){ return x.c.id === land.sel; })) { var urgent = info.slice().sort(function(a, b){ return a.nd - b.nd; }).filter(function(x){ return x.tone !== 'ok'; })[0] || info[0]; land.sel = urgent.c.id; }
     var la = (-70 + 180 / ordered.length) * Math.PI / 180;
     var guides = [[180, '6 months'], [365, '1 year'], [730, '2 years'], [1460, '4 years']].map(function(g){ var r = rOf(g[0]); return '<circle class="gd" cx="' + cx + '" cy="' + cy + '" r="' + r.toFixed(1) + '"></circle><text class="gl" x="' + (cx + r * Math.cos(la)).toFixed(1) + '" y="' + (cy + r * Math.sin(la) + 3).toFixed(1) + '">' + g[1] + '</text>'; }).join('');
-    var spokes = info.map(function(x){ return '<line class="sp' + (x.c.id === land.sel ? ' sel' : '') + '" x1="' + (cx + 60 * Math.cos(x.ang)).toFixed(1) + '" y1="' + (cy + 60 * Math.sin(x.ang)).toFixed(1) + '" x2="' + x.x.toFixed(1) + '" y2="' + x.y.toFixed(1) + '"></line>'; }).join('');
-    var nodes = info.map(function(x){
-      var name = x.c.product.length > 30 ? x.c.product.slice(0, 29) + '…' : x.c.product;
-      return '<g class="node ' + x.tone + (x.c.id === land.sel ? ' sel' : '') + '" tabindex="0" role="button" data-c="' + esc(x.c.id) + '" aria-label="' + esc(x.c.product + ', ' + eur(x.c.annualEur) + ' per year, ends ' + x.c.end) + '" style="--i:' + x.i + '"><circle class="halo" cx="' + x.x.toFixed(1) + '" cy="' + x.y.toFixed(1) + '" r="' + x.nr.toFixed(1) + '"></circle><circle class="b" cx="' + x.x.toFixed(1) + '" cy="' + x.y.toFixed(1) + '" r="' + x.nr.toFixed(1) + '"></circle>' +
-        (x.c.autoRenew ? '<text x="' + x.x.toFixed(1) + '" y="' + (x.y + 4).toFixed(1) + '">↻</text>' : '') +
-        '<text x="' + x.x.toFixed(1) + '" y="' + (x.y + x.nr + 14).toFixed(1) + '">' + esc(name) + '</text><text class="v" x="' + x.x.toFixed(1) + '" y="' + (x.y + x.nr + 27).toFixed(1) + '">' + eur(x.c.annualEur) + ' · ends ' + esc(x.c.end.slice(0, 7)) + '</text></g>';
+    // behind the hub: the spoke and the last day to give notice, turning with their contract
+    var back = info.map(function(x){
+      var dia = x.c.autoRenew ? '' : '<rect class="nt" x="' + (x.nx - 5).toFixed(1) + '" y="' + (x.ny - 5).toFixed(1) + '" width="10" height="10" transform="rotate(45 ' + x.nx.toFixed(1) + ' ' + x.ny.toFixed(1) + ')"><title>Last day to give notice: ' + esc(addDaysIso(x.c.end, -(x.c.noticeDays || 0))) + (x.nd < 0 ? ' (passed)' : '') + '</title></rect>';
+      return '<g class="orb" data-o="' + x.i + '"><line class="sp' + (x.c.id === land.sel ? ' sel' : '') + '" style="--len:' + Math.round(x.r) + '" x1="' + (cx + 60 * Math.cos(x.ang)).toFixed(1) + '" y1="' + (cy + 60 * Math.sin(x.ang)).toFixed(1) + '" x2="' + x.x.toFixed(1) + '" y2="' + x.y.toFixed(1) + '"></line>' + dia + '</g>';
     }).join('');
-    var dia = info.filter(function(x){ return !x.c.autoRenew; }).map(function(x){ return '<rect class="nt" x="' + (x.nx - 5).toFixed(1) + '" y="' + (x.ny - 5).toFixed(1) + '" width="10" height="10" transform="rotate(45 ' + x.nx.toFixed(1) + ' ' + x.ny.toFixed(1) + ')"><title>Last day to give notice: ' + esc(addDaysIso(x.c.end, -(x.c.noticeDays || 0))) + (x.nd < 0 ? ' (passed)' : '') + '</title></rect>'; }).join('');
-    var sats = D.products.slice(0, 5).map(function(p, i, arr){
-      var a = (-90 + i * 360 / arr.length) * Math.PI / 180, sx = cx + 86 * Math.cos(a), sy = cy + 86 * Math.sin(a), ratio = p.consumed / p.allotment, C = 2 * Math.PI * 11;
-      return '<g class="sat"><title>' + esc(p.name) + ': ' + Math.round(ratio * 100) + '% of ' + n(p.allotment) + ' AI units used</title><circle class="t" cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="11"></circle><circle class="a ' + ckTone(ratio) + '" cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="11" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + (C * (1 - Math.min(1, ratio))).toFixed(1) + '"></circle></g>';
+    // in front: the contract, its offers and its unpaid invoices, then the AI-unit rings around the hub
+    var front = info.map(function(x){
+      var name = x.c.product.length > 30 ? x.c.product.slice(0, 29) + '…' : x.c.product, c = x.c;
+      var node = '<g class="node ' + x.tone + (c.id === land.sel ? ' sel' : '') + '" tabindex="0" role="button" data-c="' + esc(c.id) + '" aria-label="' + esc(c.product + ', ' + eur(c.annualEur) + ' per year, ends ' + c.end) + '" style="--i:' + x.i + '"><circle class="halo" cx="' + x.x.toFixed(1) + '" cy="' + x.y.toFixed(1) + '" r="' + x.nr.toFixed(1) + '"></circle><circle class="b" cx="' + x.x.toFixed(1) + '" cy="' + x.y.toFixed(1) + '" r="' + x.nr.toFixed(1) + '"></circle>' +
+        upG(x.x, x.y, x.i, (c.autoRenew ? '<text x="' + x.x.toFixed(1) + '" y="' + (x.y + 4).toFixed(1) + '">↻</text>' : '') + '<text x="' + x.x.toFixed(1) + '" y="' + (x.y + x.nr + 14).toFixed(1) + '">' + esc(name) + '</text><text class="v" x="' + x.x.toFixed(1) + '" y="' + (x.y + x.nr + 27).toFixed(1) + '">' + eur(c.annualEur) + ' · ends ' + esc(c.end.slice(0, 7)) + '</text>') + '</g>';
+      var marks = '', slots = [-2.45, 3.14, -1.75, 2.45], k = 0, at = function(a, r){ return [x.x + r * Math.cos(a), x.y + r * Math.sin(a)]; };
+      landOffers(c).forEach(function(o){
+        var pm = at(slots[k++ % slots.length], x.nr + 13), mx = pm[0], my = pm[1], t = o.type + ' ' + o.id + ' · ' + eur(o.annualEur) + ' · ' + o.status + (o.stage ? ' · ' + o.stage : '') + ' · valid until ' + o.validUntil;
+        marks += upG(x.x, x.y, x.i, '<g class="mk off" tabindex="0" role="button" data-go="offer" data-id="' + esc(o.id) + '" aria-label="Offer: ' + esc(t) + '"><title>' + esc(t) + '</title><rect x="' + (mx - 8).toFixed(1) + '" y="' + (my - 8).toFixed(1) + '" width="16" height="16" rx="4"></rect><text x="' + mx.toFixed(1) + '" y="' + (my + 3.5).toFixed(1) + '">€</text></g>');
+      });
+      var un = landUnpaid(c);
+      if (un.length) {
+        var od = un.filter(function(i){ return i.status === 'Overdue'; }), pb = at(-0.7, x.nr + 11), bx = pb[0], by = pb[1], tt = un.length + ' unpaid invoice' + (un.length === 1 ? '' : 's') + (od.length ? ', ' + od.length + ' overdue (' + eur(sum(od.map(function(i){ return i.grossEur; }))) + ')' : '') + ' · ' + eur(sum(un.map(function(i){ return i.grossEur; }))) + ' gross';
+        marks += upG(x.x, x.y, x.i, '<g class="mk inv' + (od.length ? ' bad' : '') + '" tabindex="0" role="button" data-go="inv" data-c="' + esc(c.id) + '" aria-label="' + esc(tt) + '"><title>' + esc(tt) + '</title><circle cx="' + bx.toFixed(1) + '" cy="' + by.toFixed(1) + '" r="9"></circle><text x="' + bx.toFixed(1) + '" y="' + (by + 3.5).toFixed(1) + '">' + (od.length ? '!' : un.length) + '</text></g>');
+      }
+      return '<g class="orb" data-o="' + x.i + '">' + node + marks + '</g>';
+    }).join('');
+    var rings = D.products.slice(0, 5).map(function(p, i, arr){
+      var a = (-90 + i * 360 / arr.length) * Math.PI / 180, sx = cx + 86 * Math.cos(a), sy = cy + 86 * Math.sin(a), ratio = p.consumed / p.allotment, C = 2 * Math.PI * 11, tk = landTickets(p), hot = tk.some(function(t){ return t.priority === 'Very high' || t.priority === 'High'; });
+      var badge = tk.length ? '<g class="tk' + (hot ? ' bad' : '') + '" tabindex="0" role="button" data-go="tix" data-p="' + i + '" aria-label="' + esc(tk.length + ' open ticket' + (tk.length === 1 ? '' : 's') + ' for ' + p.name) + '"><title>' + esc(tk.length + ' open ticket' + (tk.length === 1 ? '' : 's') + ': ' + tk.map(function(t){ return t.id + ' (' + t.priority + ')'; }).join(', ')) + '</title><circle cx="' + (sx + 12).toFixed(1) + '" cy="' + (sy - 12).toFixed(1) + '" r="7"></circle><text x="' + (sx + 12).toFixed(1) + '" y="' + (sy - 8.6).toFixed(1) + '">' + tk.length + '</text></g>' : '';
+      return '<g class="sat" tabindex="0" role="button" data-go="prod" data-p="' + i + '" aria-label="' + esc(p.name + ': ' + Math.round(ratio * 100) + '% of ' + n(p.allotment) + ' AI units used. Open the product') + '"><title>' + esc(p.name) + ': ' + Math.round(ratio * 100) + '% of ' + n(p.allotment) + ' AI units used</title><circle class="t" cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="11"></circle><circle class="a ' + ckTone(ratio) + '" cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="11" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + (C * (1 - Math.min(1, ratio))).toFixed(1) + '" style="--full:' + (C * (1 - Math.min(1, ratio))).toFixed(1) + ';--c:' + C.toFixed(1) + '"></circle></g>' + badge;
+    }).join('');
+    // an offer for something the customer does not have yet has no contract to ride on: it sits next to the hub
+    var free = D.offers.filter(function(o){ return !o.contractId || !D.contracts.some(function(c){ return c.id === o.contractId; }); }).map(function(o, i){
+      var a = (18 + i * 40) * Math.PI / 180, fx = cx + 70 * Math.cos(a), fy = cy + 70 * Math.sin(a), t = o.type + ' ' + o.id + ' · ' + o.product + ' · ' + eur(o.annualEur) + ' · ' + o.status + ' · new, no contract yet';
+      return '<g class="mk off" tabindex="0" role="button" data-go="offer" data-id="' + esc(o.id) + '" aria-label="Offer: ' + esc(t) + '"><title>' + esc(t) + '</title><rect x="' + (fx - 8).toFixed(1) + '" y="' + (fy - 8).toFixed(1) + '" width="16" height="16" rx="4"></rect><text x="' + fx.toFixed(1) + '" y="' + (fy + 3.5).toFixed(1) + '">€</text></g>';
     }).join('');
     var nm = D.customer.name.split(' '), l1 = nm.slice(0, Math.ceil(nm.length / 2)).join(' '), l2 = nm.slice(Math.ceil(nm.length / 2)).join(' ');
-    el.innerHTML = '<div class="land-h"><h2 style="margin:0">Your contract landscape</h2><span class="s">Distance from the centre = time until the contract ends · size = annual value</span></div>' +
-      '<div class="land-leg"><span><i></i>on track</span><span><i class="warn"></i>decide within 90 days</span><span><i class="bad"></i>notice date passed</span><span><i class="d"></i>last day to give notice</span><span>↻ renews by itself</span><span>Small rings: AI units used per product</span></div>' +
-      '<svg class="land-svg" viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="Contract landscape">' + guides + spokes + dia + '<g class="hub"><circle class="c" cx="' + cx + '" cy="' + cy + '" r="56"></circle><text x="' + cx + '" y="' + (cy - 2) + '">' + esc(l1) + '</text><text x="' + cx + '" y="' + (cy + 12) + '">' + esc(l2) + '</text><text class="sm" x="' + cx + '" y="' + (cy + 28) + '">today ' + esc(D.asOf) + '</text></g>' + sats + nodes + '</svg><div class="land-det" id="land-det" aria-live="polite"></div>';
+    var unpaid = D.invoices.filter(function(i){ return i.status === 'Open' || i.status === 'Overdue'; }), overdue = unpaid.filter(function(i){ return i.status === 'Overdue'; });
+    var decide = info.filter(function(x){ return x.tone !== 'ok'; });
+    var chips = '<div class="land-sum">' +
+      '<span class="lchip"><b class="v">' + live.length + '</b> active contracts</span>' +
+      '<span class="lchip"><b class="v">' + eur(sum(live.map(function(c){ return c.annualEur; }))) + '</b> a year</span>' +
+      '<button type="button" class="lchip' + (decide.length ? ' warn' : '') + '" data-go="decide"><b class="v">' + decide.length + '</b> to decide</button>' +
+      '<button type="button" class="lchip' + (overdue.length ? ' bad' : '') + '" data-go="invall"><b class="v">' + unpaid.length + '</b> unpaid invoices' + (overdue.length ? ' (' + overdue.length + ' overdue)' : '') + '</button>' +
+      '<button type="button" class="lchip" data-go="tixall"><b class="v">' + D.tickets.filter(ticketOpen).length + '</b> open tickets</button></div>';
+    el.innerHTML = '<div class="land-h"><h2 style="margin:0">Your contract landscape</h2><span class="s">Distance from the centre = time until the contract ends · size = annual value</span>' +
+      (reduceMotion ? '' : '<button type="button" class="sec" id="land-play" aria-pressed="' + land.paused + '">' + (land.paused ? '▶ Play orbit' : '⏸ Pause orbit') + '</button>') + '</div>' + chips +
+      '<div class="land-leg"><span><i></i>on track</span><span><i class="warn"></i>decide within 90 days</span><span><i class="bad"></i>notice date passed</span><span><i class="d"></i>last day to give notice</span><span>↻ renews by itself</span><span><b class="lg-off">€</b>offer</span><span><b class="lg-inv">!</b>unpaid invoices</span><span>Small rings: AI units used per product, number = open tickets</span></div>' +
+      '<svg class="land-svg" viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="Contract landscape. Contracts, offers, unpaid invoices and AI-unit products are buttons that open their page.">' + guides + back + '<g class="hub"><circle class="c" cx="' + cx + '" cy="' + cy + '" r="56"></circle><text x="' + cx + '" y="' + (cy - 2) + '">' + esc(l1) + '</text><text x="' + cx + '" y="' + (cy + 12) + '">' + esc(l2) + '</text><text class="sm" x="' + cx + '" y="' + (cy + 28) + '">today ' + esc(D.asOf) + '</text></g>' + rings + free + front + '</svg><div class="land-det" id="land-det" aria-live="polite"></div>';
     landDetail(info);
     el._info = info;
+    if (!reduceMotion) { [].slice.call(el.querySelectorAll('.land-sum .v')).forEach(countUp); landApply(); landSync(); }
+  }
+  // the turning: every contract group is rotated about the hub, the texts and badges inside are turned back so they stay upright
+  function landApply(){
+    var deg = (land.t * LAND_DEG_PER_S) % 360, el = $('land');
+    [].slice.call(el.querySelectorAll('.orb')).forEach(function(g){ g.setAttribute('transform', 'rotate(' + deg.toFixed(2) + ' ' + LAND_CX + ' ' + LAND_CY + ')'); });
+    [].slice.call(el.querySelectorAll('.up')).forEach(function(g){ g.setAttribute('transform', 'rotate(' + (-deg).toFixed(2) + ' ' + g.getAttribute('data-x') + ' ' + g.getAttribute('data-y') + ')'); });
+  }
+  // The loop runs only while the Landscape tab is on screen (and not for "reduce motion"), so the page does no work in the background.
+  function landSync(){
+    var shown = !!($('pg-landscape') && $('pg-landscape').classList.contains('on'));
+    if (!shown || reduceMotion) { if (land.raf) { cancelAnimationFrame(land.raf); land.raf = 0; } land.last = 0; return; }
+    if (land.raf) return;
+    var tick = function(ts){
+      land.raf = requestAnimationFrame(tick);
+      if (document.hidden) { land.last = 0; return; }
+      var dt = land.last ? Math.min(0.1, (ts - land.last) / 1000) : 0; land.last = ts;
+      if (land.paused || land.hover || !dt) return;
+      land.t += dt; landApply();
+    };
+    land.raf = requestAnimationFrame(tick);
   }
   function landDetail(info){
     var x = info.filter(function(i){ return i.c.id === land.sel; })[0]; if (!x) return; var c = x.c, nd = addDaysIso(c.end, -(c.noticeDays || 0));
     var verdict = c.autoRenew ? tag('ok', 'renews by itself') + ' notice by ' + esc(nd) : x.tone === 'bad' ? tag('bad', 'notice date passed') + ' on ' + esc(nd) : x.tone === 'warn' ? tag('warn', x.nd + ' days to decide') + ' last day to give notice ' + esc(nd) : tag('ok', 'on track') + ' notice by ' + esc(nd);
+    var rel = '', offs = landOffers(c), un = landUnpaid(c);
+    if (offs.length) rel += '<div class="k" style="margin-top:12px">Offers for this contract</div>' + offs.map(function(o){ return '<div class="land-rel"><span><b>' + esc(o.id) + '</b> ' + esc(o.type) + ' · ' + eur(o.annualEur) + ' · ' + tag(o.status === 'Open' ? 'warn' : 'n', o.status) + ' <span class="s">valid until ' + esc(o.validUntil) + '</span></span><button type="button" class="sec" data-go="offer" data-id="' + esc(o.id) + '">Open</button></div>'; }).join('');
+    if (un.length) { var od = un.filter(function(i){ return i.status === 'Overdue'; }); rel += '<div class="k" style="margin-top:12px">Unpaid invoices</div><div class="land-rel"><span><b>' + un.length + '</b> invoice' + (un.length === 1 ? '' : 's') + ' · ' + eur(sum(un.map(function(i){ return i.grossEur; }))) + ' gross' + (od.length ? ' · ' + tag('bad', od.length + ' overdue') : '') + '</span><button type="button" class="sec" data-go="inv" data-c="' + esc(c.id) + '">Show invoices</button></div>'; }
+    if (landIsAi(c)) rel += '<div class="k" style="margin-top:12px">AI-unit products and their open tickets</div>' + D.products.map(function(p, i){ var tk = landTickets(p), r = Math.round(p.consumed / p.allotment * 100); return '<div class="land-rel"><span><b>' + esc(p.name) + '</b> · ' + r + '% used · ' + (tk.length ? tag(tk.some(function(t){ return t.priority === 'Very high'; }) ? 'bad' : 'warn', tk.length + ' open ticket' + (tk.length === 1 ? '' : 's')) : '<span class="s">no open tickets</span>') + '</span><button type="button" class="sec" data-go="prod" data-p="' + i + '">Open</button></div>'; }).join('');
     $('land-det').innerHTML = '<h3>' + esc(c.product) + ' <span class="s">' + esc(c.id) + '</span></h3><div class="s">' + esc(c.scope || '') + '</div>' +
       '<div class="kvs"><div><b>Annual value</b>' + eur(c.annualEur) + '</div><div><b>Term</b>' + esc(c.start) + ' → ' + esc(c.end) + '</div><div><b>Notice period</b>' + (c.noticeDays || 0) + ' days</div>' + (c.licensedUnits ? '<div><b>In use</b>' + n(c.usedUnits || 0) + ' of ' + n(c.licensedUnits) + ' ' + esc(c.unit || '') + '</div>' : '') + (c.csm ? '<div><b>Your success manager</b>' + esc(c.csm.name) + '</div>' : '') + '</div>' +
-      '<div style="margin-top:8px">' + verdict + '</div><div class="btns"><button type="button" class="primary" data-open="' + esc(c.id) + '">Open the contract</button><button type="button" class="sec" data-ask="' + esc(c.id) + '">Ask about renewal</button></div>';
+      '<div style="margin-top:8px">' + verdict + '</div>' + rel + '<div class="btns"><button type="button" class="primary" data-open="' + esc(c.id) + '">Open the contract</button><button type="button" class="sec" data-ask="' + esc(c.id) + '">Ask about renewal</button></div>';
+  }
+  function landFlash(sel, scrollTo){
+    var rows = [].slice.call(document.querySelectorAll(sel));
+    rows.forEach(function(r){ r.classList.remove('flash'); void r.offsetWidth; r.classList.add('flash'); });
+    var first = rows[0] || (scrollTo && document.querySelector(scrollTo));
+    if (first && first.scrollIntoView) first.scrollIntoView({block: 'center', behavior: reduceMotion ? 'auto' : 'smooth'});
+  }
+  function landGo(g){
+    var what = g.dataset.go;
+    if (what === 'offer') { var oi = D.offers.findIndex(function(o){ return o.id === g.dataset.id; }); if (oi < 0) return; selOffer = oi; renderOffers(); show('contracts'); landFlash('#offers tbody tr[data-i="' + oi + '"]', '#offers'); }
+    else if (what === 'inv' || what === 'invall') { $('inv-status').value = ''; D.invoices.forEach(function(i){ if ((i.status === 'Open' || i.status === 'Overdue') && (what === 'invall' || i.contractId === g.dataset.c)) invOpen[String(i.issued).slice(0, 7)] = true; }); renderInvoices(); show('invoices'); landFlash(what === 'inv' ? '#invoices tr[data-contract="' + g.dataset.c + '"][data-open="1"]' : '#invoices tr[data-open="1"]', '#invoices'); }
+    else if (what === 'prod') { selected = Number(g.dataset.p); renderUsage(); show('usage'); landFlash('#products tr[data-i="' + selected + '"]', '#products'); }
+    else if (what === 'tix' || what === 'tixall') { show('tickets'); var p = what === 'tix' ? D.products[Number(g.dataset.p)] : null; landFlash(p ? '#tickets tr[data-product="' + p.name.replace(/"/g, '') + '"][data-open="1"]' : '#tickets tr[data-open="1"]', '#tickets'); }
+    else if (what === 'decide') { var urgent = ($('land')._info || []).filter(function(i){ return i.tone !== 'ok'; }).sort(function(a, b){ return a.nd - b.nd; })[0]; if (urgent) { land.sel = urgent.c.id; renderLandscapeSel(); } }
   }
   $('land').addEventListener('click', function(e){
-    var nd = e.target.closest('.node'), op = e.target.closest('[data-open]'), ak = e.target.closest('[data-ask]');
+    var go = e.target.closest('[data-go]'), nd = e.target.closest('.node'), op = e.target.closest('[data-open]'), ak = e.target.closest('[data-ask]'), pl = e.target.closest('#land-play');
+    if (pl) { land.paused = !land.paused; pl.setAttribute('aria-pressed', String(land.paused)); pl.textContent = land.paused ? '▶ Play orbit' : '⏸ Pause orbit'; return; }
+    if (go) { landGo(go); return; }
     if (nd) { land.sel = nd.dataset.c; renderLandscapeSel(); return; }
     if (op) { selContract = Math.max(0, D.contracts.findIndex(function(c){ return c.id === op.dataset.open; })); renderContracts(); show('contracts'); return; }
     if (ak) { var c = D.contracts.filter(function(k){ return k.id === ak.dataset.ask; })[0]; draftTicket('Renewal options for ' + c.product + ' (' + c.id + ')', 'The contract ends ' + c.end + ' and the notice period is ' + (c.noticeDays || 0) + ' days. Please send renewal options and the price uplift that applies.', 'Question', 'Medium'); }
   });
-  $('land').addEventListener('keydown', function(e){ var nd = e.target.closest && e.target.closest('.node'); if (nd && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); land.sel = nd.dataset.c; renderLandscapeSel(); var again = $('land').querySelector('.node[data-c="' + nd.dataset.c + '"]'); if (again) again.focus(); } });
+  $('land').addEventListener('keydown', function(e){
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var t = e.target.closest && e.target.closest('.node, .mk, .sat, .tk'); if (!t) return;
+    e.preventDefault();
+    if (t.dataset.go) { landGo(t); return; }
+    land.sel = t.dataset.c; renderLandscapeSel(); var again = $('land').querySelector('.node[data-c="' + t.dataset.c + '"]'); if (again) again.focus();
+  });
+  // the orbit waits while a hand or the keyboard is on the map, so a click always hits what it aims at
+  $('land').addEventListener('mouseover', function(e){ if (e.target.closest && e.target.closest('svg')) land.hover = true; });
+  $('land').addEventListener('mouseleave', function(){ land.hover = false; });
+  $('land').addEventListener('focusin', function(e){ if (e.target.closest && e.target.closest('svg')) land.hover = true; });
+  $('land').addEventListener('focusout', function(){ land.hover = false; });
   function renderLandscapeSel(){
     var info = $('land')._info; if (!info) return;
     $('land').querySelectorAll('.node').forEach(function(g){ g.classList.toggle('sel', g.dataset.c === land.sel); });
@@ -4818,7 +4934,7 @@ details.intro .body{margin-top:8px}
     $('tickets').innerHTML = '<table><thead><tr><th>Ticket</th><th>Title</th><th>Priority</th><th>Status</th><th>Age / response target</th><th></th></tr></thead><tbody>' +
       D.tickets.map(function(t){
         var note = t.followsId ? '<div class="s">' + tag('n', 'following ' + esc(t.followsId)) + ' same issue as another customer, no new ticket</div>' : t.relatedTo ? '<div class="s">' + tag('n', 'linked to ' + esc(t.relatedTo)) + '</div>' : '';
-        return '<tr><td>' + esc(t.id) + '</td><td><b>' + esc(t.title) + '</b><div class="s">' + esc(t.product) + ' · created ' + esc(t.created) + '</div>' + meta(t) + note + '</td><td>' + tag(prio[t.priority] || 'n', t.priority) + '</td><td>' + tag(stat[t.status] || 'n', t.status) + '</td><td>' + age(t) + '<div class="s">updated ' + esc(t.updated) + '</div></td><td><button class="enrich-btn" type="button" data-enrich="' + esc(t.id) + '" title="Show the context of this ticket">Details</button></td></tr>';
+        return '<tr data-id="' + esc(t.id) + '" data-product="' + esc(t.product) + '" data-open="' + (ticketOpen(t) ? 1 : 0) + '"><td>' + esc(t.id) + '</td><td><b>' + esc(t.title) + '</b><div class="s">' + esc(t.product) + ' · created ' + esc(t.created) + '</div>' + meta(t) + note + '</td><td>' + tag(prio[t.priority] || 'n', t.priority) + '</td><td>' + tag(stat[t.status] || 'n', t.status) + '</td><td>' + age(t) + '<div class="s">updated ' + esc(t.updated) + '</div></td><td><button class="enrich-btn" type="button" data-enrich="' + esc(t.id) + '" title="Show the context of this ticket">Details</button></td></tr>';
       }).join('') + '</tbody></table>';
   }
   function renderInvoices(){
@@ -4835,7 +4951,7 @@ details.intro .body{margin-top:8px}
     list.forEach(function(i){ var k = String(i.issued).slice(0, 7); (groups[k] = groups[k] || []).push(i); });
     var keys = Object.keys(groups).sort().reverse();
     var row = function(i){
-      return '<tr><td><b>' + esc(i.id) + '</b><div class="s">' + esc(i.type) + (i.poNumber ? ' · ' + esc(i.poNumber) : '') + '</div></td><td>' + esc(i.contractId) + '<div class="s">' + esc(i.description) + '</div></td><td>' + esc(i.period) + '</td><td>' + esc(i.issued) + '</td><td>' + esc(i.due) + '</td><td class="num">' + eur(i.netEur) + '</td><td class="num">' + eur(i.grossEur) + '</td><td>' + tag(cls[i.status] || 'n', i.status) + (i.paidOn ? '<div class="s">paid ' + esc(i.paidOn) + '</div>' : '') + '</td></tr>';
+      return '<tr data-id="' + esc(i.id) + '" data-contract="' + esc(i.contractId || '') + '" data-open="' + (i.status === 'Open' || i.status === 'Overdue' ? 1 : 0) + '"><td><b>' + esc(i.id) + '</b><div class="s">' + esc(i.type) + (i.poNumber ? ' · ' + esc(i.poNumber) : '') + '</div></td><td>' + esc(i.contractId) + '<div class="s">' + esc(i.description) + '</div></td><td>' + esc(i.period) + '</td><td>' + esc(i.issued) + '</td><td>' + esc(i.due) + '</td><td class="num">' + eur(i.netEur) + '</td><td class="num">' + eur(i.grossEur) + '</td><td>' + tag(cls[i.status] || 'n', i.status) + (i.paidOn ? '<div class="s">paid ' + esc(i.paidOn) + '</div>' : '') + '</td></tr>';
     };
     var body = keys.map(function(k){
       var g = groups[k], isOpen = !!invOpen[k], label = MON[Number(k.slice(5, 7)) - 1] + ' ' + k.slice(0, 4);
@@ -5053,6 +5169,7 @@ function similarity(a, b) {
     tabs.forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === id)); });
     Array.prototype.forEach.call(document.querySelectorAll('.pg'), function(p){ p.classList.toggle('on', p.id === 'pg-' + id); });
     if (id !== 'overview' && !reduceMotion) [].slice.call($('pg-' + id).querySelectorAll('.grid .v, .smx-kpis .v')).forEach(countUp);
+    landSync();
   }
   tabs.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.tab); }); });
   function mapT(t){ return {id: String(t.id), title: String(t.title), product: String(t.product), priority: String(t.priority), status: String(t.status), created: String(t.created), updated: String(t.updated), followsId: t.followsId ? String(t.followsId) : undefined, relatedTo: t.relatedTo ? String(t.relatedTo) : undefined}; }
