@@ -117,7 +117,7 @@ test('the view uses tokens only (no hex colours), respects reduced motion, and i
   // Admin owns the way in: a rail button, an Admin page with the Ontologies tile, and nothing in the Develop hub
   const rail = read('src/ui/Rail.tsx');
   assert.match(rail, /View = [^;]*'admin'/);
-  assert.match(rail, /ADMIN_VIEWS: View\[\] = \['admin', 'ontology', 'registry', 'skillhealth'\]/);
+  assert.match(rail, /ADMIN_VIEWS: View\[\] = \['admin', 'ontology', 'registry', 'skillhealth', 'spaceanalysis'\]/);
   assert.match(rail, /onView\('admin'\)/);
   assert.doesNotMatch(rail, /DEVELOP_VIEWS: View\[\] = [^;]*'ontology'/);
   assert.match(read('src/App.tsx'), /view === 'admin'/);
