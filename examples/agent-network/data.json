@@ -398,6 +398,30 @@
           "product": "Integration Suite connectors for laboratory systems"
         },
         {
+          "id": "INV-2026-40912",
+          "status": "Overdue",
+          "grossEur": 2856,
+          "due": "2026-10-05",
+          "daysOverdue": 14,
+          "product": "Integration Suite connectors for laboratory systems"
+        },
+        {
+          "id": "INV-2026-40910",
+          "status": "Open",
+          "grossEur": 22134,
+          "due": "2026-11-15",
+          "daysOverdue": 0,
+          "product": "SuccessFactors e-signature add-on"
+        },
+        {
+          "id": "INV-2026-40911",
+          "status": "Open",
+          "grossEur": 31416,
+          "due": "2026-12-01",
+          "daysOverdue": 0,
+          "product": "BTP extra storage package"
+        },
+        {
           "id": "INV-2026-40104",
           "status": "Open",
           "grossEur": 492660,
@@ -413,6 +437,41 @@
           "priority": "Medium",
           "status": "In processing",
           "product": "AI units"
+        },
+        {
+          "id": "TKT-48231",
+          "title": "Integration Suite: the connector to the laboratory information system (LIMS) drops messages above 2 MB",
+          "priority": "High",
+          "status": "In processing",
+          "product": "Integration Suite connectors for laboratory systems"
+        },
+        {
+          "id": "TKT-48233",
+          "title": "Integration Suite: the certificate of the LIMS endpoint expires on 2026-11-09",
+          "priority": "Medium",
+          "status": "Waiting for customer",
+          "product": "Integration Suite connectors for laboratory systems"
+        },
+        {
+          "id": "TKT-48235",
+          "title": "e-signature add-on: the meaning of the signature is missing in the audit-trail export (21 CFR Part 11)",
+          "priority": "Medium",
+          "status": "In processing",
+          "product": "SuccessFactors e-signature add-on"
+        },
+        {
+          "id": "TKT-48237",
+          "title": "Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance",
+          "priority": "Low",
+          "status": "Waiting for customer",
+          "product": "BTP extra storage package"
+        },
+        {
+          "id": "TKT-48188",
+          "title": "Advanced Track and Trace: serial number requests are rejected for the Swiss market",
+          "priority": "High",
+          "status": "Waiting for customer",
+          "product": "SAP Advanced Track and Trace"
         }
       ]
     }

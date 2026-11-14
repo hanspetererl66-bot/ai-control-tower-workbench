@@ -406,6 +406,41 @@ ol.act{margin:6px 0 0;padding-left:18px;font-size:12px}ol.act li{margin:3px 0}
 .rp-n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--purple-light);color:var(--purple-ink)}
 .tabs.rp .rp-step.on .rp-n{background:var(--purple);color:var(--surface)}
 .rp-arrow{color:var(--muted)}
+/* The renewal process, big: the four main steps are large cards on one path, the one you are on is filled and pulses, the line to the next step flows.
+   The first drawing plays an entrance; another step makes the line glide; "reduce motion" turns all of it off. */
+.tabs.rp{align-items:center;gap:10px 0;padding:6px 0 20px}
+.tabs.rp .rp-step{display:inline-flex;align-items:center;gap:12px;font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--ink-2);background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:12px 20px 12px 14px;margin:0;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background-color .16s ease,color .16s ease}
+.tabs.rp .rp-step:not(.on):hover{transform:translateY(-3px);border-color:var(--purple);color:var(--ink);box-shadow:var(--shadow)}
+.tabs.rp .rp-step.on{background:var(--purple);border-color:var(--purple);color:var(--surface);box-shadow:0 10px 26px color-mix(in srgb,var(--purple) 30%,transparent);animation:rp-pulse 2.4s ease-in-out 1s infinite}
+.tabs.rp .rp-n{width:38px;height:38px;font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}
+.tabs.rp .rp-step.on .rp-n{background:var(--surface);color:var(--purple)}
+.rp-link{flex:0 0 46px;height:5px;border-radius:3px;background:var(--line);transform-origin:left center}
+.rp-link.lit{background:var(--purple)}
+.rp-link.next{background:repeating-linear-gradient(90deg,var(--purple) 0 8px,transparent 8px 16px);background-size:16px 100%;animation:rp-flow .9s linear infinite}
+@keyframes rp-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes rp-pop{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}
+@keyframes rp-draw{from{transform:scaleX(0)}to{transform:none}}
+@keyframes rp-flow{to{background-position:16px 0}}
+@keyframes rp-pulse{0%,100%{box-shadow:0 10px 26px color-mix(in srgb,var(--purple) 30%,transparent),0 0 0 0 color-mix(in srgb,var(--purple) 32%,transparent)}50%{box-shadow:0 10px 26px color-mix(in srgb,var(--purple) 30%,transparent),0 0 0 9px color-mix(in srgb,var(--purple) 0%,transparent)}}
+.rp-in .rp-step{animation:rp-rise .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k) * 110ms)}
+.rp-in .rp-step.on{animation:rp-rise .55s cubic-bezier(.2,.8,.2,1) calc(var(--k) * 110ms) both,rp-pulse 2.4s ease-in-out 1.4s infinite}
+.rp-in .rp-link{animation:rp-draw .4s ease both;animation-delay:calc(var(--k) * 110ms - 80ms)}.rp-in .rp-link.next{animation:rp-draw .4s ease calc(var(--k) * 110ms - 80ms) both,rp-flow .9s linear 1s infinite}
+.rp-move .rp-step.on{animation:rp-pop .5s cubic-bezier(.2,.9,.3,1.3) .1s both,rp-pulse 2.4s ease-in-out 1s infinite}
+.rp-move .rp-link.go{animation:rp-draw .4s ease both;animation-delay:calc((var(--k) - var(--rp-from)) * 140ms - 60ms)}
+@media (max-width:760px){.rp-link{display:none}.tabs.rp{gap:8px}.tabs.rp .rp-step{flex:1 1 44%;font-size:15px}.tabs.rp .rp-n{width:32px;height:32px;font-size:15px}}
+/* the seven phases of the renewal map: bigger, they come in one after the other, the one you filtered by is filled */
+#process .ph{position:relative;min-height:132px;padding:14px 14px 12px;gap:4px;border-radius:16px;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background-color .16s ease}
+#process .ph:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+#process .ph .no{font-size:12px;letter-spacing:.02em;text-transform:uppercase;color:var(--purple-ink)}
+#process .ph b{font-size:15px;line-height:1.2}
+#process .ph .n{font-size:34px;font-weight:750;letter-spacing:-.02em;color:var(--purple)}
+#process .ph[aria-pressed=true]{border:2px solid var(--purple);padding:13px 13px 11px;box-shadow:0 10px 24px color-mix(in srgb,var(--purple) 22%,transparent)}
+#process .ph:not(:last-child):not([data-ph="winback"])::after{content:"›";position:absolute;right:-11px;top:50%;transform:translateY(-50%);font-size:22px;line-height:1;color:var(--purple);opacity:.7;pointer-events:none}
+#process .pl{gap:12px}
+@keyframes ph-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.pl-in .ph{animation:ph-rise .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k) * 80ms + .1s)}
+@media (prefers-reduced-motion:reduce){.tabs.rp *,.tabs.rp,#process .ph,.pl-in .ph{animation:none!important;transition:none!important}}
+
 .rp-sub{display:inline-flex;gap:4px;margin-left:8px;padding-left:10px;border-left:1px solid var(--line)}
 .rp-sub[hidden]{display:none}
 .rp-more{margin-left:auto;display:inline-flex;align-items:center;gap:2px}
@@ -555,12 +590,6 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
 <body>
 <div id="jr"></div>
 <main>
-  <details class="card intro">
-    <summary><h2>What is this page?</h2><span class="hint">Fictional data · nothing is sent · click to show or hide</span></summary>
-    <div class="body"><p class="demo">Fictional renewals, derived from the Sub4Me sample data of Muster Industrie AG, Hanse Handelsgruppe AG and Lindenau Pharma AG. Health signals and next actions are calculated on this page from fixed rules; nothing is sent to a customer. The decision date is the contract end minus the notice period.</p><p>A <b>renewal</b> is a contract that ends soon (or has already ended) and has to be extended before the notice period runs out. This page is the renewal radar for the SAP account team of three fictional customers: which renewals need a decision first, why, and what to do next. Everything is tied to a customer: pick one at the top, or keep “All customers”.</p>
-    <div class="cols"><div><h3>1. Renewal due</h3><p>Three numbers, the decisions of the next six weeks on a time line, and what to do first (grouped).</p></div><div><h3>2. Renewal map</h3><p>The landscape of all customers: planets are customers, dots are contracts, the closer to the planet the sooner the decision date. Click a planet to open the map of one customer: its contracts, and around them open tickets, invoices, mails and usage; below it the seven phases of the renewal team, on the right the details with the e-mail communication.</p></div><div><h3>3. Renewal action</h3><p>The one renewal to take care of first and the queue behind it (Next best action), and the Autopilot that runs the renewals and stops at the gates a person must decide. Sending and signing are simulated.</p></div><div><h3>4. Renewal analytics</h3><p>What the open renewals are worth, what could be lost, by month and the biggest risks; the full dashboard is the Space Renewal Analytics.</p></div><div><h3>More</h3><p>The radar shows every contract on a time line, “By decision date” sorts them and shows the signals, the price against the contract cap and the approval. “Start demo” walks through ten steps.</p></div></div>
-    <details><summary class="t">Terms used on this page</summary><dl><dt>Decision date</dt><dd>Contract end minus the notice period: the last day to decide.</dd><dt>Notice period</dt><dd>How long before the end the customer or SAP must act.</dd><dt>Health</dt><dd>The worst of the signals: decision date, missing or expiring offer, price above the cap, competitor, usage, open tickets, overdue invoices.</dd><dt>Contract cap</dt><dd>The largest price rise the contract allows at renewal.</dd><dt>Retention</dt><dd>Expected chance that the customer renews, weighted by annual value.</dd><dt>Customer lifetime value</dt><dd>Expected value of the customer over the years if it stays.</dd><dt>Automatic renewal</dt><dd>Small renewals without a warning signal get an offer and an e-mail without a person (simulated).</dd></dl></details></div>
-  </details>
   <div class="card guide" id="guide" aria-live="polite"></div>
   <div class="ctx" id="ctx">
     <label class="ctxsel">Customer <select id="customer" aria-label="Customer"></select></label>
@@ -1008,7 +1037,20 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
    "owner": "Mira Hoffmann",
    "csm": "Jonas Weber",
    "customerOwner": "Anika Brandl",
-   "offer": null,
+   "offer": {
+    "id": "OFF-2026-0540",
+    "annualEur": 185400,
+    "currentAnnualEur": 180000,
+    "discountPct": 0,
+    "validUntil": "2026-11-30",
+    "stage": "Negotiation",
+    "probabilityPct": 55,
+    "competitor": "None",
+    "nextStep": "Validation concept from Quality Assurance by 2026-11-06 (condition of the top-up)",
+    "termMonths": 12,
+    "priceGuaranteeMonths": 12,
+    "approval": "Pending deal desk"
+   },
    "tickets": [
     {
      "id": "TKT-48097",
@@ -1171,14 +1213,46 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
    "owner": "Clara Neumann",
    "csm": "Jonas Weber",
    "customerOwner": "Ralf Kessel",
-   "offer": null,
-   "tickets": [],
+   "offer": {
+    "id": "OFF-2026-0541",
+    "annualEur": 14832,
+    "currentAnnualEur": 14400,
+    "discountPct": 0,
+    "validUntil": "2026-11-20",
+    "stage": "Proposal sent",
+    "probabilityPct": 65,
+    "competitor": "None",
+    "nextStep": "Clear the open tickets on the LIMS connector before the deadline",
+    "termMonths": 12,
+    "priceGuaranteeMonths": 12,
+    "approval": "Deal desk approved"
+   },
+   "tickets": [
+    {
+     "id": "TKT-48231",
+     "title": "Integration Suite: the connector to the laboratory information system (LIMS) drops messages above 2 MB",
+     "priority": "High",
+     "status": "In processing"
+    },
+    {
+     "id": "TKT-48233",
+     "title": "Integration Suite: the certificate of the LIMS endpoint expires on 2026-11-09",
+     "priority": "Medium",
+     "status": "Waiting for customer"
+    }
+   ],
    "invoices": [
     {
      "id": "INV-2026-40890",
      "status": "Overdue",
      "grossEur": 17136,
      "due": "2026-09-30"
+    },
+    {
+     "id": "INV-2026-40912",
+     "status": "Overdue",
+     "grossEur": 2856,
+     "due": "2026-10-05"
     }
    ],
    "addon": true
@@ -1262,9 +1336,36 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
    "owner": "Clara Neumann",
    "csm": "Jonas Weber",
    "customerOwner": "Ralf Kessel",
-   "offer": null,
-   "tickets": [],
-   "invoices": [],
+   "offer": {
+    "id": "OFF-2026-0542",
+    "annualEur": 19158,
+    "currentAnnualEur": 18600,
+    "discountPct": 0,
+    "validUntil": "2026-12-15",
+    "stage": "Proposal sent",
+    "probabilityPct": 70,
+    "competitor": "None",
+    "nextStep": "Confirm the meaning of the signature in the audit-trail export",
+    "termMonths": 12,
+    "priceGuaranteeMonths": 12,
+    "approval": "Deal desk approved"
+   },
+   "tickets": [
+    {
+     "id": "TKT-48235",
+     "title": "e-signature add-on: the meaning of the signature is missing in the audit-trail export (21 CFR Part 11)",
+     "priority": "Medium",
+     "status": "In processing"
+    }
+   ],
+   "invoices": [
+    {
+     "id": "INV-2026-40910",
+     "status": "Open",
+     "grossEur": 22134,
+     "due": "2026-11-15"
+    }
+   ],
    "addon": true
   },
   {
@@ -1372,8 +1473,22 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
    "csm": "Jonas Weber",
    "customerOwner": "Ralf Kessel",
    "offer": null,
-   "tickets": [],
-   "invoices": [],
+   "tickets": [
+    {
+     "id": "TKT-48237",
+     "title": "Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance",
+     "priority": "Low",
+     "status": "Waiting for customer"
+    }
+   ],
+   "invoices": [
+    {
+     "id": "INV-2026-40911",
+     "status": "Open",
+     "grossEur": 31416,
+     "due": "2026-12-01"
+    }
+   ],
    "addon": true
   },
   {
@@ -1462,7 +1577,14 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
    "csm": "Jonas Weber",
    "customerOwner": "Ralf Kessel",
    "offer": null,
-   "tickets": [],
+   "tickets": [
+    {
+     "id": "TKT-48188",
+     "title": "Advanced Track and Trace: serial number requests are rejected for the Swiss market",
+     "priority": "High",
+     "status": "Waiting for customer"
+    }
+   ],
    "invoices": [
     {
      "id": "INV-2026-40104",
@@ -2145,10 +2267,12 @@ function renderCustPanel() {
   if (cs) { $('#cm-open').onclick = () => openRenewal(cs.id); $('#cm-clear').onclick = () => { state.csel = null; renderCustomerView(); }; }
   $('#cust-prep').onclick = () => send(`Prepare the renewal talk with ${cust.name}: situation ${s.list.map((x) => x.label).join(', ')}. ${s.tickets.length} open tickets (${s.byPrio['Very high']} very high), ${s.overdue.length} overdue invoices, ${eur(s.renewalEur)} a year up for renewal. ${e ? 'Escalation: ' + e.topic + ' ' : ''}Use the Sub4Me tools and the skill customer-call-prep. Please answer in English.`);
 }
+let phDrawn = false;
 function renderProcess() {
+  const first = !phDrawn; phDrawn = true;
   const el = $('#process'), here = state.csel ? model.find((c) => c.id === state.csel) : null, sum = (l) => l.reduce((a, c) => a + c.annualEur, 0), cur = state.phase ? PHASES.find((p) => p.id === state.phase) : null;
   el.innerHTML = `<div class="bar" style="margin-bottom:4px"><h2 style="margin:0">Renewal process</h2>${state.phase ? '<button class="ghost" id="ph-clear" type="button">Show all phases</button>' : ''}</div><p class="sub">How the renewal team handles every contract of the three customers, in order. Each box counts the contracts that are in that phase today; click a box to filter the radar and the list below, and to read what happens there.</p>` +
-    `<div class="pl" role="group" aria-label="Renewal phases">${PHASES.map((p, i) => { const l = scoped().filter((c) => c.ph.phase === p.id), late = l.filter((c) => c.ph.late).length; return `<button type="button" class="ph${here && here.ph.phase === p.id ? ' here' : ''}" data-ph="${p.id}" aria-pressed="${state.phase === p.id}"><span class="no">${i + 1}${p.id === 'winback' ? ' · side path' : ''}</span><b>${esc(p.name)}</b><span class="n">${l.length}</span><small>${l.length ? eur(sum(l)) + ' a year' : 'none today'}</small>${late ? `<span class="late">${late} behind</span>` : ''}</button>`; }).join('')}</div>` +
+    `<div class="pl${first ? ' pl-in' : ''}" role="group" aria-label="Renewal phases">${PHASES.map((p, i) => { const l = scoped().filter((c) => c.ph.phase === p.id), late = l.filter((c) => c.ph.late).length; return `<button type="button" class="ph${here && here.ph.phase === p.id ? ' here' : ''}" data-ph="${p.id}" aria-pressed="${state.phase === p.id}" style="--k:${i}"><span class="no">${i + 1}${p.id === 'winback' ? ' · side path' : ''}</span><b>${esc(p.name)}</b><span class="n">${l.length}</span><small>${l.length ? eur(sum(l)) + ' a year' : 'none today'}</small>${late ? `<span class="late">${late} behind</span>` : ''}</button>`; }).join('')}</div>` +
     (cur ? `<dl class="pdesc"><dt>When</dt><dd>${esc(cur.when)}</dd><dt>Who</dt><dd>${esc(cur.who)}</dd><dt>What</dt><dd>${esc(cur.what)}</dd></dl>` : '<p class="note">The process runs left to right. A contract is "behind" when its offer should exist by now (90 days before the decision date) but does not.</p>');
   el.querySelectorAll('[data-ph]').forEach((b) => (b.onclick = () => { state.phase = state.phase === b.dataset.ph ? null : b.dataset.ph; renderAll(); }));
   const cl = $('#ph-clear'); if (cl) cl.onclick = () => { state.phase = null; renderAll(); };
@@ -2255,12 +2379,18 @@ function renderCtx() {
   const on = $('#owner-note'); on.hidden = state.owner === 'all';
   on.textContent = state.owner === 'all' ? '' : 'Numbers, time line, lists and the radar show only the renewals of ' + state.owner + '. The customer pictures (landscape, customer map) still show every contract of the customer.';
 }
+const rpDrawn = { idx: null };
 function renderTabs() {
   const cur = stepOf(state.tab), act = cur === 2;
   const btn = (id, cls, extra = '') => `<button type="button" role="tab" class="${cls}" id="tab-${id}" aria-selected="${state.tab === id}" aria-controls="pg-${id}" tabindex="${state.tab === id ? 0 : -1}" data-tab="${id}"${extra}>`;
-  const main = MAIN_STEPS.map(([id], i) => `<button type="button" role="tab" class="rp-step${cur === i ? ' on' : ''}" id="tab-${id}" aria-selected="${cur === i}" aria-controls="pg-${id}" tabindex="${cur === i ? 0 : -1}" data-tab="${id}"><span class="rp-n">${i + 1}</span>${tabLabel(id)}</button>`).join('<span class="rp-arrow" aria-hidden="true">→</span>');
+  // the first drawing plays the entrance; another main step makes the line glide from the old to the new step; the same step stays still
+  const mode = rpDrawn.idx === null ? 'in' : rpDrawn.idx !== cur ? 'move' : 'still', from = rpDrawn.idx === null ? 0 : rpDrawn.idx;
+  rpDrawn.idx = cur;
+  const main = MAIN_STEPS.map(([id], i) => `${i ? `<span class="rp-link${i <= cur ? ' lit' : ''}${i === cur + 1 ? ' next' : ''}${mode === 'move' && cur > from && i > from && i <= cur ? ' go' : ''}" style="--k:${i}" aria-hidden="true"></span>` : ''}<button type="button" role="tab" class="rp-step${cur === i ? ' on' : ''}" id="tab-${id}" aria-selected="${cur === i}" aria-controls="pg-${id}" tabindex="${cur === i ? 0 : -1}" data-tab="${id}" style="--k:${i}"><span class="rp-n">${i + 1}</span>${tabLabel(id)}</button>`).join('');
   const sub = `<span class="rp-sub"${act ? '' : ' hidden'}><button type="button" role="tab" class="rp-sec${state.tab === 'nba' ? ' on' : ''}" id="sub-nba" aria-selected="${state.tab === 'nba'}" data-tab="nba">Next best action</button>${btn('autopilot', 'rp-sec' + (state.tab === 'autopilot' ? ' on' : ''))}Autopilot</button></span>`;
   const more = `<span class="rp-more"><span class="rp-more-h">More</span>${MORE_TABS.map((id) => `${btn(id, 'rp-sec' + (state.tab === id ? ' on' : ''))}${tabLabel(id)}</button>`).join('')}</span>`;
+  $('#tabs').className = `tabs rp rp-${mode}`;
+  $('#tabs').style.setProperty('--rp-from', from);
   $('#tabs').innerHTML = main + sub + more;
   TABS.forEach(([id]) => { $('#pg-' + id).hidden = state.tab !== id; });
   $('#tabs').querySelectorAll('button').forEach((b) => {
@@ -2654,10 +2784,10 @@ $('#assump').textContent = `Illustrative assumptions, not real figures: gross ma
 // @journey-start
 function makeJourney() {
   var CUSTOMERS = {
-    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true },
-    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true },
-    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true },
-    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false },
+    lindenau: { name: 'Lindenau Pharma AG', sales: true, c360: 'lindenau', mail: 'lindenau', renewals: true, collections: true },
+    muster: { name: 'Muster Industrie AG', sales: true, c360: null, mail: 'muster', renewals: true, collections: true },
+    hanse: { name: 'Hanse Handelsgruppe AG', sales: true, c360: null, mail: null, renewals: true, collections: true },
+    nordlicht: { name: 'Nordlicht Gruppe', sales: false, c360: 'nordlicht', mail: null, renewals: false, collections: false },
   };
   var STEPS = [
     { id: 'today', label: 'Today', ask: 'What needs me now?' },
@@ -2677,6 +2807,7 @@ function makeJourney() {
     { id: 'workflow', step: 'act', label: 'Skills', space: 'sales', tab: 'workflow' },
     { id: 'governance', step: 'act', label: 'Approvals', space: 'sales', tab: 'governance' },
     { id: 'payments', step: 'follow', label: 'Late payments', space: 'sales', tab: 'payments' },
+    { id: 'collections', step: 'follow', label: 'Collections', space: 'collections', tab: 'list', needs: 'collections' },
   ];
   /** Which step a Sales tab belongs to (for the highlighted step of the rail). */
   var TAB_STEP = { inbox: 'today', meetings: 'today', knowledge: 'understand', pipeline: 'decide', forecast: 'decide', workflow: 'act', governance: 'act', rules: 'act', payments: 'follow' };
@@ -2714,40 +2845,80 @@ function makeJourney() {
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
-  var CSS = '.jr{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px 14px;padding:10px 16px;margin:0;background:var(--surface);border-bottom:1px solid var(--line);font-size:12px;color:var(--ink-2)}' +
-    '.jr-who{display:flex;flex-direction:column;justify-content:center;min-width:130px}.jr-who b{font-size:13px;color:var(--ink)}.jr-who span{color:var(--muted)}' +
-    '.jr ol{display:flex;flex:1 1 420px;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}' +
-    '.jr li{flex:1 1 130px;min-width:120px;border:1px solid var(--line);border-radius:12px;padding:6px 9px;background:var(--canvas)}' +
-    '.jr li[aria-current="step"]{border-color:var(--purple);background:var(--purple-dim)}' +
-    '.jr li{transition:background-color .12s ease,border-color .12s ease}.jr li:hover:not([aria-current="step"]){background:var(--purple-light);border-color:var(--purple-border)}' +
-    '.jr .jr-h{display:flex;gap:6px;align-items:baseline;font-weight:600;color:var(--ink)}.jr .jr-n{color:var(--purple);font-variant-numeric:tabular-nums}' +
-    '.jr .jr-a{color:var(--muted);margin:1px 0 4px;font-size:11px}' +
-    '.jr .jr-s{display:flex;flex-wrap:wrap;gap:4px}' +
-    '.jr button{font:inherit;font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer}' +
-    '.jr button:hover:not(:disabled){border-color:var(--purple);color:var(--ink)}.jr button[aria-current="true"]{background:var(--purple);border-color:var(--purple);color:var(--surface)}' +
+  // The rail is big on purpose: five cards on one path. A dot per step (done = filled with a tick, now = large and pulsing, later = outline),
+  // a line that draws itself from step to step when the page opens (and from the old to the new step when the step changes), cards that
+  // rise one after the other, a lift on hover. "Reduce motion" turns all of it off; the resting state is the finished picture.
+  var CSS = '.jr{--g:14px;display:block;margin:0;padding:18px 22px 22px;background:var(--surface);border-bottom:1px solid var(--line);font-size:13px;color:var(--ink-2)}' +
+    '.jr-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:0 0 18px}' +
+    '.jr-who{display:flex;flex-direction:column;min-width:0}.jr-who b{font-size:21px;font-weight:750;letter-spacing:-.02em;line-height:1.15;color:var(--purple)}.jr-who span{color:var(--muted);font-size:12.5px;margin-top:2px}' +
+    '.jr-val{display:flex;gap:8px;flex-wrap:wrap}.jr-val span{padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--canvas);font-size:12.5px;color:var(--muted)}.jr-val b{color:var(--ink);font-variant-numeric:tabular-nums}' +
+    '.jr-note{margin-left:auto;color:var(--muted);font-size:12px;max-width:46ch;text-align:right}' +
+    '.jr ol{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--g);list-style:none;margin:0;padding:0}' +
+    '.jr li{position:relative;display:flex;flex-direction:column;align-items:stretch}' +
+    '.jr-dot{position:relative;z-index:1;align-self:center;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;margin-bottom:12px;border:3px solid var(--line);background:var(--surface);color:var(--muted);font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}' +
+    '.jr li.done .jr-dot,.jr li.cur .jr-dot{background:var(--purple);border-color:var(--purple);color:var(--surface)}' +
+    '.jr li.cur .jr-dot{transform:scale(1.18);box-shadow:0 0 0 6px var(--purple-dim);animation:jr-pulse 2.4s ease-in-out 1.2s infinite}' +
+    '.jr li:not(:first-child)::before{content:"";position:absolute;top:20px;left:calc(-1 * (var(--g) + 50%));width:calc(100% + var(--g));height:4px;border-radius:2px;background:var(--line);transform-origin:left center}' +
+    '.jr li.done::before,.jr li.cur::before{background:var(--purple)}' +
+    '.jr-card{flex:1;display:flex;flex-direction:column;gap:7px;border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--canvas);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background-color .18s ease}' +
+    '.jr li.done .jr-card{border-color:var(--purple-border)}' +
+    '.jr li.cur .jr-card{border:2px solid var(--purple);background:var(--purple-dim);padding:13px 15px;box-shadow:0 10px 24px color-mix(in srgb,var(--purple) 20%,transparent)}' +
+    '.jr li:hover .jr-card{transform:translateY(-3px);box-shadow:var(--shadow)}.jr li.cur:hover .jr-card{box-shadow:0 14px 30px color-mix(in srgb,var(--purple) 26%,transparent)}' +
+    '.jr .jr-h{font-size:18px;font-weight:750;letter-spacing:-.015em;line-height:1.2;color:var(--ink)}' +
+    '.jr .jr-a{color:var(--muted);font-size:13px;line-height:1.35}' +
+    '.jr-m{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.jr-m b{font-size:24px;font-weight:750;letter-spacing:-.02em;line-height:1.1;color:var(--purple);font-variant-numeric:tabular-nums}.jr-m span{font-size:12px;color:var(--muted)}' +
+    '.jr .jr-s{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}' +
+    '.jr button{font:inherit;font-size:13px;font-weight:550;padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer;transition:transform .12s ease,border-color .12s ease,background-color .12s ease,color .12s ease}' +
+    '.jr button:hover:not(:disabled){border-color:var(--purple);color:var(--ink);transform:translateY(-1px)}.jr button[aria-current="true"]{background:var(--purple);border-color:var(--purple);color:var(--surface)}' +
     '.jr button:disabled{opacity:.45;cursor:not-allowed}' +
-    '.jr-val{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:6px 16px;border-bottom:1px solid var(--line);background:var(--canvas);font-size:12px;color:var(--muted)}' +
-    '.jr-val b{color:var(--ink);font-variant-numeric:tabular-nums}.jr-val .jr-note{margin-left:auto}' +
-    '@media (max-width:640px){.jr li{flex-basis:100%}}';
+    '@keyframes jr-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}' +
+    '@keyframes jr-pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}' +
+    '@keyframes jr-popc{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1.18)}}' +
+    '@keyframes jr-draw{from{transform:scaleX(0)}to{transform:none}}' +
+    '@keyframes jr-drawy{from{transform:scaleY(0)}to{transform:none}}' +
+    '@keyframes jr-pulse{0%,100%{box-shadow:0 0 0 6px var(--purple-dim)}50%{box-shadow:0 0 0 13px color-mix(in srgb,var(--purple) 7%,transparent)}}' +
+    '.jr-in .jr-card{animation:jr-rise .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k) * 90ms + .15s)}' +
+    '.jr-in .jr-dot{animation:jr-pop .5s cubic-bezier(.2,.9,.3,1.3) both;animation-delay:calc(var(--k) * 140ms)}' +
+    '.jr-in li.cur .jr-dot{animation:jr-popc .5s cubic-bezier(.2,.9,.3,1.3) calc(var(--k) * 140ms) both,jr-pulse 2.4s ease-in-out 1.6s infinite}' +
+    '.jr-in li::before{animation:jr-draw .5s ease both;animation-delay:calc(var(--k) * 140ms - 60ms)}' +
+    '.jr-move li.cur .jr-dot{animation:jr-popc .55s cubic-bezier(.2,.9,.3,1.3) .1s both,jr-pulse 2.4s ease-in-out 1s infinite}' +
+    '.jr-move li.go::before{animation:jr-draw .45s ease both;animation-delay:calc((var(--k) - var(--jr-from)) * 150ms - 100ms)}' +
+    '@media (max-width:760px){.jr{--gm:12px;padding:14px 14px 18px}.jr ol{grid-template-columns:1fr;gap:var(--gm)}.jr li{flex-direction:row;gap:14px;align-items:flex-start}.jr-dot{margin:0;align-self:flex-start}' +
+    '.jr li:not(:first-child)::before{display:none}.jr li:not(:last-child)::after{content:"";position:absolute;left:20px;top:44px;bottom:calc(-1 * var(--gm));width:4px;border-radius:2px;background:var(--line);transform-origin:top center}' +
+    '.jr li.done:not(:last-child)::after{background:var(--purple)}.jr-in li:not(:last-child)::after{animation:jr-drawy .5s ease both;animation-delay:calc(var(--k) * 140ms)}.jr-note{margin-left:0;text-align:left}}' +
+    '@media (prefers-reduced-motion:reduce){.jr *,.jr *::before,.jr *::after{animation:none!important;transition:none!important}}';
   function injectStyle(doc) {
     if (doc.getElementById('journey-style')) return;
     var st = doc.createElement('style'); st.id = 'journey-style'; st.textContent = CSS; doc.head.appendChild(st);
   }
+  /** The figures the pages pass in (a label and a value) belong to a step: they are shown big under that step. Others stay in the strip on top. */
+  var VALUE_STEP = [[/^Money in play/, 'decide'], [/^Due within/, 'today'], [/^Waiting for our answer/, 'today'], [/^Past the/, 'today'], [/^Deals with a risk/, 'understand'], [/^Open points/, 'understand'], [/^Waiting for your decision/, 'act']];
+  function stepOfValue(label) { for (var i = 0; i < VALUE_STEP.length; i++) if (VALUE_STEP[i][0].test(label)) return VALUE_STEP[i][1]; return null; }
+  /** Where the rail was drawn last (null = never): the first drawing plays the entrance, a later one with another step glides from the old step. */
+  var drawn = { idx: null };
   /**
-   * The rail as HTML. cur: { space, step, stop?, customer }, values: [[label, value], ...] for the strip, note: optional text at the right.
+   * The rail as HTML. cur: { space, step, stop?, customer }, values: [[label, value], ...], note: optional text at the right.
    * The stop that is shown on this page gets aria-current="true"; a stop the customer has no sample data for is disabled.
    */
   function railHtml(cur, values, note) {
     var c = CUSTOMERS[cur.customer] || CUSTOMERS.lindenau;
+    var idx = 0;
+    for (var q = 0; q < STEPS.length; q++) if (STEPS[q].id === cur.step) idx = q;
+    var mode = drawn.idx === null ? 'in' : drawn.idx !== idx ? 'move' : 'still', from = drawn.idx === null ? 0 : drawn.idx;
+    drawn.idx = idx;
+    var byStep = {}, rest = [];
+    (values || []).forEach(function (v) { var st = stepOfValue(String(v[0])); if (st) (byStep[st] = byStep[st] || []).push(v); else rest.push(v); });
     var steps = STEPS.map(function (st, i) {
       var stops = STOPS.filter(function (s) { return s.step === st.id; }).map(function (s) {
         var ok = available(s, cur.customer), here = cur.stop === s.id;
         return '<button type="button" data-jr-stop="' + esc(s.id) + '"' + (ok ? '' : ' disabled title="No sample data for ' + esc(c.name) + '"') + ' aria-current="' + here + '">' + esc(s.label) + '</button>';
       }).join('');
-      return '<li' + (cur.step === st.id ? ' aria-current="step"' : '') + '><div class="jr-h"><span class="jr-n">' + (i + 1) + '</span>' + esc(st.label) + '</div><div class="jr-a">' + esc(st.ask) + '</div><div class="jr-s">' + stops + '</div></li>';
+      var metrics = (byStep[st.id] || []).slice(0, 2).map(function (v) { return '<div class="jr-m"><b>' + esc(v[1]) + '</b><span>' + esc(v[0]) + '</span></div>'; }).join('');
+      var state = i < idx ? 'done' : i === idx ? 'cur' : 'todo', go = mode === 'move' && idx > from && i > from && i <= idx ? ' go' : '';
+      return '<li class="' + state + go + '" style="--k:' + i + '"' + (i === idx ? ' aria-current="step"' : '') + '><div class="jr-dot" aria-hidden="true">' + (i < idx ? '&#10003;' : i + 1) + '</div><div class="jr-card"><div class="jr-h">' + esc(st.label) + '</div><div class="jr-a">' + esc(st.ask) + '</div>' + metrics + '<div class="jr-s">' + stops + '</div></div></li>';
     }).join('');
-    var strip = values && values.length ? '<div class="jr-val">' + values.map(function (v) { return '<span>' + esc(v[0]) + ' <b>' + esc(v[1]) + '</b></span>'; }).join('') + (note ? '<span class="jr-note">' + esc(note) + '</span>' : '') + '</div>' : '';
-    return '<nav class="jr" aria-label="Sales journey"><div class="jr-who"><b>' + esc(c.name) + '</b><span>Sales journey</span></div><ol>' + steps + '</ol></nav>' + strip;
+    var strip = rest.length ? '<div class="jr-val">' + rest.map(function (v) { return '<span>' + esc(v[0]) + ' <b>' + esc(v[1]) + '</b></span>'; }).join('') + '</div>' : '';
+    return '<nav class="jr jr-' + mode + '" style="--jr-from:' + from + '" aria-label="Sales journey"><div class="jr-top"><div class="jr-who"><b>' + esc(c.name) + '</b><span>Sales journey · step ' + (idx + 1) + ' of ' + STEPS.length + ': ' + esc(STEPS[idx].label) + '</span></div>' + strip + (note ? '<span class="jr-note">' + esc(note) + '</span>' : '') + '</div><ol>' + steps + '</ol></nav>';
   }
   return { CUSTOMERS: CUSTOMERS, STEPS: STEPS, STOPS: STOPS, TAB_STEP: TAB_STEP, stop: stop, available: available, handoff: handoff, parse: parse, customerOfAccount: customerOfAccount, railHtml: railHtml, injectStyle: injectStyle };
 }

@@ -374,7 +374,20 @@
       "owner": "Mira Hoffmann",
       "csm": "Jonas Weber",
       "customerOwner": "Anika Brandl",
-      "offer": null,
+      "offer": {
+        "id": "OFF-2026-0540",
+        "annualEur": 185400,
+        "currentAnnualEur": 180000,
+        "discountPct": 0,
+        "validUntil": "2026-11-30",
+        "stage": "Negotiation",
+        "probabilityPct": 55,
+        "competitor": "None",
+        "nextStep": "Validation concept from Quality Assurance by 2026-11-06 (condition of the top-up)",
+        "termMonths": 12,
+        "priceGuaranteeMonths": 12,
+        "approval": "Pending deal desk"
+      },
       "tickets": [
         {
           "id": "TKT-48097",
@@ -537,14 +550,46 @@
       "owner": "Clara Neumann",
       "csm": "Jonas Weber",
       "customerOwner": "Ralf Kessel",
-      "offer": null,
-      "tickets": [],
+      "offer": {
+        "id": "OFF-2026-0541",
+        "annualEur": 14832,
+        "currentAnnualEur": 14400,
+        "discountPct": 0,
+        "validUntil": "2026-11-20",
+        "stage": "Proposal sent",
+        "probabilityPct": 65,
+        "competitor": "None",
+        "nextStep": "Clear the open tickets on the LIMS connector before the deadline",
+        "termMonths": 12,
+        "priceGuaranteeMonths": 12,
+        "approval": "Deal desk approved"
+      },
+      "tickets": [
+        {
+          "id": "TKT-48231",
+          "title": "Integration Suite: the connector to the laboratory information system (LIMS) drops messages above 2 MB",
+          "priority": "High",
+          "status": "In processing"
+        },
+        {
+          "id": "TKT-48233",
+          "title": "Integration Suite: the certificate of the LIMS endpoint expires on 2026-11-09",
+          "priority": "Medium",
+          "status": "Waiting for customer"
+        }
+      ],
       "invoices": [
         {
           "id": "INV-2026-40890",
           "status": "Overdue",
           "grossEur": 17136,
           "due": "2026-09-30"
+        },
+        {
+          "id": "INV-2026-40912",
+          "status": "Overdue",
+          "grossEur": 2856,
+          "due": "2026-10-05"
         }
       ],
       "addon": true
@@ -628,9 +673,36 @@
       "owner": "Clara Neumann",
       "csm": "Jonas Weber",
       "customerOwner": "Ralf Kessel",
-      "offer": null,
-      "tickets": [],
-      "invoices": [],
+      "offer": {
+        "id": "OFF-2026-0542",
+        "annualEur": 19158,
+        "currentAnnualEur": 18600,
+        "discountPct": 0,
+        "validUntil": "2026-12-15",
+        "stage": "Proposal sent",
+        "probabilityPct": 70,
+        "competitor": "None",
+        "nextStep": "Confirm the meaning of the signature in the audit-trail export",
+        "termMonths": 12,
+        "priceGuaranteeMonths": 12,
+        "approval": "Deal desk approved"
+      },
+      "tickets": [
+        {
+          "id": "TKT-48235",
+          "title": "e-signature add-on: the meaning of the signature is missing in the audit-trail export (21 CFR Part 11)",
+          "priority": "Medium",
+          "status": "In processing"
+        }
+      ],
+      "invoices": [
+        {
+          "id": "INV-2026-40910",
+          "status": "Open",
+          "grossEur": 22134,
+          "due": "2026-11-15"
+        }
+      ],
       "addon": true
     },
     {
@@ -738,8 +810,22 @@
       "csm": "Jonas Weber",
       "customerOwner": "Ralf Kessel",
       "offer": null,
-      "tickets": [],
-      "invoices": [],
+      "tickets": [
+        {
+          "id": "TKT-48237",
+          "title": "Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance",
+          "priority": "Low",
+          "status": "Waiting for customer"
+        }
+      ],
+      "invoices": [
+        {
+          "id": "INV-2026-40911",
+          "status": "Open",
+          "grossEur": 31416,
+          "due": "2026-12-01"
+        }
+      ],
       "addon": true
     },
     {
@@ -828,7 +914,14 @@
       "csm": "Jonas Weber",
       "customerOwner": "Ralf Kessel",
       "offer": null,
-      "tickets": [],
+      "tickets": [
+        {
+          "id": "TKT-48188",
+          "title": "Advanced Track and Trace: serial number requests are rejected for the Swiss market",
+          "priority": "High",
+          "status": "Waiting for customer"
+        }
+      ],
       "invoices": [
         {
           "id": "INV-2026-40104",
