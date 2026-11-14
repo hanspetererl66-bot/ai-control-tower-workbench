@@ -24,7 +24,8 @@ test('renewals: the box "What is this page?" is gone, the other cards stay', asy
   const p = await open();
   assert.equal(p.q('details.intro'), null);
   assert.doesNotMatch(p.d.body.textContent, /What is this page\?/);
-  assert.ok(p.q('#guide') && p.q('#ctx') && p.q('#tabs'), 'the demo flow, the customer choice and the steps are still there');
+  assert.equal(p.q('#guide'), null, 'the demo flow card is gone');
+  assert.ok(p.q('#ctx') && p.q('#tabs'), 'the customer choice and the steps are still there');
   assert.equal(p.errors.length, 0);
 });
 

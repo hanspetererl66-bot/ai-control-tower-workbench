@@ -125,7 +125,7 @@ test('renewals process: the customer map, the four standing tiles and the detail
   p.w.close();
 });
 
-test('renewals: next best action queue, radar and list follow the customer; the demo opens the right tab at every step', async () => {
+test('renewals: next best action queue, radar and list follow the customer', async () => {
   const p = await open();
   const model = p.w.__renewals();
   click(p.w, p.q('#tab-nba'));
@@ -137,10 +137,6 @@ test('renewals: next best action queue, radar and list follow the customer; the 
   assert.ok(p.qa('#rows tr').every((tr) => /Hanse/.test(tr.textContent)));
   p.q('#reset').click();
   assert.deepEqual(p.visible(), ['pg-overview'], 'reset starts at the overview');
-  p.q('#g-start').click();
-  const seen = [];
-  for (let i = 0; i < 10; i++) { seen.push(p.visible()[0]); assert.ok(p.q('.spot'), `step ${i + 1} outlines its place`); const next = p.q('#g-next'); if (i < 9) next.click(); }
-  assert.deepEqual(seen, ['pg-overview', 'pg-process', 'pg-process', 'pg-radar', 'pg-list', 'pg-list', 'pg-list', 'pg-list', 'pg-overview', 'pg-list']);
   assert.deepEqual(p.errors, []);
   p.w.close();
 });
