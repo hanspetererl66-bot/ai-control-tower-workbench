@@ -6,11 +6,12 @@
  * Messages (checked on both sides: the page accepts only its parent, the host only its own frame):
  *   host -> page  { type: 'sp:search', query } | { type: 'sp:filter', filters: { [column label]: value } } | { type: 'sp:clear' }
  *   page -> host  { type: 'sp:state', searchable, count | null, filters: [{ label, values }], customer: string | null }
+ *   page -> host  { type: 'sp:customer', customer: string | null }   (sent at once when the customer changes, the state above can take a while on a big page)
  *
  * Customer: a Space that belongs to one customer marks the name with the attribute data-wb-customer, either as the
- * attribute value or as the text of the element (it may be hidden). The page script reports it, and the host shows it
- * in the same place, size and colour in the top bar of every Space. The element is read again whenever the page changes,
- * so a customer picker only has to keep that element up to date.
+ * attribute value or as the text of the element (it may be hidden), or it has a picker labelled "Customer" (aria-label),
+ * whose selected entry counts. The page script reports it, and the host shows it in the same place, size and colour in
+ * the top bar of every Space. It is read again whenever the page changes or a picker changes.
  *
  * What it works on: table rows, list items and cards without nested cards. Filters are derived from table columns that
  * hold a few repeating, non-numeric values (status, priority, severity, product, ...). Pages drawn on a canvas
@@ -32,12 +33,24 @@ export const SPACE_TOOLS_SCRIPT = String.raw`
     return String(s == null ? '' : s).toLowerCase().replace(/ß/g, 'ss').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
   }
   function tokens(query) { return norm(query).split(' ').filter(Boolean); }
-  /** The customer a Space has marked with data-wb-customer (attribute value first, then the text), or null. */
+  /**
+   * The customer of a Space: the one it marked with data-wb-customer (attribute value first, then the text), or else the
+   * selected entry of a picker that is labelled "Customer" (aria-label), or null. A Space with such a picker needs no marker.
+   */
   function customerOf(root) {
     var el = root.querySelector('[data-wb-customer]');
-    if (!el) return null;
-    var v = String(el.getAttribute('data-wb-customer') || '').replace(/\s+/g, ' ').trim() || String(el.textContent || '').replace(/\s+/g, ' ').trim();
-    return v ? v.slice(0, 80) : null;
+    if (el) {
+      var v = String(el.getAttribute('data-wb-customer') || '').replace(/\s+/g, ' ').trim() || String(el.textContent || '').replace(/\s+/g, ' ').trim();
+      if (v) return v.slice(0, 80);
+    }
+    var sels = root.querySelectorAll ? root.querySelectorAll('select') : [];
+    for (var i = 0; i < sels.length; i++) {
+      if (String(sels[i].getAttribute('aria-label') || '').trim().toLowerCase() !== 'customer') continue;
+      var o = sels[i].options && sels[i].options[sels[i].selectedIndex];
+      var t = o ? String(o.textContent || '').replace(/\s+/g, ' ').trim() : '';
+      if (t) return t.slice(0, 80);
+    }
+    return null;
   }
   function matches(text, query) {
     var t = tokens(query);
@@ -73,6 +86,14 @@ export const SPACE_TOOLS_SCRIPT = String.raw`
 
   var state = { query: '', filters: {} };
   var lastSent = '';
+  var lastCustomer;
+  /** The customer alone, at once: a picker change must not wait for the search and filter work on a big page. */
+  function reportCustomer() {
+    var c = customerOf(document);
+    if (c === lastCustomer) return;
+    lastCustomer = c;
+    if (window.parent !== window) window.parent.postMessage({ type: 'sp:customer', customer: c }, '*');
+  }
   var timer = null;
   var observer = null;
 
@@ -195,14 +216,16 @@ export const SPACE_TOOLS_SCRIPT = String.raw`
 
     var filters = Object.keys(filterMap).slice(0, 6).map(function (label) { return { label: label, values: Object.keys(filterMap[label]).sort().slice(0, 12) }; });
     var message = { type: 'sp:state', searchable: targets.length > 0, count: active ? count : null, filters: filters, customer: customerOf(document) };
+    lastCustomer = message.customer;
     var json = JSON.stringify(message);
     if (json !== lastSent && window.parent !== window) { lastSent = json; window.parent.postMessage(message, '*'); }
     watch();
   }
   function schedule(ms) { if (timer) clearTimeout(timer); timer = setTimeout(run, ms); }
+  document.addEventListener('change', function () { reportCustomer(); schedule(60); }, true);
   function watch() {
     if (!window.MutationObserver || !document.body) return;
-    if (!observer) observer = new MutationObserver(function () { schedule(150); });
+    if (!observer) observer = new MutationObserver(function () { reportCustomer(); schedule(150); });
     observer.takeRecords();
     observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden', 'aria-selected'] });
   }
