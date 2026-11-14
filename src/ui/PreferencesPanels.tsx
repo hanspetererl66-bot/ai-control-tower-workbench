@@ -173,7 +173,7 @@ export function LookPanel({ prefs, update }: Common) {
         <Choice label="Font" value={prefs.font} options={FONTS} show={(v) => FONT_NAMES[v]} onPick={(v) => update((p) => ({ ...p, font: v }))} />
         <Choice label="Density" value={prefs.density} options={DENSITIES} show={(v) => v[0].toUpperCase() + v.slice(1)} onPick={(v) => update((p) => ({ ...p, density: v }))} />
       </Section>
-      <Section title="Tips" hint="The speech bubbles in the Ontology Manager that explain each part. Switch them on or off here, and set their size and colours. An empty colour follows the skin (light or dark).">
+      <Section title="Tips" hint="The speech bubbles that explain each part, in the Ontology Manager and in Spaces that have them (Revenue Recognition). Switch them on or off here, and set their size and colours. An empty colour follows the skin (light or dark).">
         <label className="voice-option">
           <input type="checkbox" role="switch" checked={prefs.tips.enabled} onChange={(e) => update((p) => ({ ...p, tips: { ...p.tips, enabled: e.target.checked } }))} />
           <span>Show tips {prefs.tips.enabled ? '(on)' : '(off)'}</span>
