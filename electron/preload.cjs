@@ -101,6 +101,7 @@ contextBridge.exposeInMainWorld('host', {
   skillPackInfo: (dir) => ipcRenderer.invoke('skill-pack-info', dir),
   duplicateSkill: (dir) => ipcRenderer.invoke('skill-duplicate', dir),
   exportSkill: (dir) => ipcRenderer.invoke('skill-export', dir),
+  exportDocx: (payload) => ipcRenderer.invoke('document-export-docx', payload),
   designerPickDataFile: () => ipcRenderer.invoke('designer-pick-data-file'),
   designerDataView: (id, days) => ipcRenderer.invoke('designer-data-view', id, days),
   designerPickImage: () => ipcRenderer.invoke('designer-pick-image'),

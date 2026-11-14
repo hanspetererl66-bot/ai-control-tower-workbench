@@ -54,7 +54,8 @@ import JouleDock from './ui/JouleDock';
 import StudyBadge from './ui/StudyBadge';
 import Splitter from './ui/Splitter';
 import { DEFAULT_WIDTHS, loadWidths, saveWidths, type PaneWidths } from './pane-width';
-import { PRD_SPACE, JIRA_EXTENSION } from './prd-bridge';
+import { PRD_SPACE, prdExtensionFor } from './prd-bridge';
+import { SPEC_SPACE } from './spec-bridge';
 import { HIRING_SPACE } from './hiring-bridge';
 import { OBSERVABILITY_SPACE } from './observability-bridge';
 import { ONBOARDING_SPACE } from './onboarding-bridge';
@@ -1871,10 +1872,11 @@ export default function App() {
             onTextScale={changeSpaceScale}
             theme={resolvedTheme}
             prefs={prefs}
-            bridgeEnabled={space.slug === RENEWALS_SPACE || space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === ONBOARDING_SPACE || space.slug === HOTLINE_SPACE || space.slug === MONITORING_SPACE || space.slug === SHADOW_SPACE || space.slug === CUSTOMER360_SPACE}
+            bridgeEnabled={space.slug === RENEWALS_SPACE || space.slug === SUB4ME_SPACE || space.slug === PRD_SPACE || space.slug === SPEC_SPACE || space.slug === SALES_SPACE || space.slug === CONTROL_TOWER_BRIDGE_SPACE || space.slug === PRECLOSE_SPACE || space.slug === INTERVIEW_SPACE || space.slug === HIRING_SPACE || space.slug === OBSERVABILITY_SPACE || space.slug === ONBOARDING_SPACE || space.slug === HOTLINE_SPACE || space.slug === MONITORING_SPACE || space.slug === SHADOW_SPACE || space.slug === CUSTOMER360_SPACE}
             salesKnowledgeDeps={space.slug === SALES_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             customer360Deps={space.slug === CUSTOMER360_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined } : undefined}
             interviewDeps={space.slug === INTERVIEW_SPACE ? interviewDeps() : undefined}
+            specDeps={space.slug === SPEC_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined, exportDocx: window.host?.exportDocx } : undefined}
             renewalsDeps={space.slug === RENEWALS_SPACE ? { ask: agent ? (prompt: string, title: string, session: string) => developGenerate(prompt, title, session) : undefined, cases: window.host?.renewalsCases && window.host.renewalsCaseSave && window.host.renewalsCaseReset ? { list: () => window.host!.renewalsCases!(), save: (args) => window.host!.renewalsCaseSave!(args), reset: (args) => window.host!.renewalsCaseReset!(args) } : undefined } : undefined}
             onOpenHiringTools={() => setView('hiring')}
             onAsk={(prompt) => askFromSpace(prompt, space.slug)}
@@ -1888,7 +1890,7 @@ export default function App() {
             installedSpaces={space.slug === 'ai-control-tower' ? spaces.map((x) => x.slug) : undefined}
             studioAgents={space.slug === 'ai-control-tower' || space.slug === 'agent-registry' ? registryEntries(studioAgents, buildCatalog(extensionNames, spaces.map((x) => ({ slug: x.slug, title: x.title }))), (id) => govLevelOf(agentGov, id), agentGov.levels, (id) => govPendingFor(agentGov, id)?.to ?? null, schedules, identity?.name || identity?.email || '') : undefined}
             onIncomingDelivered={() => setIncoming((current) => { const { [space.slug]: _gone, ...rest } = current; return rest; })}
-            bridge={agent ? (tool, args) => agent.callTool(`${space.slug === PRD_SPACE ? (extensionNames.find((n) => /jira/i.test(n)) ?? JIRA_EXTENSION) : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? FORECAST_EXTENSION : space.slug === PRECLOSE_SPACE ? precloseExtensionFor(tool, FORECAST_EXTENSION) : SUB4ME_EXTENSION}__${tool}`, args) : undefined}
+            bridge={agent ? (tool, args) => agent.callTool(`${space.slug === PRD_SPACE ? prdExtensionFor(tool, extensionNames) : space.slug === CONTROL_TOWER_BRIDGE_SPACE ? FORECAST_EXTENSION : space.slug === PRECLOSE_SPACE ? precloseExtensionFor(tool, FORECAST_EXTENSION) : SUB4ME_EXTENSION}__${tool}`, args) : undefined}
           />
         ) : (
           <main className="main">
