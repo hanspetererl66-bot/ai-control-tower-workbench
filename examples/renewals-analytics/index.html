@@ -224,6 +224,12 @@ details.intro>summary:focus-visible{outline:2px solid var(--purple);outline-offs
 details.intro .body{margin-top:8px}
 @media (prefers-reduced-motion:reduce){details.intro>summary::before{transition:none}}
 </style>
+<style id="amber-lighter">
+/* Renewal Analytics: the yellow (amber) is a bit lighter than in the shared design system. Only this page; light and dark. */
+:root{--amber:#A5843F;--amber-dim:rgba(165,132,63,.08);--amber-border:rgba(165,132,63,.22)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--amber:#E0C894;--amber-dim:rgba(224,200,148,.10);--amber-border:rgba(224,200,148,.26)}}
+:root[data-theme="dark"]{--amber:#E0C894;--amber-dim:rgba(224,200,148,.10);--amber-border:rgba(224,200,148,.26)}
+</style>
 <style>
 main{max-width:1180px;margin:0 auto;padding:16px 16px 40px}
 h1{font-size:20px;margin:0 0 4px}
@@ -232,6 +238,12 @@ h1{font-size:20px;margin:0 0 4px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
 .kpi{padding:12px 14px;margin:0}.kpi .v{font-size:22px;font-weight:600}.kpi .k{display:block;color:var(--ink-2);font-size:12px;font-weight:600}.kpi .s{margin-top:2px;color:var(--muted);font-size:11px}
 .kpi.red .v{color:var(--red)}.kpi.amber .v{color:var(--amber)}.kpi.green .v{color:var(--green)}
+.how{padding:0}.how summary{cursor:pointer;padding:8px 12px;font-weight:600}.how summary:focus-visible{outline:2px solid var(--purple);outline-offset:-2px;border-radius:var(--radius-s)}.how p{margin:0;padding:0 12px 10px}
+.tabs{position:sticky;top:0;z-index:5;display:flex;gap:2px;margin:0 0 16px;padding-top:4px;background:var(--canvas);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden}
+.tabs button{flex:none;margin:0 0 -1px;padding:9px 14px;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.tabs button:hover{color:var(--ink)}.tabs button[aria-selected="true"]{color:var(--purple-ink);border-bottom-color:var(--purple)}.tabs button:focus-visible{outline:2px solid var(--purple);outline-offset:-2px}
+.stack{display:grid;gap:16px}.stack>.card{margin:0;min-width:0;overflow-x:auto}
+[role="tabpanel"][hidden]{display:none}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:16px;align-items:start}
 .grid2>.card{margin:0;min-width:0;overflow-x:auto}.grid2.wide{grid-template-columns:repeat(auto-fit,minmax(480px,1fr))}
 .card h2{font-size:15px;margin:0 0 2px}.card .sub{margin:0 0 10px;color:var(--muted);font-size:12px}
@@ -261,24 +273,41 @@ table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;colo
   <p class="lead">For the sales manager. Same fictional renewals as the Renewals Space; read only, nothing is sent.</p>
   <div class="bar-head"><span class="lead" style="margin:0">Click a row to open the renewal in the Renewals Space.</span><button class="small spacer" id="to-renewals" type="button">Renewals Space</button></div>
   <p class="note" id="appnote" hidden>Open this Space in the app to jump to the Renewals Space.</p>
-  <p class="note">All numbers are derived from invented sample data. Expected retention and lifetime value rest on assumptions (<span id="assump"></span>), they are not a forecast. Open value counts renewals that are not lapsed; lapsed contracts are shown as win-back.</p>
+  <details class="note how"><summary>How these numbers are made</summary><p>All numbers are derived from invented sample data. Expected retention and lifetime value rest on assumptions (<span id="assump"></span>), they are not a forecast. Open value counts renewals that are not lapsed; lapsed contracts are shown as win-back.</p></details>
 
   <div class="kpis" id="kpis"></div>
 
-  <div class="grid2">
-    <section class="card" id="months"></section>
-    <section class="card" id="risks"></section>
+  <div class="tabs" role="tablist" aria-label="Renewal analytics">
+    <button type="button" role="tab" id="tab-overview" aria-controls="pane-overview" aria-selected="true" data-tab="overview">Overview</button>
+    <button type="button" role="tab" id="tab-process" aria-controls="pane-process" aria-selected="false" tabindex="-1" data-tab="process">Process &amp; team</button>
+    <button type="button" role="tab" id="tab-customers" aria-controls="pane-customers" aria-selected="false" tabindex="-1" data-tab="customers">Customers</button>
+    <button type="button" role="tab" id="tab-offers" aria-controls="pane-offers" aria-selected="false" tabindex="-1" data-tab="offers">Offers &amp; competition</button>
   </div>
-  <section class="card" id="phases" style="margin-top:16px"></section>
-  <div class="grid2">
-    <section class="card" id="customers"></section>
-    <section class="card" id="noffer"></section>
+
+  <div role="tabpanel" id="pane-overview" aria-labelledby="tab-overview">
+    <div class="grid2">
+      <section class="card" id="months"></section>
+      <section class="card" id="risks"></section>
+    </div>
   </div>
-  <section class="card" id="team" style="margin-top:16px"></section>
-  <div class="grid2 wide">
-    <section class="card" id="stages"></section>
-    <section class="card" id="price"></section>
-    <section class="card" id="compet"></section>
+  <div role="tabpanel" id="pane-process" aria-labelledby="tab-process" hidden>
+    <div class="stack">
+      <section class="card" id="phases"></section>
+      <section class="card" id="team"></section>
+    </div>
+  </div>
+  <div role="tabpanel" id="pane-customers" aria-labelledby="tab-customers" hidden>
+    <div class="grid2">
+      <section class="card" id="customers"></section>
+      <section class="card" id="noffer"></section>
+    </div>
+  </div>
+  <div role="tabpanel" id="pane-offers" aria-labelledby="tab-offers" hidden>
+    <div class="grid2 wide">
+      <section class="card" id="stages"></section>
+      <section class="card" id="price"></section>
+      <section class="card" id="compet"></section>
+    </div>
   </div>
 </main>
 
@@ -1824,6 +1853,18 @@ const ask = (prompt) => post({ type: 'wb:ask', prompt: prompt.slice(0, 600) });
 document.addEventListener('click', (e) => { const r = e.target.closest('tr[data-c]'); if (!r) return; const c = model.find((x) => x.contractId === r.dataset.c); if (c) post({ type: 'wb:handoff', to: 'renewals', payload: { journey: { customer: c.customerId, step: 'decide', tab: 'list', deal: c.contractId } }, open: true, notice: 'Renewals: ' + c.product + ' for ' + c.customer }); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches && e.target.matches('tr[data-c]')) e.target.click(); });
 $('#to-renewals').onclick = () => post({ type: 'wb:handoff', to: 'renewals', payload: { from: 'renewals-analytics' }, open: true, notice: 'Renewals Space' });
+const TABS = ['overview', 'process', 'customers', 'offers'];
+function showTab(name, focus) {
+  TABS.forEach((t) => { const on = t === name; const b = $('#tab-' + t); b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; $('#pane-' + t).hidden = !on; if (on && focus) b.focus(); });
+}
+document.querySelectorAll('.tabs [role="tab"]').forEach((b) => {
+  b.addEventListener('click', () => showTab(b.dataset.tab));
+  b.addEventListener('keydown', (e) => {
+    const i = TABS.indexOf(b.dataset.tab);
+    const to = e.key === 'ArrowRight' ? TABS[(i + 1) % TABS.length] : e.key === 'ArrowLeft' ? TABS[(i + TABS.length - 1) % TABS.length] : e.key === 'Home' ? TABS[0] : e.key === 'End' ? TABS[TABS.length - 1] : null;
+    if (to) { e.preventDefault(); showTab(to, true); }
+  });
+});
 renderKpis(); renderMonths(); renderRisks(); renderPhases(); renderCustomers(); renderNoOffer(); renderTeam(); renderStages(); renderPrice(); renderCompet();
 </script>
 </body>
