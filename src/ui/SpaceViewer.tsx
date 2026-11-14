@@ -272,6 +272,10 @@ export default function SpaceViewer({
     const onMessage = (event: MessageEvent) => {
       if (!frame.current || event.source !== frame.current.contentWindow) return;
       const data = event.data;
+      if (data && data.type === 'sp:customer') {
+        setTools((current) => ({ ...current, customer: typeof data.customer === 'string' && data.customer.trim() ? data.customer.trim().slice(0, 80) : null }));
+        return;
+      }
       if (!data || data.type !== 'sp:state' || !Array.isArray(data.filters)) return;
       const filters = data.filters
         .filter((f: any) => f && typeof f.label === 'string' && Array.isArray(f.values))
