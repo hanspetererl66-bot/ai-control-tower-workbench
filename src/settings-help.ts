@@ -12,7 +12,7 @@ export const TAB_HELP: Record<string, TabHelp> = {
   },
   look: {
     what: 'How the app looks: colours, text size, font, density and accessibility.',
-    where: 'Everywhere in this app and in the Spaces, immediately.',
+    where: 'Everywhere in this app and in the Spaces, as soon as you press Save.',
     effect: 'Only the display changes. Your data, Spaces and answers stay the same.',
   },
   work: {
@@ -57,7 +57,7 @@ export const TAB_HELP: Record<string, TabHelp> = {
   },
   general: {
     what: 'Light or dark appearance, text size in Spaces and voice input.',
-    where: 'The whole app, immediately. Voice input appears as a microphone button in the message box.',
+    where: 'The whole app, as soon as you press Save (voice settings apply at once). Voice input appears as a microphone button in the message box.',
     effect: 'Voice sends your recording to the speech service you set up; only the recognised text is kept, no audio.',
   },
 };
@@ -77,7 +77,7 @@ export const SECTION_EFFECT: Array<[string, string]> = [
   ['Casimir', 'Show Casimir switches the little cat on or off. He is dark purple with light purple ears, looks over a thin black ledge, shows only 60 % of his face, blinks, follows the pointer with his eyes and pulls a different face now and then (paws on the ledge, yawning, sleeping and snoring, hearts). Drag him anywhere on the screen and he stays there; click him for a new face. With Reduce motion on he keeps still. The switch and his place are saved in the settings on this computer.'],
   ['Tips', 'Show tips switches the speech bubbles of the Ontology Manager and of Spaces that have tips (Revenue Recognition) on or off (the bubble itself also has Turn off tips). Size and the three colours change how the bubbles look at once; an empty colour follows the skin. The highlight is the tint and frame around the part a tip points at. Nothing else in the app changes.'],
   ['Spaces list', 'View switches the list between cards with a description and a tree with one line per Space. Position puts the list on the left or on the right of the window as a column, or on top or at the bottom as a bar of domain tabs and Space chips (the view then has no cards or tree). Both apply at once, only in the Spaces view, and change no Space.'],
-  ['Accessibility', 'High contrast and reduced motion apply at once and to every screen. They do not change any content.'],
+  ['Accessibility', 'High contrast and reduced motion apply to every screen as soon as you press Save. They do not change any content.'],
   ['Start view', 'Decides what you see after the next start. It does not change the current session.'],
   ['Pinned Spaces', 'Pinned Spaces move to the top of the Spaces list in the order you pinned them.'],
   ['Favourite skills', 'Shows a button per skill under the message box. A click inserts the skill into the message.'],
