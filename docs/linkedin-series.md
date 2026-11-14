@@ -111,6 +111,7 @@ Die Sprecherrollen der neuen Posts sind im Produktionschat gegen die vorhandenen
 - Trademark-Footer ("Design study · Personal view · Sample data · SAP and Joule are trademarks of SAP SE") am Anfang und am Ende.
 - Accenture-Violett, kein Rot (Ausnahme: der rote Schal in Post 10).
 - Der Kater ist in groben Pixeln gezeichnet, eine eigene Figur ohne Anlehnung an bestehende Maskottchen. Jede Folge hat ihre eigene Wäsche und ihren eigenen Kater-Gag.
+- **Casimir:** Der Kater heißt Casimir und kommt in **jedem** Video vor: Serien-Trailer, Post 0, Pre-Trailer und Post 1 bis 14. Im Intro und im Outro ist er immer zu sehen; dazu hat jeder Post seinen eigenen Auftritt (Gag-Tabellen). Wo noch kein Gag festgelegt ist, gilt als Mindestauftritt: Casimir sitzt an der Wäscheleine und schaut dem Diamanten nach, im Outro folgt er ihm bis zum Mausloch. Im Trailer läuft er durch die Teaser-Montage (kurzer Auftritt in jedem dritten Teaser) und sitzt am Ende vor dem Mausloch. In Post 0 (nur Grafiken) erscheint er klein im Intro und im Outro. Der Name fällt höchstens einmal je Post im Sprechertext (z. B. im Hook oder in der Brücke), im Trailer am Ende ("Casimir knows where the diamond went.").
 
 ## Wäsche, Kater und Musik der bestehenden Posts (alte Nummern, Zuordnung zu den neuen Nummern oben)
 
