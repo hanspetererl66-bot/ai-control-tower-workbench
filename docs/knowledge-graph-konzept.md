@@ -7,7 +7,7 @@ Stand 14.11.2026. Nur ein Konzept, nichts davon ist gebaut. Die Zahlen stammen a
 - **Umfang:** 265 Knoten und 630 Kanten. Der Graph wird aus Sub4Me, Skill Marketplace, Control Tower, n8n, den Call- und Mail-Mockups und kuratierten Links (`examples/knowledge-graph/links.json`) abgeleitet (`buildGraph` in `connectors/_lib/server/graph.mjs`) und von `npm run sync:knowledge-graph` in `examples/knowledge-graph/index.html` eingebettet. Dieselben Daten beantworten die Chat-Werkzeuge `get_graph_overview`, `search_graph` und die anderen.
 - **Verkaufsteil ist klein:** 5 Kunden, 10 Verträge, 9 Angebote, 9 Deals, 5 Tickets, 5 Calls, 8 Mail-Verläufe. Die großen Gruppen sind Tools (50), Skills (38), Personen (47) und Agenten (23).
 - **Renewals fehlen als Quelle.** Der Graph kennt 10 Verträge (Muster 6, Hanse 2, Lindenau 2), die Renewals führen 21 Fälle (Muster 8, Hanse 7, Lindenau 6). Es fehlen mindestens die neun ausgedachten Zusatzverträge und der abgelaufene Ariba-Vertrag von Lindenau. Rechnungen, Eskalationen, Gesundheit und Entscheidungstermine kommen im Graph gar nicht vor.
-- **Bewegung heute:** Ein Kräfte-Layout auf dem Canvas (`frame`, `tick`, `draw`), das im Leerlauf leicht weiterläuft, ein 3D-Modus (`draw3d`) und eine Minikarte. `prefers-reduced-motion` wird für das Layout schon beachtet (`reduced`). Sonst gibt es keine Animation.
+- **Bewegung heute:** Ein Kräfte-Layout auf dem Canvas (`frame`, `tick`, `draw`), das im Leerlauf leicht weiterläuft, ein 3D-Modus (`draw3d`) und eine Minikarte. `prefers-reduced-motion` wird für das Layout schon beachtet (`reduced`). Sonst gibt es keine Animation. **Korrektur (14.11.2026, beim Bauen von PR 2):** Das stimmt nicht. Die Seite hat schon ein Einblenden (1,7 Sekunden, Knoten wachsen, Kanten blenden nach), kleine Kometen entlang der Kanten der Auswahl (`inF`), eine Welle um den Ausgangsknoten im Auswirkungsmodus, einen pulsierenden Ring um den gewählten Knoten, weiches Ein- und Ausblenden bei Hover und Auswahl und eine zeitbasierte Kamerafahrt (`flyTo`, alles mit `reduced` abgesichert). Das hatte ich beim Lesen übersehen.
 - **Tests, die Zahlen festhalten:** Calls (5), Mail-Verläufe (8) und Deals müssen gleich bleiben (`test/knowledge-graph.test.mjs`). Gesamtzahlen sind nur als Untergrenze geprüft (über 120 Knoten, über 200 Kanten).
 
 ## Vorschlag: mehr Daten (Stufe 1)
@@ -29,6 +29,8 @@ Zusammen etwa +25 bis +30 Knoten und +50 Kanten, also gut 10 % mehr. **Gemessen 
 **Später (Stufe 2, nicht in diesem Konzept):** Aufträge aus Order-to-Cash (Übergabe der Renewals) und Zahlungsverhalten aus Collections. Die neuen Lindenau-Daten aus `docs/renewals-lindenau-daten-konzept.md` kommen automatisch mit, sobald sie in `renewals.json` stehen und das Skript neu läuft. **Der Graph kann also zuerst gebaut werden.**
 
 ## Vorschlag: leichte Animationen
+
+**Stand beim Bauen:** Die Punkte 1, 2, 4 und 5 unten gibt es in der Seite schon (siehe die Korrektur oben). Neu in PR 2 ist nur Punkt 3, der Gesundheitsring und das leise Atmen für Rot und Eskalation, dazu die Legende.
 
 Alles im vorhandenen Zeichenschritt (`draw`, später `draw3d`), keine neue Bibliothek.
 

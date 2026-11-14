@@ -9107,6 +9107,17 @@ function readColors() {
 
 /* ---------- model ---------- */
 const nodes = D.nodes.map((n) => ({ ...n, x:0, y:0, vx:0, vy:0, deg:0, pin:false, nb:[] }));
+/* @pulse-start */
+/* Renewal health as a ring (colour = health token) and a slow breath for what needs attention: customers with an escalation and red renewals
+   (closest decision first), at most `cap` together so the picture stays calm. Returns the ids in that order. */
+const HEALTH_TOKEN = { red: 'red', yellow: 'amber', green: 'green' };
+function pulseIds(list, cap) {
+  const esc = list.filter((n) => n.escalation);
+  const red = list.filter((n) => n.renewal && n.renewal.health === 'red').sort((a, b) => a.renewal.days - b.renewal.days);
+  return esc.concat(red).slice(0, cap).map((n) => n.id);
+}
+/* @pulse-end */
+const PULSE = new Map(pulseIds(nodes, 15).map((id, i) => [id, (i * 0.37) % 1])); // id -> phase, so the breaths do not run in step
 const byId = new Map(nodes.map((n) => [n.id, n]));
 const edges = D.edges.map((e, i) => ({ ...e, a: byId.get(e.source), b: byId.get(e.target), i, weak: !!(D.edgeTypes[e.type] || {}).weak }));
 for (const e of edges) { e.a.deg++; e.b.deg++; e.a.nb.push({ n: e.b, e, out: true }); e.b.nb.push({ n: e.a, e, out: false }); }
@@ -9465,6 +9476,16 @@ function draw(now) {
       sg.addColorStop(0, hl); sg.addColorStop(1, colr); ctx.globalAlpha = al * 0.26; ctx.fillStyle = sg; ctx.fill(); ctx.globalAlpha = al;
     }
     ctx.stroke();
+    if (!foc && r > 5 && (n.renewal || n.escalation)) { // renewal health ring; breathing only for what needs attention, never with reduced motion
+      const hc = C[n.escalation ? 'amber' : HEALTH_TOKEN[n.renewal.health]], red = !n.escalation && n.renewal.health === 'red';
+      ctx.save(); ctx.strokeStyle = hc; ctx.lineWidth = red || n.escalation ? 2.2 : 1.6; ctx.globalAlpha = al * 0.9;
+      ctx.beginPath(); ctx.arc(x, y, r + 3, 0, Math.PI * 2); ctx.stroke();
+      if (PULSE.has(n.id) && !reduced && IP >= 1) {
+        const p = ((now / 2400) + PULSE.get(n.id)) % 1;
+        ctx.globalAlpha = al * 0.55 * (1 - p); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(x, y, r + 3 + p * 11, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.restore();
+    }
     if (isNew(n) && !foc) { ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = C.teal; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(x, y, r + 3.5, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
     if (n.pin) { ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, r + 4, 0, Math.PI * 2); ctx.stroke(); }
     if (n === S.sel) {
@@ -9888,10 +9909,10 @@ function syncBars() {
   $('#b-stake').setAttribute('aria-pressed', String(S.stake));
   const sw = (c, l) => `<span><i style="background:var(--${c})"></i>${l}</span>`;
   $('#vleg').innerHTML = S.stake
-    ? `<b>Stakeholders</b><div class="sw">${sw('green', 'Sponsor')}${sw('purple', 'Decider')}${sw('red', 'Blocker')}${sw('muted', 'Influencer')}</div><span>Size = contact strength</span>`
+    ? `<b>Stakeholders</b><div class="sw">${sw('green', 'Sponsor')}${sw('purple', 'Decider')}${sw('red', 'Blocker')}${sw('muted', 'Influencer')}</div><span>Size = contact strength · ring colour = renewal health</span>`
     : S.value
-      ? `<b>Value view</b><span>Node size = ACV · line width = TCV</span><div class="sw">${sw('green', '70 % +')}${sw('amber', '50 to 69 %')}${sw('red', 'under 50 %')}${sw('blue', 'contract')}</div><span>Dashed ring = new in the last 7 days</span>`
-      : '<b>Dashed ring</b><span>new in the last 7 days</span>';
+      ? `<b>Value view</b><span>Node size = ACV · line width = TCV</span><div class="sw">${sw('green', '70 % +')}${sw('amber', '50 to 69 %')}${sw('red', 'under 50 %')}${sw('blue', 'contract')}</div><span>Ring colour = renewal health, red and escalations breathe · dashed ring = new in the last 7 days</span>`
+      : `<b>Rings</b><span>Colour = renewal health (red, yellow, green) · amber ring on a customer = escalation · red and escalated ones breathe · dashed = new in the last 7 days</span>`;
   updateStats();
 }
 $('#b-enabler').onclick = () => {
