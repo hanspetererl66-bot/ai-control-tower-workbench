@@ -39,11 +39,10 @@ test('clicking the logo opens the cover sheet with the design study wording', ()
   const product = readFileSync(path.join(root, 'src/product.ts'), 'utf8');
   assert.match(product, /COVER_SUBTITLE = 'Futuristic Design Study'/);
   assert.match(product, /COVER_TAGLINE = 'Engineered as MVP'/, 'own line below the title');
-  assert.match(product, /COVER_BY = 'Accenture Germany'/);
+  assert.doesNotMatch(product, /COVER_BY/, 'no company line on the cover');
   assert.doesNotMatch(cover, /from Accenture/, 'no \"from\" before the company name');
-  assert.match(cover, /\{COVER_TAGLINE\}[\s\S]*\{COVER_BY\}/, 'tagline, then the company line');
   assert.match(product, /Demo only · Mockup · no productive system · illustrative sample data/);
-  assert.match(cover, /Author: Hans-Peter Erl/);
+  assert.doesNotMatch(cover, /Author:|Accenture/, 'no author and no company line on the cover');
   assert.match(cover, /COVER_STATUS/);
   assert.match(cover, /Escape/); // closable from the keyboard
 });
