@@ -78,7 +78,7 @@ export default function DevelopHub(props: Props) {
     return () => window.removeEventListener(PROJECTS_PULLED, reload);
   }, []);
   const open = projects.find((p) => p.id === openId) ?? null;
-  const [mode, setMode] = useState<'hub' | 'sources'>('hub');
+  const [mode, setMode] = useState<'hub' | 'sources' | 'agent'>('hub');
   const { mainRef, innerRef, fit } = useFit(!open && mode === 'hub');
 
   const startWorkflow = (goal: string) => {
@@ -138,7 +138,42 @@ export default function DevelopHub(props: Props) {
   }
 
   if (mode === 'sources') {
-    return <SourcesView generate={props.generate} onStop={props.onStop} ready={props.ready} onBack={() => setMode('hub')} onHandover={handOver} onOpenRegistry={props.onOpenRegistry} />;
+    return <SourcesView generate={props.generate} onStop={props.onStop} ready={props.ready} onBack={() => setMode('hub')} onHandover={handOver} onOpenRegistry={props.onOpenRegistry} onOpenConnectors={props.onOpenConnectors} />;
+  }
+
+  if (mode === 'agent') {
+    return (
+      <main className="main develop-main">
+        <div className="develop">
+          <button className="develop-back" onClick={() => setMode('hub')} aria-label="Back to Develop">← Develop</button>
+          <h1 className="develop-title">Agent Studio</h1>
+          <p className="develop-sub">Three ways to get an agent: build a new one, extend an SAP standard agent, or bring in an agent that lives elsewhere. Each starts a project in the Agent Studio that you confirm step by step.</p>
+          <div className="develop-cards develop-cards-three">
+            <IntentCard
+              kind="agent-new" logo={<AgentNewMark />} title="Create new agent" brand="from a goal"
+              text="From goal to agent in confirmed steps: requirements, design, architecture, test plan, build."
+              placeholder="e.g. Watch our renewals and tell me every Monday which ones are at risk"
+              action="Start from this goal" other="or open the Agent Studio"
+              onIntent={props.onAgentIntent} onOther={props.onAgent}
+            />
+            <IntentCard
+              kind="agent-ext" logo={<AgentExtendMark />} title="Extend existing SAP standard agent" brand="add what the standard agent lacks"
+              text="Name the SAP standard agent and say what it should do in addition. Your extension is planned and built on top of it, the standard agent stays as it is."
+              placeholder="e.g. Let the purchase-order agent also check our supplier blocks before it proposes an order"
+              action="Start the extension"
+              onIntent={(g) => props.onAgentIntent(`Extend the existing SAP standard agent: ${g}`)}
+            />
+            <IntentCard
+              kind="agent-int" logo={<AgentIntegrateMark />} title="Integrate external agent" brand="bring in an agent from outside"
+              text="Say which agent from outside should work with Joule and what it should do for you. The Agent Studio plans how it is connected, what it may see and who approves."
+              placeholder="e.g. Connect the supplier's order agent so that it answers delivery questions for us"
+              action="Start the integration"
+              onIntent={(g) => props.onAgentIntent(`Integrate an external agent: ${g}`)}
+            />
+          </div>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -148,21 +183,20 @@ export default function DevelopHub(props: Props) {
         <h1 className="develop-title">Develop</h1>
         <SharedSaveLine />
         <p className="develop-sub">Say what you want to achieve. Joule turns the goal into a draft, you refine and approve it.</p>
-        <section className="develop-card develop-card-wide" aria-label="Start from requirements">
+        <section className="develop-card develop-card-wide" aria-label="Requirement collection">
           <div className="develop-wide-text">
-            <span className="develop-card-title">Start from requirements</span>
+            <span className="develop-card-title">Requirement collection</span>
             <span className="develop-card-brand">from {SOURCES.map((s) => s.label).join(', ')}</span>
             <span className="develop-card-text">Read the requirements you already have, tick the ones that belong together, and let Joule cluster them and propose what each cluster is: an agent, a workflow, an extension of one, or a feature.</span>
           </div>
           <button className="dialog-btn dialog-btn-primary develop-go develop-go-wide" onClick={() => setMode('sources')}>Open Sources</button>
         </section>
         <div className="develop-cards">
-          <IntentCard
-            kind="agent" logo={<AgentMark />} title="Create an Agent" brand="with the Agent Studio"
-            text="From goal to agent in confirmed steps: requirements, design, architecture, test plan, build."
-            placeholder="e.g. Watch our renewals and tell me every Monday which ones are at risk"
-            action="Start from this goal" other="or open the Agent Studio"
-            onIntent={props.onAgentIntent} onOther={props.onAgent}
+          <BlockCard
+            kind="agent" logo={<AgentMark />} title="Agent Studio" brand="build, extend, integrate" label="Agent Studio"
+            text="Everything about agents in one place: create a new one, extend an SAP standard agent or integrate an external agent."
+            points={['Confirmed steps from requirements to build', 'Three ways in, one studio']}
+            action="Open Agent Studio" onOpen={() => setMode('agent')}
           />
           <IntentCard
             kind="n8n" logo={<N8nSymbol />} title="Create a Workflow" brand="with n8n"
@@ -195,7 +229,7 @@ export default function DevelopHub(props: Props) {
 }
 
 function BlockCard(p: {
-  kind: 'skills' | 'connectors'; logo: React.ReactNode; title: string; brand: string; label: string; text: string;
+  kind: 'agent' | 'skills' | 'connectors'; logo: React.ReactNode; title: string; brand: string; label: string; text: string;
   points: string[]; action: string; onOpen: () => void;
 }) {
   return (
@@ -213,8 +247,8 @@ function BlockCard(p: {
 }
 
 function IntentCard(p: {
-  kind: 'agent' | 'n8n'; logo: React.ReactNode; title: string; brand: string; text: string; placeholder: string;
-  action: string; other: string; onIntent: (intent: string) => void; onOther: () => void;
+  kind: 'agent-new' | 'agent-ext' | 'agent-int' | 'n8n'; logo: React.ReactNode; title: string; brand: string; text: string; placeholder: string;
+  action: string; other?: string; onIntent: (intent: string) => void; onOther?: () => void;
 }) {
   const [goal, setGoal] = useState('');
   const ok = goal.trim().length >= 8;
@@ -232,8 +266,49 @@ function IntentCard(p: {
         </span>
       </label>
       <button className="dialog-btn dialog-btn-primary develop-go" disabled={!ok} onClick={() => { p.onIntent(goal.trim()); setGoal(''); }}>{p.action}</button>
-      <button className="develop-other" onClick={p.onOther}>{p.other}</button>
+      {p.other && p.onOther && <button className="develop-other" onClick={p.onOther}>{p.other}</button>}
     </section>
+  );
+}
+
+/** A robot with a plus: a new agent. */
+function AgentNewMark() {
+  return (
+    <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+      <rect x="8" y="16" width="40" height="32" rx="11" fill="currentColor" />
+      <circle cx="20" cy="31" r="4.2" fill="#fff" /><circle cx="36" cy="31" r="4.2" fill="#fff" />
+      <path d="M22 40c1.8 1.6 3.6 2.4 6 2.4s4.2-.8 6-2.4" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" />
+      <path d="M28 6v7" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" />
+      <circle cx="49" cy="15" r="10" fill="currentColor" opacity=".55" />
+      <path d="M49 10v10M44 15h10" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** A block with a part plugged on top: an extension of an existing agent. */
+function AgentExtendMark() {
+  return (
+    <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+      <rect x="8" y="30" width="48" height="26" rx="8" fill="currentColor" />
+      <path d="M18 43h28" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" />
+      <path d="M22 30v-6a6 6 0 0 1 12 0v6" fill="currentColor" opacity=".55" />
+      <rect x="22" y="6" width="26" height="20" rx="6" fill="currentColor" opacity=".55" transform="rotate(8 35 16)" />
+      <path d="M33 14l4 4-4 4" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** Two agents linked across a gap: an external agent brought in. */
+function AgentIntegrateMark() {
+  return (
+    <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+      <rect x="4" y="20" width="22" height="24" rx="8" fill="currentColor" />
+      <rect x="38" y="20" width="22" height="24" rx="8" fill="currentColor" opacity=".55" />
+      <circle cx="11" cy="31" r="2.6" fill="#fff" /><circle cx="19" cy="31" r="2.6" fill="#fff" />
+      <circle cx="45" cy="31" r="2.6" fill="#fff" /><circle cx="53" cy="31" r="2.6" fill="#fff" />
+      <path d="M26 32h12" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeDasharray="1 6" />
+      <path d="M29 26l-4 6 4 6M35 26l4 6-4 6" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

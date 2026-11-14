@@ -22,7 +22,7 @@ export type ToolCard = {
 export const TOOL_CARDS: ToolCard[] = [
   {
     id: 'jira', name: 'Jira',
-    reads: 'Reads issues and backlogs (JQL search) to start from requirements.',
+    reads: 'Reads issues and backlogs (JQL search) for requirement collection.',
     writes: 'Comments, labels, status changes and new issues only after you confirmed a preview.',
     key: 'Needs your site, e-mail and an API token from id.atlassian.com (Security, API tokens).',
     addCommand: 'npm run connect:connectors -- --only jira',
@@ -36,14 +36,14 @@ export const TOOL_CARDS: ToolCard[] = [
   },
   {
     id: 'linear', name: 'Linear',
-    reads: 'Reads teams, projects and issues to start from requirements.',
+    reads: 'Reads teams, projects and issues for requirement collection.',
     writes: 'Adds a comment to an issue only after you confirmed it. Nothing else can change.',
     key: 'Needs a personal API key from Linear (Settings, Account, Security & access) with Read and Create comments.',
     addCommand: 'npm run connect:connectors -- --only linear',
   },
   {
     id: 'figma', name: 'Figma',
-    reads: 'Reads open comments and the text in frames of a design file to start from requirements.',
+    reads: 'Reads open comments and the text in frames of a design file for requirement collection.',
     writes: 'Nothing: the connector is read only. Even after you confirmed, it cannot change a Figma file.',
     key: 'Needs a personal access token from Figma (Settings, Security, Personal access tokens) with read scopes only.',
     addCommand: 'npm run connect:connectors -- --only figma',
