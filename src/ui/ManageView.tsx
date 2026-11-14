@@ -1,3 +1,4 @@
+import { isLiveConnector } from '../connector-activity';
 import { useCallback, useEffect, useState } from 'react';
 import type { Agent, Extension } from '../acp';
 import {
@@ -51,6 +52,7 @@ export default function ManageView({
   onAgentRestarted,
   onImport,
   focus,
+  liveConnectors = [],
 }: {
   agent: Agent | null;
   onBack: () => void;
@@ -58,6 +60,8 @@ export default function ManageView({
   onImport: (request: Record<string, unknown>) => void;
   /** Which part to scroll to when the page opens (from the Develop tiles). */
   focus?: 'skills' | 'connectors';
+  /** Normalised names of the connectors the agent is using right now (see connector-activity.ts). */
+  liveConnectors?: string[];
 }) {
   // Opened from a Develop tile: show only that part. Without a focus (other entry points) both parts are shown.
   const showConnectors = focus !== 'skills';
@@ -262,11 +266,12 @@ export default function ManageView({
         <h2 className="manage-h" id="manage-connectors">Connectors</h2>
         {connectors.length === 0 && <p className="manage-empty">No connectors configured.</p>}
         {connectors.map((e) => (
-          <div key={e.configKey} className="row">
+          <div key={e.configKey} className={`row${isLiveConnector(liveConnectors, e.configKey) ? ' conn-live' : ''}`} data-live={isLiveConnector(liveConnectors, e.configKey) ? 'true' : undefined}>
             <div className="row-main">
               <span className="row-title">
                 {connectorDisplayName(e.configKey)}
                 {!e.enabled && <em className="row-off"> disabled</em>}
+                {isLiveConnector(liveConnectors, e.configKey) && <em className="row-live" role="status"> in use</em>}
               </span>
               <span className="row-detail">{e.detail}</span>
             </div>

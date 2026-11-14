@@ -29,6 +29,7 @@ import Composer from './ui/Composer';
 import { chatMail, chatMailtoUrl } from './chat-mail';
 import ConversationList from './ui/ConversationList';
 import ManageView from './ui/ManageView';
+import { liveConnectors } from './connector-activity';
 import SidePanel, { memorySummary, type ContextItem, type GeneratedFile, type SidePanelTab } from './ui/SidePanel';
 import PermissionDialog from './ui/PermissionDialog';
 import Rail, { type View } from './ui/Rail';
@@ -145,6 +146,8 @@ export default function App() {
   const [agentEpoch, setAgentEpoch] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  /** Connectors with a tool call that is running right now (normalised names); shown in the connector list while an answer is being made. */
+  const [liveExt, setLiveExt] = useState<string[]>([]);
   const [conversationState, setConversationState] = useState(() =>
     loadConversationState(window.localStorage)
   );
@@ -828,11 +831,13 @@ export default function App() {
         if (tc.toolName) toolNames.current.set(tc.id, tc.toolName);
         { const used = skillLoadedBy(tc, skillListRef.current.map((k) => k.name)); if (used) countSkillRun([used]); }
         tools.current = [...tools.current, tc];
+        setLiveExt(liveConnectors(tools.current));
         recordFiles(tc.id, tc);
         flush();
       },
       onToolUpdate: (id: string, patch: Partial<ToolCall>) => {
         tools.current = tools.current.map((t) => (t.id === id ? { ...t, ...patch } : t));
+        setLiveExt(liveConnectors(tools.current));
         recordFiles(id, patch);
         flush();
       },
@@ -1809,6 +1814,7 @@ export default function App() {
           onAgentRestarted={reconnectAgent}
           onImport={(request) => setSkillRequest(request as unknown as InstallRequest)}
           focus={manageFocus}
+          liveConnectors={busy ? liveExt : []}
         />
       ) : view === 'studio' ? (
         <AgentStudio
