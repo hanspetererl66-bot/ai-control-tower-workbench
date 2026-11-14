@@ -3923,6 +3923,7 @@ button {
 .sub-toggle {
   display: inline-block;
   width: 16px;
+  font-size: 0.8em; /* the small triangle, 20 % smaller */
   margin-right: 2px;
   color: var(--muted);
   cursor: pointer;
@@ -4127,6 +4128,7 @@ button {
 .archived-spaces { margin: 14px 0 4px; border-top: 1px solid var(--line, rgb(127 127 127 / 25%)); padding-top: 8px; }
 .archived-head { display: flex; align-items: center; gap: 8px; width: 100%; background: none; border: 0; padding: 6px 2px; color: var(--muted, inherit); font: inherit; font-size: 12.5px; cursor: pointer; text-align: left; }
 .archived-head:hover { color: var(--ink); }
+.archived-caret { font-size: 0.8em; } /* the small triangle, 20 % smaller */
 .archived-list { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px; }
 .archived-list li { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 13px; }
 .archived-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.8; }
@@ -5756,7 +5758,7 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .trow-sub { margin-left: 22px; width: calc(100% - 22px); position: relative; }
 .trow-sub::before { content: ''; position: absolute; left: -10px; top: 0; bottom: 0; border-left: 1px solid var(--line); }
 .trow-dragging { opacity: 0.45; }
-.trow-open { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; color: var(--muted); font-size: 11px; border-radius: 4px; }
+.trow-open { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; color: var(--muted); font-size: 8.8px; border-radius: 4px; }
 .trow-open:not(.trow-open-none):hover { background: color-mix(in srgb, var(--ink) 14%, transparent); color: var(--ink); }
 .trow-icon { flex: none; display: inline-flex; color: var(--accent); }
 .trow-sub .trow-icon { opacity: 0.75; }

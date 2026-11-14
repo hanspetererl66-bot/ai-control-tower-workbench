@@ -741,7 +741,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
       {archived.length > 0 && (
         <section className="archived-spaces" aria-label="Archived Spaces">
           <button className="archived-head" aria-expanded={archivedOpen} onClick={() => setArchivedOpen((v) => !v)}>
-            <span aria-hidden="true">{archivedOpen ? '▾' : '▸'}</span>
+            <span className="archived-caret" aria-hidden="true">{archivedOpen ? '▾' : '▸'}</span>
             <span>Archived Spaces</span>
             <span className="domain-count">{archived.length}</span>
           </button>

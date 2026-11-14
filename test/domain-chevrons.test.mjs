@@ -25,3 +25,10 @@ test('the sign keeps a fixed box so the heading does not jump, grows a little on
   assert.match(css, /\.domain-toggle:hover \.domain-chev,\s*\.domain-toggle:focus-visible \.domain-chev \{\s*transform: scale\(1\.12\)/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.domain-chev, \.domain-chev svg \{ transition: none; \}/);
 });
+
+test('the small triangles (tree rows, cards with subspaces, Archived Spaces) are 20 % smaller than before', () => {
+  assert.match(css, /\.trow-open \{[^}]*font-size: 8\.8px;/, 'the tree row sign was 11 px');
+  assert.match(rule('.sub-toggle'), /font-size: 0\.8em;/, 'the sign on a card with subspaces follows the text, 20 % less');
+  assert.match(css, /\.archived-caret \{ font-size: 0\.8em; \}/, 'the sign of Archived Spaces');
+  assert.match(list, /<span className="archived-caret" aria-hidden="true">/);
+});
