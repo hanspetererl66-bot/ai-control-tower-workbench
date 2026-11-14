@@ -2185,6 +2185,36 @@ button {
   font-weight: 650;
 }
 
+:root { --live: #2f6fe4; }
+:root[data-theme="dark"] { --live: #7aa5ff; }
+/* A connector the agent is using right now: a thin blue outline that glows very softly. The words "in use" say it too, so it does not rely on colour. */
+.row.conn-live {
+  position: relative;
+}
+/* the outline lies on top of the row's own border and only its opacity moves (a colour change of the border itself would jump, not glide) */
+.row.conn-live::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--live);
+  border-radius: inherit;
+  box-shadow: 0 0 10px 0 color-mix(in srgb, var(--live) 18%, transparent);
+  pointer-events: none;
+  animation: conn-live 2.8s ease-in-out infinite;
+}
+.row-live {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--live);
+}
+@keyframes conn-live {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .row.conn-live::after { animation: none; opacity: 0.8; }
+}
 .row-off {
   font-style: normal;
   font-weight: 400;
