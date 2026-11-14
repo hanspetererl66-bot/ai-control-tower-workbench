@@ -351,6 +351,20 @@ h2,.card>.bar,.cust-panel>.bar{background:none}
 .tl .ended{position:absolute;top:6px;width:2px;height:18px;background:var(--muted)}
 .n{text-align:right}#alt td.n{white-space:nowrap}tr[data-id]{cursor:pointer}tr[data-id]:hover td,tr[aria-selected=true] td{background:var(--purple-dim)}
 .sig{margin:6px 0;padding:6px 8px;border-radius:var(--radius-s);border:1px solid var(--line);font-size:12px}.sig.red{background:var(--red-dim);border-color:var(--red-border)}.sig.yellow{background:var(--amber-dim);border-color:var(--amber-border)}.sig.plus{background:var(--green-dim);border-color:var(--green-border)}
+.wow-week{display:block;margin-bottom:12px;padding:12px 16px}.wow-line{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}.wow-line .lab{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--purple-ink)}.wow-sentence{flex:1 1 320px;font-size:15px;font-weight:600}
+.wow-found{margin-bottom:12px}.wow-found .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}.wow-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:10px}
+.wow-card{position:relative;display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid var(--line);border-top-width:4px;border-radius:var(--radius-s);background:var(--surface)}.wow-card.red{border-top-color:var(--red)}.wow-card.amber{border-top-color:var(--amber)}.wow-card.green{border-top-color:var(--green)}
+.wow-tag{align-self:flex-start;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;background:var(--wash);color:var(--ink-2)}.wow-card.red .wow-tag{background:var(--red-dim);color:var(--red-ink)}.wow-card.amber .wow-tag{background:var(--amber-dim);color:var(--amber-ink)}.wow-card.green .wow-tag{background:var(--green-dim);color:var(--green-ink)}
+.wow-card h3{margin:0;font-size:14px}.wow-card p{margin:0;font-size:12.5px;color:var(--ink-2)}.wow-card ul{margin:2px 0 0;padding-left:16px;font-size:12px;color:var(--muted)}.wow-card li{margin:2px 0}.wow-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:8px}
+.plan-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch;margin:10px 0}.plan-col{padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface)}.plan-col h3{margin:0 0 6px;font-size:12px;color:var(--muted);text-transform:none}.plan-col.after{border-color:var(--green-border);background:var(--green-dim)}
+.plan-arrow{align-self:center;font-size:22px;color:var(--purple-ink)}.plan-num{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin:4px 0;font-size:12px;color:var(--muted)}.plan-num b{font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
+.plan-gain{margin:4px 0 10px;padding:8px 12px;border-radius:var(--radius-s);background:var(--green-dim);border:1px solid var(--green-border);font-size:13px}.plan-gain b{color:var(--green-ink)}
+.plan-steps{margin:6px 0 10px;padding-left:18px;font-size:13px}.plan-steps li{margin:3px 0}.plan-mail{width:100%;min-height:190px;box-sizing:border-box;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);color:var(--ink);font:12.5px/1.5 var(--font);resize:vertical}
+.plan-meta{margin:6px 0;font-size:12px;color:var(--muted)}.plan-meta b{color:var(--ink-2)}
+@media (max-width:760px){.plan-grid{grid-template-columns:1fr}.plan-arrow{transform:rotate(90deg);justify-self:center}}
+.pwhat{padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface)}.pwhat .pw-row{display:flex;align-items:center;gap:10px}.pwhat input[type=range]{flex:1;accent-color:var(--purple)}.pwhat .pw-u{min-width:56px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.pw-out{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;margin-top:8px;font-size:12px}.pw-out div{display:flex;justify-content:space-between;gap:8px;color:var(--muted)}.pw-out b{color:var(--ink);font-variant-numeric:tabular-nums}.pw-out .bad b{color:var(--red-ink)}.pw-out .good b{color:var(--green-ink)}
+.pw-warn{margin-top:6px;font-size:12px;font-weight:600}.pw-warn.over{color:var(--red-ink)}.pw-warn.ok{color:var(--green-ink)}
 .sig b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 .dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:12px;margin:8px 0}.dl dt{color:var(--muted)}.dl dd{margin:0;text-align:right;font-weight:600}
 .meter{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:4px 0}.meter i{display:block;height:100%;background:var(--purple)}
@@ -612,6 +626,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
   <nav class="tabs rp" id="tabs" role="tablist" aria-label="Renewal process"></nav>
 
   <section class="pg" id="pg-overview" role="tabpanel" aria-labelledby="tab-overview">
+    <div id="wow"></div>
+    <div class="card" id="plan" hidden></div>
     <div id="kpis"></div>
     <p class="kpi-hint">Double-click a box to see the renewals behind the number.</p>
     <div class="card" id="kpi-detail" hidden></div>
@@ -2868,6 +2884,132 @@ function wbAct(st, action, who, ctx, arg) {
   if (action === 'takeover' && (st.status === 'running' || st.status.startsWith('waiting'))) return wbLog({ ...st, status: 'stopped', gate: null }, person, WB_STEPS[Math.min(st.step, WB_STEPS.length - 1)].id, 'Taken over by a person: the autopilot stops.');
   return st;
 }
+
+/* ---------- wow: what the app found, the rescue plan, the price impact, the weekly briefing ---------- */
+const MONTHS_OF = (tr) => tr.length - 1;
+const customerOf = (customers, id) => customers.find((x) => x.id === id) || {};
+const mailAbout = (customers, c) => ((customerOf(customers, c.customerId).mails) || []).find((m) => m.contractId === c.contractId && m.snippet);
+/**
+ * What the app found: the few things nobody asked about, each with its evidence. A rule per kind, the same signals the colours use.
+ * Three problems (a price trap, falling usage, a missing offer, a lost customer) and one chance (usage that keeps rising). At most two per customer.
+ */
+function findings(cases, customers, asOf) {
+  const out = [];
+  for (const c of cases) {
+    const cu = customerOf(customers, c.customerId), base = { contractId: c.contractId, id: c.id, customerId: c.customerId, customer: c.customer, product: c.product, eur: c.annualEur };
+    if (c.status === 'Lapsed') {
+      if (c.offer && c.offer.competitor && c.offer.competitor !== 'None') {
+        const m = mailAbout(customers, c);
+        out.push({ ...base, key: 'winback', rank: 4, tone: 'amber', headline: 'A lost customer is looking at the way back', text: `${c.product} at ${c.customer} lapsed on ${c.end}. The reactivation offer ${c.offer.id} is open until ${c.offer.validUntil}.`, evidence: [`Competitor in play: ${c.offer.competitor}`, m ? `Customer mail: "${m.snippet}"` : `Offer stage: ${c.offer.stage} (${c.offer.probabilityPct} %)`, `${eur(c.annualEur)} a year if they come back`] });
+      }
+      continue;
+    }
+    const sig = signals(c, asOf), has = (k) => sig.signals.some((s) => s.key === k), days = sig.days, up = upliftPct(c), use = usagePct(c), tr = c.usageTrend;
+    const trendText = (sig.signals.find((s) => s.key === 'trend' || s.key === 'trend-up') || {}).text;
+    if (c.autoRenew && c.offer && up !== null && up > c.upliftCapPct && days >= 0 && days <= 30) {
+      const hot = c.tickets.find((t) => t.priority === 'Very high' || t.priority === 'High');
+      out.push({ ...base, key: 'trap', rank: 0, tone: 'red', headline: 'Automatic renewal with a price rise above the cap', text: `${c.product} at ${c.customer} renews on its own in ${days} days at +${up} %. The contract cap is ${c.upliftCapPct} %.`,
+        evidence: [`Price rise ${up} % against a cap of ${c.upliftCapPct} %`, ...(c.offer.competitor && c.offer.competitor !== 'None' ? [`Competitor in play: ${c.offer.competitor}`] : []), ...(hot ? [`${hot.priority} ticket ${hot.id}: ${hot.title}`] : []), ...(cu.escalation ? [`${cu.escalation.level} escalation since ${cu.escalation.since}`] : [])] });
+    } else if (has('trend') && cu.escalation) {
+      out.push({ ...base, key: 'dots', rank: 3, tone: 'red', headline: 'Usage is falling while the customer is in escalation', text: `${c.product} at ${c.customer}: ${trendText}. The customer has an open ${cu.escalation.level.toLowerCase()} escalation.`, evidence: [trendText, cu.escalation.topic, `${eur(c.annualEur)} a year, decision ${c.decisionDate}`] });
+    } else if (has('trend') && use !== null && use >= 80) {
+      const people = (cu.topics || []).find((t) => t.kind === 'people') || (cu.topics || [])[0];
+      out.push({ ...base, key: 'hidden', rank: 1, tone: 'amber', headline: 'Looks fine, but usage has been falling', text: `${c.product} at ${c.customer} shows ${use} % usage and no warning today. Over ${MONTHS_OF(tr)} months it fell from ${tr[0]} % to ${tr[tr.length - 1]} %.`, evidence: [trendText, ...(people ? [people.text] : []), 'No ticket and no overdue invoice: nobody would have reported it'] });
+    } else if (!c.offer && !c.autoRenew && days >= 0 && days <= 21) {
+      const m = mailAbout(customers, c);
+      out.push({ ...base, key: 'clock', rank: 2, tone: 'red', headline: `${days} days left and no offer yet`, text: `${c.product} at ${c.customer} (${eur(c.annualEur)} a year) has its decision date on ${c.decisionDate}.`, evidence: ['Without an offer the customer decides without us', ...(m ? [`Customer mail: "${m.snippet}"`] : []), `Contract ends ${c.end}, notice period ${c.noticeDays} days`] });
+    } else if (has('trend-up') && use !== null) {
+      out.push({ ...base, key: 'expand', rank: 3, tone: 'green', headline: 'Ready for more: usage keeps rising', text: `${c.product} at ${c.customer}: usage rose from ${tr[0]} % to ${tr[tr.length - 1]} % in ${MONTHS_OF(tr)} months. An expansion of about ${eur(roundK(c.annualEur * 0.15))} a year is within reach.`, evidence: [trendText, `${use} % of the ${c.unit} are used`, ...(c.offer ? [`Offer ${c.offer.id}: ${c.offer.stage} (${c.offer.probabilityPct} %)`] : ['No renewal offer yet: put the expansion into it'])] });
+    }
+  }
+  // One finding per kind first (the biggest of each), in the order of the ranks; at most two per customer.
+  const sorted = out.filter((x) => x.key !== 'expand').sort((a, b) => a.rank - b.rank || b.eur - a.eur), problems = [], perCustomer = {}, kinds = new Set();
+  for (const f of sorted) { if (kinds.has(f.key) || (perCustomer[f.customerId] || 0) >= 2) continue; kinds.add(f.key); perCustomer[f.customerId] = (perCustomer[f.customerId] || 0) + 1; problems.push(f); }
+  const chance = out.filter((x) => x.key === 'expand').sort((a, b) => b.eur - a.eur)[0];
+  return [...problems.slice(0, 3), ...(chance ? [chance] : [])];
+}
+/** Signals a plan can clear: a person can solve the ticket, clear the invoice, write the offer, hold the cap. The others (competitor, usage, trend) stay and are worked on. */
+const PLAN_CLEARS = ['invoice', 'ticket', 'no-offer', 'uplift', 'validity'];
+/**
+ * The rescue plan of one renewal: the steps, the colour and the numbers before and after, and a mail draft. Nothing is sent.
+ * After the plan the cleared signals are gone and a red date becomes yellow (the signing date is agreed); the rest stays as it is.
+ */
+function rescuePlan(c, customers, rules, asOf) {
+  const sig = signals(c, asOf), keep = [], lapsed = c.status === 'Lapsed';
+  // A lapsed contract is not rescued by a price: the offer on the table is a reactivation (often with more scope), the plan is the follow-up.
+  for (const s of sig.signals) { if (!lapsed && PLAN_CLEARS.includes(s.key)) continue; keep.push(s.key === 'timing' && s.level === 'red' ? { ...s, level: 'yellow', text: `${s.text} (signing date agreed)` } : s); }
+  const afterHealth = keep.some((s) => s.level === 'red') ? 'red' : keep.some((s) => s.level === 'yellow') ? 'yellow' : 'green';
+  const cur = c.offer ? c.offer.currentAnnualEur : c.annualEur, cap = c.upliftCapPct, within = roundK(cur * (1 + cap / 100));
+  const has = (k) => sig.signals.some((s) => s.key === k);
+  // Only a plan that writes an offer changes the price on the table; a renewal with nothing to fix stays as it is.
+  const writesOffer = !lapsed && !c.offer && (has('no-offer') || (!c.autoRenew && sig.days <= 60));
+  const annualAfter = lapsed ? (c.offer ? c.offer.annualEur : c.annualEur) : c.offer ? (upliftPct(c) > cap ? within : c.offer.annualEur) : writesOffer ? within : c.annualEur;
+  const steps = [];
+  if (lapsed) steps.push({ key: 'winback', text: c.offer ? `Follow up the reactivation offer ${c.offer.id} with the technical contact before ${c.offer.validUntil}` : 'Decide with the account team whether a win-back offer is worth it' });
+  if (has('invoice')) steps.push({ key: 'invoice', text: 'Clear the overdue invoice with the customer finance team (offer a payment plan)' });
+  if (has('ticket')) { const t = c.tickets.find((x) => x.priority === 'Very high' || x.priority === 'High') || c.tickets[0]; steps.push({ key: 'ticket', text: `Name an engineer and a date for ticket ${t.id}` }); }
+  if (has('uplift') && !lapsed) steps.push({ key: 'uplift', text: `Hold the contract cap: ${eur(annualAfter)} a year (+${cap} %) instead of ${eur(c.offer.annualEur)}` });
+  if (writesOffer) steps.push({ key: 'no-offer', text: `Send an offer at the cap today: ${eur(within)} a year` });
+  if (has('validity')) steps.push({ key: 'validity', text: 'Extend the offer validity in exchange for a signing date' });
+  if (has('timing') && !lapsed) steps.push({ key: 'timing', text: sig.days < 0 ? 'Agree a written extension and the signing date' : 'Fix the signing date with the customer this week' });
+  if (has('competitor')) steps.push({ key: 'competitor', text: 'Executive sponsor call with a competitive battlecard' });
+  if (has('trend') || has('usage')) steps.push({ key: 'usage', text: 'Call the business owner: why is usage falling, and who is the champion now?' });
+  if (!steps.length) steps.push({ key: 'keep', text: 'Keep on track: confirm the renewal date at the next customer meeting' });
+  // The colour decides the retention; when the colour stays the same but signals were cleared, each cleared signal adds two points (an assumption, said on the page).
+  const cleared = lapsed ? 0 : sig.signals.filter((x) => PLAN_CLEARS.includes(x.key)).length;
+  const pBefore = retention(c, sig.health, rules), pAfter = lapsed ? pBefore : Math.min(0.97, retention(c, afterHealth, rules) + (afterHealth === sig.health ? 0.02 * cleared : 0));
+  const make = (health, p, annual) => ({ health, retentionPct: Math.round(p * 100), expectedEur: Math.round(annual * p), clvEur: clv(annual, p, rules) });
+  const before = make(sig.health, pBefore, c.offer ? c.offer.annualEur : c.annualEur), after = make(afterHealth, pAfter, annualAfter);
+  const mail = rescueMail(c, steps, annualAfter, within, customers);
+  return { steps, before, after, gainEur: after.expectedEur - before.expectedEur, remaining: keep.filter((s) => s.level !== 'plus').map((s) => s.text), mail };
+}
+/** The mail draft that goes with a plan (to the customer's owner, from the account executive). Never sent. */
+function rescueMail(c, steps, annualAfter, within, customers) {
+  const cu = customerOf(customers, c.customerId), keys = steps.map((s) => s.key), lines = [];
+  lines.push(`Dear ${c.customerOwner},`, '', `about the renewal of ${c.product} (${c.contractId}), which ends on ${c.end}: here is what we do on our side, and what we ask of you.`, '');
+  if (keys.includes('ticket')) { const t = c.tickets.find((x) => x.priority === 'Very high' || x.priority === 'High') || c.tickets[0]; lines.push(`- Ticket ${t.id} ("${t.title}"): a named engineer works on it, and you get a date from us by the end of this week.`); }
+  if (keys.includes('invoice')) lines.push('- The open invoice: we are happy to agree a payment plan with your finance team, so that it does not stand in the way of the renewal.');
+  if (keys.includes('uplift')) lines.push(`- Price: we hold the contract cap. The renewal is ${eur(annualAfter)} a year (+${c.upliftCapPct} % against today) and not more.`);
+  if (keys.includes('no-offer')) lines.push(`- Offer: you receive our offer today, ${eur(within)} a year, within the contract cap of ${c.upliftCapPct} %.`);
+  if (keys.includes('validity')) lines.push('- The offer stays valid until we have agreed a signing date.');
+  if (keys.includes('usage')) lines.push('- Usage: let us look together at how your teams work with it today, and who owns it after the changes.');
+  if (keys.includes('competitor')) lines.push('- We would like to show you in a short session why the renewal is the safer and cheaper way for you.');
+  lines.push('', `Could we agree the signing date by ${c.decisionDate}?`, '', `Kind regards,`, c.owner);
+  return { to: `${(c.customerOwner || 'customer').toLowerCase().replace(/[^a-z]+/g, '.').replace(/^\.+|\.+$/g, '')}@${c.customerId}.example`, subject: `Your renewal of ${c.product} (${c.contractId}): our next steps`, body: lines.join('\n') };
+}
+/**
+ * What a price rise does to the renewal: the retention probability falls a little with every percent, faster above the contract cap, and faster still with a competitor.
+ * The base is the colour of the renewal without its price signal. An assumption, shown as such on the page.
+ */
+function priceImpact(c, rules, asOf, upliftPctValue) {
+  const sig = signals(c, asOf), rest = sig.signals.filter((s) => s.key !== 'uplift');
+  const health = rest.some((s) => s.level === 'red') ? 'red' : rest.some((s) => s.level === 'yellow') ? 'yellow' : 'green';
+  const cur = c.offer ? c.offer.currentAnnualEur : c.annualEur, cap = c.upliftCapPct, u = Math.max(0, upliftPctValue);
+  const competitor = !!(c.offer && c.offer.competitor && c.offer.competitor !== 'None');
+  const over = Math.max(0, u - cap);
+  const base = retention(c, health, rules);
+  const p = Math.max(0.2, Math.min(0.97, base - 0.003 * u - (competitor ? 0.022 : 0.012) * over));
+  const annual = roundK(cur * (1 + u / 100));
+  return { upliftPct: u, annualEur: annual, retentionPct: Math.round(p * 100), expectedEur: Math.round(annual * p), clvEur: clv(annual, p, rules), withinCap: u <= cap + 0.05, overCap: Math.round(over * 10) / 10, deltaEur: Math.round(annual * p - cur * base) };
+}
+/** The rise (0 to 12 %, steps of half a percent) with the highest expected value a year. */
+function bestPrice(c, rules, asOf) {
+  let best = null;
+  for (let u = 0; u <= 12; u += 0.5) { const r = priceImpact(c, rules, asOf, u); if (!best || r.expectedEur > best.expectedEur) best = r; }
+  return best;
+}
+/** One sentence for the week and the mail for the sales manager. The numbers are those of the cases, nothing else. */
+function weeklyBriefing(cases, customers, asOf, rules) {
+  const live = cases.filter((c) => c.status !== 'Lapsed').map((c) => ({ c, sig: signals(c, asOf) }));
+  const stake = live.reduce((a, x) => a + x.c.annualEur, 0), six = live.filter((x) => x.sig.days <= 42), red = live.filter((x) => x.sig.health === 'red'), now = live.filter((x) => x.sig.health === 'red' || x.sig.days <= 14);
+  const atRisk = Math.round(live.reduce((a, x) => a + x.c.annualEur * (1 - retention(x.c, x.sig.health, rules)), 0));
+  const found = findings(cases, customers, asOf);
+  const headline = `${eur(stake)} a year are at stake. ${six.length} decisions fall within six weeks, ${red.length} are red, and ${now.length} need you now.`;
+  const top = red.sort((a, b) => b.c.annualEur - a.c.annualEur).slice(0, 3).map((x) => `- ${x.c.customer}, ${x.c.product}: ${eur(x.c.annualEur)} a year, decision ${x.sig.days < 0 ? 'passed ' + -x.sig.days + ' days ago' : 'in ' + x.sig.days + ' days'}. First: ${actions(x.c, x.sig)[0]}`);
+  const body = ['Hello,', '', `renewals this week: ${headline}`, `Expected loss over the next year at today's colours: ${eur(atRisk)} (assumption: retention by colour).`, '', 'The three biggest red renewals:', ...top, '', 'What the app found that nobody asked for:', ...found.map((f) => `- ${f.headline}: ${f.customer}, ${f.product}.`), '', 'Kind regards'].join('\n');
+  return { headline, stakeEur: stake, sixWeeks: six.length, redCount: red.length, needNow: now.length, atRiskEur: atRisk, mail: { to: 'sales.manager@sap.example', subject: `Renewals this week: ${eur(stake)} at stake, ${red.length} red`, body } };
+}
+
 </script>
 <script>
 (function () {
@@ -2878,7 +3020,7 @@ const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
 const FLOW = ['Detected', 'Prepared (by you)', 'Offer approved (simulated)', 'Sent (simulated)', 'Signed (simulated)'];
 const LABEL = { green: 'Green', yellow: 'Yellow', red: 'Red' };
-const state = { briefs: {}, stats: { n: 0, ms: 0, useful: 0, notUseful: 0 }, running: null, briefNote: '', owner: 'all', groups: {}, asked: {}, tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, auto: false, ap: {}, wb: {}, apMode: 'autopilot', apOpen: {} };
+const state = { plan: null, briefs: {}, stats: { n: 0, ms: 0, useful: 0, notUseful: 0 }, running: null, briefNote: '', owner: 'all', groups: {}, asked: {}, tab: 'overview', phase: null, kpi: null, status: 'all', customer: 'all', q: '', sel: null, csel: null, focus: null, stage: {}, option: {}, auto: false, ap: {}, wb: {}, apMode: 'autopilot', apOpen: {} };
 const START = Date.UTC(2026, 0, 1), END = Date.UTC(2027, 11, 31);
 const pos = (d) => Math.max(0, Math.min(100, ((toDay(d) - START) / (END - START)) * 100));
 let model = [];
@@ -3088,11 +3230,12 @@ function paintDetail(el) {
     `<h3 style="margin-top:12px">Why this colour</h3>${c.sig.signals.map((s) => `<div class="sig ${s.level}"><b>${s.level === 'plus' ? 'positive' : s.level}</b>${esc(s.text)}</div>`).join('') || '<div class="sig plus">No warning signals.</div>'}` +
     (mailsOfCase(c).length ? `<h3 style="margin-top:12px">E-mail about this renewal</h3>${mailTimeline(mailsOfCase(c))}` : '') +
     `<h3 style="margin-top:12px">Next best action</h3><div class="act-first">${esc(c.actions[0])}</div>` + (c.actions.length > 1 ? `<div class="sub" style="margin:6px 0 0">After that</div><ol class="act">${c.actions.slice(1).map((a) => `<li>${esc(a)}</li>`).join('')}</ol>` : '') +
-    autoBlock(c) + briefBlock(c) +
-    `<div class="flow">${FLOW.map((f, i) => (i === 1 && apPrepared(c) ? 'Prepared (autopilot)' : f)).map((f, i) => (i === st ? `<b>${f}</b>` : f)).join(' › ')}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn}<button class="small" data-act="ask" type="button">Ask Joule</button>${c.offer ? '<button class="small" data-act="price" type="button">Check the price</button>' : ''}</div><p class="note">A person approves every step. Joule answers in the chat, not here: mark a step yourself once it is done. Approving, sending and signing are simulated, and the stages are kept for this session only.</p>`;
+    priceBlock(c) + autoBlock(c) + briefBlock(c) +
+    `<div class="flow">${FLOW.map((f, i) => (i === 1 && apPrepared(c) ? 'Prepared (autopilot)' : f)).map((f, i) => (i === st ? `<b>${f}</b>` : f)).join(' › ')}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${btn}<button class="small" data-act="ask" type="button">Ask Joule</button>${st === 4 || c.status === 'Lapsed' ? '' : '<button class=\"small\" data-act=\"plan\" type=\"button\">Rescue plan</button>'}${c.offer ? '<button class="small" data-act="price" type="button">Check the price</button>' : ''}</div><p class="note">A person approves every step. Joule answers in the chat, not here: mark a step yourself once it is done. Approving, sending and signing are simulated, and the stages are kept for this session only.</p>`;
   el.querySelectorAll('[data-act]').forEach((b) => (b.onclick = () => {
     const a = b.dataset.act;
     if (a === 'ask') return send(`Explain the renewal of ${c.product} for ${c.customer} (SAP customer ID ${c.sapCustomerId}): health ${c.health} because ${c.sig.signals.filter((s) => s.level !== 'plus').map((s) => s.text).join('; ') || 'no warning'}. What would you do first? Please answer in English.`);
+    if (a === 'plan') return showPlan({ kind: 'case', id: c.id });
     if (a === 'price') return send(pricePrompt(c));
     if (a === 'brief') return requestBrief(c.id);
     if (a === 'useful' || a === 'changes') return rateBrief(c.id, a === 'useful');
@@ -3103,6 +3246,7 @@ function paintDetail(el) {
     if (a === 'sign') state.stage[c.id] = 4;
     compute(); renderAll();
   }));
+  wirePrice(el, c);
 }
 function autoBlock(c) {
   const R = DATA.rules, th = eur(R.autoThresholdEur);
@@ -3152,7 +3296,7 @@ function countUp(el, to, fmt) {
   const tick = (t) => { const p = Math.min(1, (t - t0) / 700); el.textContent = fmt(p >= 1 ? to : Math.round(to * (1 - Math.pow(1 - p, 3)))); if (p < 1 && el.isConnected) requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
 }
-const runCounts = (root) => root.querySelectorAll('[data-count]').forEach((el) => countUp(el, +el.dataset.count, el.dataset.fmt === 'eur' ? eur : String));
+const runCounts = (root) => root.querySelectorAll('[data-count]').forEach((el) => countUp(el, +el.dataset.count, el.dataset.fmt === 'eur' ? eur : el.dataset.fmt === 'pct' ? (v) => v + ' %' : String));
 const activate = (el, fn) => { el.onclick = fn; el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } }; };
 function renderCtx() {
   $('#customer').value = state.customer; $('#owner').value = state.owner;
@@ -3520,10 +3664,87 @@ function renderAutopilot() {
   $('#ap').querySelectorAll('[data-wbopen]').forEach((b) => { b.onclick = () => { wbHandOver(b.dataset.wbopen, true); renderAll(); }; });
   $('#ap').querySelectorAll('details[data-apd]').forEach((d) => { d.ontoggle = () => { state.apOpen[d.dataset.apd] = d.open; }; });
 }
+/* ---------- wow: the weekly line, what the app found, the rescue plan, the price impact ---------- */
+const WOW_TAG = { trap: 'Price trap', hidden: 'Hidden loss', clock: 'Running out of time', dots: 'Connected', expand: 'Chance', winback: 'Win-back' };
+function wowCard(f) {
+  return `<article class="wow-card ${f.tone}" data-key="${esc(f.key)}"><span class="wow-tag">${esc(WOW_TAG[f.key] || f.key)}</span><h3>${esc(f.headline)}</h3><p>${esc(f.text)}</p><ul>${f.evidence.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>` +
+    `<div class="wow-actions"><button class="primary" type="button" data-plan="${esc(f.id)}">${f.key === 'expand' ? 'Show the expansion' : 'Show the rescue plan'}</button><button class="small" type="button" data-open="${esc(f.id)}">Open the renewal</button></div></article>`;
+}
+function showPlan(plan) {
+  state.plan = plan; state.tab = 'overview'; renderAll();
+  const el = $('#plan'); if (el && !el.hidden) el.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'nearest' });
+}
+function renderWow() {
+  const el = $('#wow'); if (!el) return;
+  const cases = scoped(), found = findings(cases, DATA.customers, DATA.asOf), wk = weeklyBriefing(cases, DATA.customers, DATA.asOf, DATA.rules);
+  el.innerHTML = `<div class="card wow-week"><div class="wow-line"><span class="lab">This week</span><span class="wow-sentence">${esc(wk.headline)}</span><button class="small" type="button" id="wk-mail">Draft the weekly mail</button></div></div>` +
+    (found.length ? `<div class="card wow-found"><div class="head"><h2>What the app found</h2><span class="sub" style="margin:0">Things nobody asked about, with the evidence. The same signals as the colours.</span></div><div class="wow-grid">${found.map(wowCard).join('')}</div></div>` : '');
+  $('#wk-mail').onclick = () => showPlan({ kind: 'week' });
+  el.querySelectorAll('[data-plan]').forEach((b) => (b.onclick = () => showPlan({ kind: 'case', id: b.dataset.plan })));
+  el.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => openRenewal(b.dataset.open)));
+}
+const mailBox = (m) => `<div class="plan-meta"><b>To</b> ${esc(m.to)} · <b>Subject</b> ${esc(m.subject)}</div><textarea class="plan-mail" readonly aria-label="Mail draft">${esc(m.body)}</textarea><div class="row2" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="small" type="button" id="plan-copy">Copy the draft</button><button class="small" type="button" id="plan-ask">Ask Joule to polish it</button><span class="sub" style="margin:0;align-self:center" id="plan-copied" role="status"></span></div><p class="sub" style="margin-top:8px">A draft only. Nothing is sent.</p>`;
+function wirePlanMail(m, about) {
+  $('#plan-copy').onclick = () => { const t = $('#plan .plan-mail'); t.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; } $('#plan-copied').textContent = ok ? 'Copied.' : 'Selected: press Ctrl+C.'; };
+  $('#plan-ask').onclick = () => send(`Polish this mail draft ${about}. Keep the facts and the numbers, keep it short and friendly, answer in English, do not send anything.\n\nSubject: ${m.subject}\n\n${m.body}`);
+}
+function renderPlan() {
+  const el = $('#plan'); if (!el) return;
+  const pl = state.plan;
+  if (!pl) { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  const close = `<button class="ghost" type="button" id="plan-close">Close</button>`;
+  if (pl.kind === 'week') {
+    const wk = weeklyBriefing(scoped(), DATA.customers, DATA.asOf, DATA.rules);
+    el.innerHTML = `<div class="head"><h2>Weekly mail for the sales manager</h2>${close}</div><p class="sub">${esc(wk.headline)} Expected loss at today's colours: <b>${eur(wk.atRiskEur)}</b> a year (retention by colour is an assumption).</p>${mailBox(wk.mail)}`;
+    wirePlanMail(wk.mail, 'for the sales manager (weekly renewals summary)');
+  } else {
+    const raw = DATA.cases.find((x) => x.id === pl.id), c = byId(pl.id);
+    if (!raw || !c) { state.plan = null; el.hidden = true; return; }
+    const sig = signals(raw, DATA.asOf), opts = options(raw, sig, DATA.rules), growth = opts.find((o) => o.key === 'growth'), std = opts.find((o) => o.key === 'standard');
+    const expand = sig.signals.some((x) => x.key === 'trend-up') && growth && std && sig.health !== 'red';
+    let before, after, steps, gain, mail, note;
+    if (expand) {
+      before = { health: sig.health, retentionPct: std.retentionPct, expectedEur: Math.round(std.annualEur * std.retentionPct / 100), clvEur: std.clvEur }; after = { health: sig.health, retentionPct: growth.retentionPct, expectedEur: Math.round(growth.annualEur * growth.retentionPct / 100), clvEur: growth.clvEur };
+      steps = [{ text: `Put the growth bundle into the renewal: ${eur(growth.annualEur)} a year, 10 % more scope at the same unit price` }, ...(raw.offer && raw.offer.nextStep ? [{ text: raw.offer.nextStep }] : []), { text: 'Show the customer the usage curve: it is the argument for more scope' }];
+      mail = { to: `${raw.customerOwner.toLowerCase().replace(/[^a-z]+/g, '.').replace(/^\.+|\.+$/g, '')}@${raw.customerId}.example`, subject: `Your ${raw.product}: more scope for your growing usage`, body: `Dear ${raw.customerOwner},\n\nyour usage of ${raw.product} has risen from ${raw.usageTrend[0]} % to ${raw.usageTrend[raw.usageTrend.length - 1]} % of the licence in ${raw.usageTrend.length - 1} months.\n\nWe suggest to put 10 % more scope into the renewal at the same unit price: ${eur(growth.annualEur)} a year instead of ${eur(std.annualEur)}.\n\nCould we talk about it this week?\n\nKind regards,\n${raw.owner}` };
+      gain = after.expectedEur - before.expectedEur; note = 'Before = the renewal as it stands, after = with the growth bundle. Retention and lifetime value follow the offer options (an assumption).';
+    } else { const rp = rescuePlan(raw, DATA.customers, DATA.rules, DATA.asOf); before = rp.before; after = rp.after; steps = rp.steps; gain = rp.gainEur; mail = rp.mail; note = 'After the plan: the cleared signals (ticket, invoice, offer, price, validity) are gone and a red date turns yellow once the signing date is agreed. Competitor, usage and trend stay, they need their own work. Retention by colour is an assumption; when the colour stays, each cleared signal adds two points.'; }
+    const col = (t, d, cls) => `<div class="plan-col ${cls}"><h3>${t}</h3><div class="plan-num"><span>Colour</span><span class="pill ${d.health}">${LABEL[d.health]}</span></div><div class="plan-num"><span>Retention</span><b data-count="${d.retentionPct}" data-fmt="pct">${d.retentionPct} %</b></div><div class="plan-num"><span>Expected a year</span><b data-count="${d.expectedEur}" data-fmt="eur">${eur(d.expectedEur)}</b></div><div class="plan-num"><span>Lifetime value</span><b data-count="${d.clvEur}" data-fmt="eur">${eur(d.clvEur)}</b></div></div>`;
+    el.innerHTML = `<div class="head"><h2>${expand ? 'Expansion' : 'Rescue plan'}: ${esc(c.product)} · ${esc(c.customer)}</h2>${close}</div><p class="sub">${eur(c.annualEur)} a year · decision ${esc(c.decisionDate)} · ${esc(c.contractId)}</p>` +
+      `<div class="plan-grid">${col('Today', before, 'before')}<div class="plan-arrow" aria-hidden="true">→</div>${col(expand ? 'With the expansion' : 'With the plan', after, 'after')}</div>` +
+      `<div class="plan-gain">${gain >= 0 ? 'Expected value a year: ' : 'Expected value a year: '}<b>${gain >= 0 ? '+' : '−'}${eur(Math.abs(gain))}</b> ${expand ? 'with the expansion' : 'if the plan is done'}.</div>` +
+      `<h3 style="margin:0 0 4px">${expand ? 'What to do' : 'The plan, in this order'}</h3><ol class="plan-steps">${steps.map((x) => `<li>${esc(x.text)}</li>`).join('')}</ol>` +
+      `<h3 style="margin:0 0 4px">Mail draft</h3>${mailBox(mail)}<p class="sub">${esc(note)}</p><div class="row2" style="display:flex;gap:8px;flex-wrap:wrap"><button class="small" type="button" id="plan-open">Open the renewal</button></div>`;
+    $('#plan-open').onclick = () => openRenewal(pl.id);
+    wirePlanMail(mail, `for ${raw.customerOwner} at ${raw.customer} (${raw.product})`);
+    runCounts(el);
+  }
+  $('#plan-close').onclick = () => { state.plan = null; renderPlan(); };
+}
+/** The price slider of the detail: what a rise does to retention and to the expected value (assumption, shown as such). */
+function priceBlock(c) {
+  const raw = DATA.cases.find((x) => x.id === c.id);
+  if (!raw || c.status === 'Lapsed' || c.stage === 4) return '';
+  const start = raw.offer ? Math.max(0, Math.min(12, Math.round(upliftPct(raw) * 2) / 2)) : raw.upliftCapPct;
+  return `<h3 style="margin-top:12px">What if the price rise changes?</h3><div class="pwhat" data-pw="${esc(c.id)}"><div class="pw-row"><label for="pw-${esc(c.id)}">Price rise</label><input type="range" id="pw-${esc(c.id)}" min="0" max="12" step="0.5" value="${start}"><span class="pw-u" aria-live="polite"></span></div><div class="pw-out"></div><div class="pw-warn" aria-live="polite"></div><div class="row2" style="margin-top:6px"><button class="small" type="button" data-pw-best>Set to the best rise</button></div><div class="sub" style="margin-top:6px">Assumption: retention falls with every percent, faster above the contract cap (${raw.upliftCapPct} %) and faster still with a competitor.</div></div>`;
+}
+function wirePrice(el, c) {
+  const box = el.querySelector('.pwhat'); if (!box) return;
+  const raw = DATA.cases.find((x) => x.id === c.id), rg = box.querySelector('input'), best = bestPrice(raw, DATA.rules, DATA.asOf);
+  const paint = () => {
+    const r = priceImpact(raw, DATA.rules, DATA.asOf, +rg.value), cur = raw.offer ? raw.offer.currentAnnualEur : raw.annualEur;
+    box.querySelector('.pw-u').textContent = `+${(+rg.value).toFixed(1)} %`;
+    box.querySelector('.pw-out').innerHTML = `<div><span>Annual value</span><b>${eur(r.annualEur)}</b></div><div><span>Retention</span><b>${r.retentionPct} %</b></div><div class="${r.expectedEur >= best.expectedEur ? 'good' : ''}"><span>Expected a year</span><b>${eur(r.expectedEur)}</b></div><div class="${r.deltaEur < 0 ? 'bad' : 'good'}"><span>Against today (${eur(cur)})</span><b>${r.deltaEur >= 0 ? '+' : '−'}${eur(Math.abs(r.deltaEur))}</b></div><div><span>Lifetime value</span><b>${eur(r.clvEur)}</b></div><div><span>Best rise</span><b>+${best.upliftPct.toFixed(1)} %</b></div>`;
+    const w = box.querySelector('.pw-warn'); w.className = 'pw-warn ' + (r.withinCap ? 'ok' : 'over'); w.textContent = r.withinCap ? `Within the contract cap of ${raw.upliftCapPct} %.` : `${r.overCap} points above the contract cap of ${raw.upliftCapPct} %: the customer can refuse.`;
+  };
+  rg.oninput = paint; box.querySelector('[data-pw-best]').onclick = () => { rg.value = String(best.upliftPct); paint(); };
+  paint();
+}
 function renderAll() {
   $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`;
   renderCtx(); renderTabs();
-  if (state.tab === 'overview') { renderKpis(); renderKpiDetail(); renderSix(); renderGroups($('#today-groups'), 't', 'What to do first', 'today:'); }
+  if (state.tab === 'overview') { renderWow(); renderPlan(); renderKpis(); renderKpiDetail(); renderSix(); renderGroups($('#today-groups'), 't', 'What to do first', 'today:'); }
   else if (state.tab === 'analytics') renderAnalytics();
   else if (state.tab === 'autopilot') renderAutopilot();
   else if (state.tab === 'process') { renderLand(); renderCustomerView(); }
