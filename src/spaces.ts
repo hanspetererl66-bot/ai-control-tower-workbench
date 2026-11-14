@@ -9,6 +9,10 @@ export type Space = {
   parent?: string;
   cardCount: number;
   updatedAt: number;
+  /** The words of the title shown on top of the Space when the title of the list does not read well as a heading (space.json `heading`). */
+  heading?: string;
+  /** The page makes its own title (space.json `ownTitle`): the app puts none above it. */
+  ownTitle?: boolean;
   /** Made in the Space Designer: the page carries its layout and can be opened there again. */
   designer?: boolean;
 };

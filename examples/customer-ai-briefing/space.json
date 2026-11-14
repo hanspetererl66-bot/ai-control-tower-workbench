@@ -8,5 +8,6 @@
     "The AI-credit contract card shows the usual models (pay as you go, agreed consumption, fixed consumption, rollover, prepaid pool, top-up packs); a check marks the ones that are valid for the customer.",
     "'Written briefing with Joule' asks the chat to turn the page into a one-page briefing."
   ],
-  "prompt": "Bundled example: Kundenspezifisches AI-Briefing (static, data embedded by npm run sync:customer-briefing)."
+  "prompt": "Bundled example: Kundenspezifisches AI-Briefing (static, data embedded by npm run sync:customer-briefing).",
+  "heading": "Customer AI Briefing"
 }

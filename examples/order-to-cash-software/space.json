@@ -9,5 +9,6 @@
     "Renewal orders: when a customer signs a renewal in the Renewals Space, the autopilot hands the order over here. Order management books it in three steps (sales order, entitlement for the new term, invoice) and the booking goes back to the Renewals Space. Simulated, nothing is written to a system.",
     "Fictional sample data. No SAP system is called; tool names, prices and document numbers are illustrative."
   ],
-  "prompt": "Bundled example: Order-to-Cash for a software company (static mockup, data embedded by npm run sync:mockups)."
+  "prompt": "Bundled example: Order-to-Cash for a software company (static mockup, data embedded by npm run sync:mockups).",
+  "heading": "Order-to-Cash Software"
 }

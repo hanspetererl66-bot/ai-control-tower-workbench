@@ -199,6 +199,8 @@ function spacesApi(): Plugin {
                   : [],
                 domain: typeof meta.domain === 'string' ? meta.domain.trim().slice(0, 30) : undefined,
                 parent: typeof meta.parent === 'string' && /^[A-Za-z0-9._-]+$/.test(meta.parent.trim()) ? meta.parent.trim() : undefined,
+                heading: typeof meta.heading === 'string' && meta.heading.trim() ? meta.heading.trim().slice(0, 80) : undefined,
+                ownTitle: meta.ownTitle === true ? true : undefined,
                 cardCount,
                 updatedAt,
                 designer: designer || undefined,

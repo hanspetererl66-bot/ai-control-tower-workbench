@@ -8,5 +8,6 @@
     "The committed price of 388,000.00 is shared out by stand-alone price; the 28,700.00 discount is spread proportionally, or lands on the licence under the residual approach.",
     "Fictional sample data. Not accounting advice; the policy choices must be confirmed by the company's accountants."
   ],
-  "prompt": "Bundled example: Revenue Recognition for a software licence deal (static mockup, data embedded by npm run sync:mockups)."
+  "prompt": "Bundled example: Revenue Recognition for a software licence deal (static mockup, data embedded by npm run sync:mockups).",
+  "heading": "Revenue Recognition Software"
 }
