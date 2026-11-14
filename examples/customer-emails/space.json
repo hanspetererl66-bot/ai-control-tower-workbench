@@ -8,5 +8,6 @@
     "Open points are matched with the call transcripts, for example a mail that confirms an action still open after a call.",
     "A message that contains instructions for AI assistants is flagged and shown as plain text; replies are only ever drafts."
   ],
-  "prompt": "Bundled example: E-Mail-Communication (customer Muster Industrie AG) (static mockup, data embedded by npm run sync:mockups)."
+  "prompt": "Bundled example: E-Mail-Communication (customer Muster Industrie AG) (static mockup, data embedded by npm run sync:mockups).",
+  "heading": "Customer E-mails"
 }

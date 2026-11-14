@@ -10,5 +10,6 @@
     "Next actions are rule-based and ordered. Outside the autopilot a person approves each step; sending and signing are simulated.",
     "'Start demo' walks through ten steps from the start page to a signed renewal."
   ],
-  "prompt": "Bundled example: Renewals (static, data embedded by npm run sync:renewals)."
+  "prompt": "Bundled example: Renewals (static, data embedded by npm run sync:renewals).",
+  "heading": "Renewal Process"
 }

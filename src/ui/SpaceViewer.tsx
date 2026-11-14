@@ -20,6 +20,7 @@ import { handleSpecMessage, SPEC_SPACE, type SpecDeps } from '../spec-bridge';
 import { handleInterviewMessage, INTERVIEW_SPACE, type InterviewDeps } from '../interview-bridge';
 import { parseAskMessage } from '../space-ask';
 import { applySpacePrefs } from '../preferences-style';
+import { applySpaceTitle } from '../space-title';
 import type { Preferences } from '../preferences';
 import { applySpaceFit, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, SPACE_SCALES, type SpaceScale } from '../space-scale';
 import { applySpaceTools, type SpaceToolsState } from '../space-tools';
@@ -511,7 +512,7 @@ export default function SpaceViewer({
           key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}-${theme}-${prefs ? `${prefs.accent}${prefs.font}${prefs.contrast}${prefs.reduceMotion}` : ''}`}
           className="space-frame"
           title={space.title}
-          srcDoc={applySpaceScroll(applySpaceTools(applySpaceFit((() => { const themed = applySpaceTheme(html ?? '', theme); return applySpaceTerms(prefs ? applySpacePrefs(themed, prefs) : themed); })(), textScale)))}
+          srcDoc={applySpaceScroll(applySpaceTools(applySpaceFit((() => { const themed = applySpaceTheme(applySpaceTitle(html ?? '', space), theme); return applySpaceTerms(prefs ? applySpacePrefs(themed, prefs) : themed); })(), textScale)))}
           // No allow-same-origin: the page is agent-authored, so it gets an
           // opaque origin and cannot reach this window or its storage.
           sandbox="allow-scripts"
