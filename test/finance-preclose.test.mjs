@@ -108,7 +108,6 @@ test('page: chat prompts in English, nothing is sent, no network, no live system
   assert.ok((page.match(/Please answer in English\./g) || []).length >= 4);
   assert.ok(!/fetch\(|XMLHttpRequest|WebSocket/.test(page));
   assert.match(page, /mockup data/i);
-  assert.equal((page.match(/\{ t: '/g) || []).length, 6);
   for (const m of page.matchAll(/send\(`([^`]{0,700})/g)) assert.ok(m[1].length > 40);
 });
 
@@ -131,4 +130,20 @@ test('Databricks accruals posted in SAP raise the booked Other costs, and the ca
   assert.match(page, /In the P&amp;L: \+/);
   // the pure logic works without the hook (it lives in the page script), so the tests above are unchanged
   assert.doesNotThrow(() => L.lineAt(data, 'all', 'other', 17, {}));
+});
+
+test('page: five tabs split the page, one panel shows at a time, the demo flow is gone', () => {
+  const tabs = [...page.matchAll(/<button type="button" role="tab" id="tab-(\w+)" aria-controls="pg-(\w+)" aria-selected="(true|false)" data-tab="(\w+)">([^<]+)</g)];
+  assert.deepEqual(tabs.map((m) => m[4]), ['today', 'forecast', 'close', 'items', 'risks']);
+  assert.deepEqual(tabs.map((m) => m[5]), ['Today', 'Forecast', 'Close', 'Items &amp; accruals', 'Risks']);
+  assert.deepEqual(tabs.map((m) => m[3]), ['true', 'false', 'false', 'false', 'false'], 'opens on Today');
+  for (const [, id, controls] of tabs) assert.equal(id, controls);
+  for (const [, id] of tabs) assert.match(page, new RegExp(`<section class="pg( on)?" id="pg-${id}" role="tabpanel" aria-labelledby="tab-${id}"`));
+  assert.equal((page.match(/<section class="pg on"/g) || []).length, 1, 'only one panel is open at the start');
+  const panel = (id) => new RegExp(`id="pg-${id}"[\\s\\S]*?</section>`).exec(page)[0];
+  for (const [id, ids] of [['today', ['Company codes']], ['forecast', ['evo', 'bridge', 'pnl']], ['close', ['task-chips']], ['items', ['items-ask', 'accr-est', 'dbx-card']], ['risks', ['alerts-card', 'scen', 'assump']]]) for (const x of ids) assert.ok(panel(id).includes(x), `${x} is on the ${id} tab`);
+  assert.match(page, /function showTab\(/);
+  assert.match(page, /ct:open-tab/);
+  assert.match(page, /showTab\('risks'\); \$\('#alerts-card'\)\.scrollIntoView/, 'the alert dialog opens the Risks tab first');
+  assert.doesNotMatch(page, /Start demo|Demo flow|const STEPS|renderGuide|id="guide"/);
 });

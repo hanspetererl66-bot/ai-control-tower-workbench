@@ -257,9 +257,13 @@ button:disabled{opacity:.5;cursor:default}
 table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)}td{padding:5px 8px;border-bottom:1px solid var(--line-2)}
 .flow{display:flex;gap:4px;font-size:11px;color:var(--muted);margin-top:8px;flex-wrap:wrap;align-items:center}.flow b{color:var(--ink)}
 .tip{position:fixed;z-index:10;max-width:300px;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-s);box-shadow:var(--shadow-lg);padding:10px 12px;font-size:12px;line-height:1.45}.tip[hidden]{display:none}.tip ul{margin:4px 0 0;padding-left:16px}.tip .lim{color:var(--muted)}
-.guide{border-color:var(--purple-border);background:var(--purple-dim)}.guide .stepno{font-size:11px;font-weight:700;color:var(--purple)}.guide p{margin:4px 0 0;color:var(--ink-2)}
-.guide .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.dots{display:flex;gap:5px;margin-bottom:6px}.dots i{width:22px;height:4px;border-radius:2px;background:var(--line)}.dots i.on{background:var(--purple)}
 .head{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ptabs{display:flex;gap:2px;margin:0 0 14px;border-bottom:1px solid var(--line);overflow-x:auto}
+.ptabs button{border:0;background:none;color:var(--muted);padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap;flex:none;border-bottom:3px solid transparent}
+.ptabs button:hover:not([aria-selected=true]){color:var(--ink)}
+.ptabs button[aria-selected=true]{color:var(--purple);border-bottom-color:var(--purple)}
+.ptabs button:focus-visible{outline:2px solid var(--purple);outline-offset:-2px}
+.pg{display:none}.pg.on{display:block}
 .note{color:var(--muted);font-size:12px;margin:8px 0 0}
 .n{text-align:right}#alt td.n{white-space:nowrap}tr[data-id]{cursor:pointer}tr[data-id]:hover td,tr[aria-selected=true] td{background:var(--purple-dim)}
 .dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:12px;margin:8px 0}.dl dt{color:var(--muted)}.dl dd{margin:0;text-align:right;font-weight:600}
@@ -357,7 +361,7 @@ button.kpi{font:inherit;text-align:left;color:inherit;width:100%;cursor:pointer}
       <select id="ent" aria-label="Company code"></select>
       <div class="seg" id="metric" role="group" aria-label="Metric"><button type="button" data-m="revenue">Revenue</button><button type="button" data-m="gross">Gross profit</button><button type="button" data-m="ebit">EBIT</button></div>
       <button class="primary spacer" id="brief" type="button">Daily briefing with Joule</button>
-      <button class="ghost" id="reset" type="button">Reset demo</button>
+      <button class="ghost" id="reset" type="button" title="Back to the start: day, company code, filters, approvals and scenarios">Reset</button>
     </div>
     <div class="dayctl" style="margin-top:10px">
       <button class="ghost" id="prev" type="button" aria-label="Previous working day">‹</button>
@@ -368,25 +372,41 @@ button.kpi{font:inherit;text-align:left;color:inherit;width:100%;cursor:pointer}
     <p class="sub" style="margin:8px 0 0" id="day-label" aria-live="polite"></p>
   </div>
   <div class="kpis" id="kpis"></div>
-  <div class="card guide" id="guide" aria-live="polite"></div>
-  <div class="two">
-    <div class="card"><h2>Forecast evolution</h2><p class="sub" id="evo-sub"></p><div id="evo"></div></div>
-    <div class="card"><h2>Budget to forecast</h2><p class="sub" id="bridge-sub"></p><div id="bridge"></div></div>
-  </div>
-  <div class="layout">
-    <div class="card"><h2 id="pnl-title">Profit and loss</h2><p class="sub" id="pnl-sub"></p><table class="fit pl"><thead><tr><th>Line</th><th class="n hs">Booked</th><th class="n">Forecast (range)</th><th class="n">Budget</th><th class="n">Variance</th><th class="n hs">vs LY</th><th>Status</th></tr></thead><tbody id="pnl"></tbody></table></div>
-    <aside class="card drill" id="detail" aria-live="polite"></aside>
-  </div>
-  <div class="card"><h2>Company codes</h2><p class="sub">Forecast against budget (chip = deviation), close readiness, open items (number · amount) and red alerts. Click a row to filter the page, click the number in the last column to see the alerts.</p><table class="fit dense"><thead><tr><th>Company code</th><th class="n">Revenue</th><th class="n">EBIT</th><th>Readiness</th><th class="n">Open items</th><th class="n">Red alerts</th></tr></thead><tbody id="ents"></tbody></table></div>
-  <div class="card"><div class="bar"><h2 style="margin:0">Close calendar</h2><div class="chips" id="task-chips" role="group" aria-label="Filter tasks"></div></div><p class="sub">One bar per task from start to due working day (12 to 25). Working days 23 to 25 are in November. Click a task for details.</p><div class="cal-top" id="cal-top"></div><div id="tasks"></div></div>
-  <div class="card"><div class="bar"><h2 style="margin:0">Open items and reconciliations</h2><button class="small spacer" id="items-ask" type="button">Prioritise with Joule</button></div><p class="sub">What must be cleared before the cut-off, the largest first.</p><div id="aging"></div><div class="chips cp" id="item-chips" role="group" aria-label="Filter by type"></div><div class="oi-grid"><div><table class="fit dense"><thead><tr><th>Item</th><th>Company code</th><th class="n">Amount</th><th class="n">Age</th><th>Owner</th><th>Step</th></tr></thead><tbody id="items"></tbody></table><p class="note" id="items-more"></p></div><aside><table id="ic" class="ic"></table><p class="note">Open intercompany differences, thousand EUR.</p></aside></div></div>
-  <div class="card"><div class="bar"><h2 style="margin:0">Accrual proposals</h2><button class="small spacer" id="accr-est" type="button" title="Asks the forecast service (TabPFN) for the likely final amounts. Nothing is changed.">Estimate with TabPFN</button><button class="small" id="accr-all" type="button">Approve all high and medium</button></div><p class="sub" id="accr-sub"></p><div style="overflow:auto"><table><thead><tr><th>ID</th><th>Code</th><th>Line</th><th>Basis</th><th>Confidence</th><th class="n">Amount</th><th>Likely final amount</th><th>Correction risk</th><th></th></tr></thead><tbody id="accr"></tbody></table></div><div class="note" id="accr-est-note" role="status"></div></div>
-  <div class="card" id="dbx-card"><div class="bar"><h2 style="margin:0">Open goods receipts and intercompany from Databricks</h2><button class="small spacer" id="dbx-load" type="button" title="Reads the lakehouse tables and checks them against SAP. Nothing is changed.">Load from Databricks</button><button class="small" id="dbx-ask" type="button" title="Opens the conversation. Joule drafts the accruals; nothing is posted until you say yes there.">Prepare accruals with Joule</button></div><p class="sub" id="dbx-sub">Goods received and not yet invoiced, and intercompany balances that will not eliminate. Read from the governed lakehouse and compared with SAP. Synthetic demo data for the company codes DE10, FR10 and UK10 above (the lakehouse holds no US10 items).</p><div id="dbx-sum" class="chips" role="status"></div><table class="fit dense"><thead><tr><th>PO / item</th><th>Code</th><th class="hs">Vendor</th><th class="n hs">Age</th><th class="n">Open value</th><th>Treatment</th><th>SAP</th></tr></thead><tbody id="dbx-grir"><tr><td colspan="7" class="sub">Press “Load from Databricks”.</td></tr></tbody></table><table class="fit dense"><thead><tr><th>Intercompany</th><th>Seller → buyer</th><th class="n hs">Seller</th><th class="n hs">Buyer</th><th class="n">Difference</th><th>Category</th></tr></thead><tbody id="dbx-ic"></tbody></table><div class="note" id="dbx-note" role="status"></div></div>
-  <div class="two">
-    <div class="card" id="alerts-card"><div class="bar"><h2 style="margin:0">Alerts and anomalies</h2><div class="chips" id="alert-chips" role="group" aria-label="Filter alerts"></div></div><p class="sub">Found by rules on the postings up to the selected day.</p><div id="alerts"></div></div>
-    <div class="card"><h2>What if?</h2><p class="sub">Risks and opportunities that are not in the forecast yet. Tick them to see the effect.</p><div id="scen"></div><div style="overflow:auto"><table id="scen-res"></table></div></div>
-  </div>
-  <div class="card"><h2>How the numbers are made</h2><p class="sub" style="margin:0" id="assump"></p></div>
+  <nav class="ptabs" role="tablist" id="ptabs" aria-label="Pre-close views">
+    <button type="button" role="tab" id="tab-today" aria-controls="pg-today" aria-selected="true" data-tab="today">Today</button>
+    <button type="button" role="tab" id="tab-forecast" aria-controls="pg-forecast" aria-selected="false" data-tab="forecast">Forecast</button>
+    <button type="button" role="tab" id="tab-close" aria-controls="pg-close" aria-selected="false" data-tab="close">Close</button>
+    <button type="button" role="tab" id="tab-items" aria-controls="pg-items" aria-selected="false" data-tab="items">Items &amp; accruals</button>
+    <button type="button" role="tab" id="tab-risks" aria-controls="pg-risks" aria-selected="false" data-tab="risks">Risks</button>
+  </nav>
+  <section class="pg on" id="pg-today" role="tabpanel" aria-labelledby="tab-today">
+    <div class="card"><h2>Company codes</h2><p class="sub">Forecast against budget (chip = deviation), close readiness, open items (number · amount) and red alerts. Click a row to filter the page, click the number in the last column to see the alerts.</p><table class="fit dense"><thead><tr><th>Company code</th><th class="n">Revenue</th><th class="n">EBIT</th><th>Readiness</th><th class="n">Open items</th><th class="n">Red alerts</th></tr></thead><tbody id="ents"></tbody></table></div>
+  </section>
+  <section class="pg" id="pg-forecast" role="tabpanel" aria-labelledby="tab-forecast" hidden>
+    <div class="two">
+      <div class="card"><h2>Forecast evolution</h2><p class="sub" id="evo-sub"></p><div id="evo"></div></div>
+      <div class="card"><h2>Budget to forecast</h2><p class="sub" id="bridge-sub"></p><div id="bridge"></div></div>
+    </div>
+    <div class="layout">
+      <div class="card"><h2 id="pnl-title">Profit and loss</h2><p class="sub" id="pnl-sub"></p><table class="fit pl"><thead><tr><th>Line</th><th class="n hs">Booked</th><th class="n">Forecast (range)</th><th class="n">Budget</th><th class="n">Variance</th><th class="n hs">vs LY</th><th>Status</th></tr></thead><tbody id="pnl"></tbody></table></div>
+      <aside class="card drill" id="detail" aria-live="polite"></aside>
+    </div>
+  </section>
+  <section class="pg" id="pg-close" role="tabpanel" aria-labelledby="tab-close" hidden>
+    <div class="card"><div class="bar"><h2 style="margin:0">Close calendar</h2><div class="chips" id="task-chips" role="group" aria-label="Filter tasks"></div></div><p class="sub">One bar per task from start to due working day (12 to 25). Working days 23 to 25 are in November. Click a task for details.</p><div class="cal-top" id="cal-top"></div><div id="tasks"></div></div>
+  </section>
+  <section class="pg" id="pg-items" role="tabpanel" aria-labelledby="tab-items" hidden>
+    <div class="card"><div class="bar"><h2 style="margin:0">Open items and reconciliations</h2><button class="small spacer" id="items-ask" type="button">Prioritise with Joule</button></div><p class="sub">What must be cleared before the cut-off, the largest first.</p><div id="aging"></div><div class="chips cp" id="item-chips" role="group" aria-label="Filter by type"></div><div class="oi-grid"><div><table class="fit dense"><thead><tr><th>Item</th><th>Company code</th><th class="n">Amount</th><th class="n">Age</th><th>Owner</th><th>Step</th></tr></thead><tbody id="items"></tbody></table><p class="note" id="items-more"></p></div><aside><table id="ic" class="ic"></table><p class="note">Open intercompany differences, thousand EUR.</p></aside></div></div>
+    <div class="card"><div class="bar"><h2 style="margin:0">Accrual proposals</h2><button class="small spacer" id="accr-est" type="button" title="Asks the forecast service (TabPFN) for the likely final amounts. Nothing is changed.">Estimate with TabPFN</button><button class="small" id="accr-all" type="button">Approve all high and medium</button></div><p class="sub" id="accr-sub"></p><div style="overflow:auto"><table><thead><tr><th>ID</th><th>Code</th><th>Line</th><th>Basis</th><th>Confidence</th><th class="n">Amount</th><th>Likely final amount</th><th>Correction risk</th><th></th></tr></thead><tbody id="accr"></tbody></table></div><div class="note" id="accr-est-note" role="status"></div></div>
+    <div class="card" id="dbx-card"><div class="bar"><h2 style="margin:0">Open goods receipts and intercompany from Databricks</h2><button class="small spacer" id="dbx-load" type="button" title="Reads the lakehouse tables and checks them against SAP. Nothing is changed.">Load from Databricks</button><button class="small" id="dbx-ask" type="button" title="Opens the conversation. Joule drafts the accruals; nothing is posted until you say yes there.">Prepare accruals with Joule</button></div><p class="sub" id="dbx-sub">Goods received and not yet invoiced, and intercompany balances that will not eliminate. Read from the governed lakehouse and compared with SAP. Synthetic demo data for the company codes DE10, FR10 and UK10 above (the lakehouse holds no US10 items).</p><div id="dbx-sum" class="chips" role="status"></div><table class="fit dense"><thead><tr><th>PO / item</th><th>Code</th><th class="hs">Vendor</th><th class="n hs">Age</th><th class="n">Open value</th><th>Treatment</th><th>SAP</th></tr></thead><tbody id="dbx-grir"><tr><td colspan="7" class="sub">Press “Load from Databricks”.</td></tr></tbody></table><table class="fit dense"><thead><tr><th>Intercompany</th><th>Seller → buyer</th><th class="n hs">Seller</th><th class="n hs">Buyer</th><th class="n">Difference</th><th>Category</th></tr></thead><tbody id="dbx-ic"></tbody></table><div class="note" id="dbx-note" role="status"></div></div>
+  </section>
+  <section class="pg" id="pg-risks" role="tabpanel" aria-labelledby="tab-risks" hidden>
+    <div class="two">
+      <div class="card" id="alerts-card"><div class="bar"><h2 style="margin:0">Alerts and anomalies</h2><div class="chips" id="alert-chips" role="group" aria-label="Filter alerts"></div></div><p class="sub">Found by rules on the postings up to the selected day.</p><div id="alerts"></div></div>
+      <div class="card"><h2>What if?</h2><p class="sub">Risks and opportunities that are not in the forecast yet. Tick them to see the effect.</p><div id="scen"></div><div style="overflow:auto"><table id="scen-res"></table></div></div>
+    </div>
+    <div class="card"><h2>How the numbers are made</h2><p class="sub" style="margin:0" id="assump"></p></div>
+  </section>
 </main>
 <div class="modal" id="modal" hidden><div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="bar"><h2 id="modal-title" style="margin:0"></h2><button class="ghost spacer" id="modal-close" type="button" aria-label="Close">✕</button></div><div id="modal-body"></div><div class="mfoot" id="modal-foot"></div></div></div>
 <script type="application/json" id="preclose-data">
@@ -496,7 +516,7 @@ const R = DATA.rules;
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const send = (prompt) => window.parent.postMessage({ type: 'wb:ask', prompt: prompt.slice(0, 600) }, '*');
-const state = { d: DATA.asOfWd, ent: 'all', metric: 'ebit', sel: null, taskFilter: 'all', itemType: 'all', alertFilter: 'all', taskSel: null, itemsAll: false, approved: {}, scen: {}, step: -1 };
+const state = { d: DATA.asOfWd, ent: 'all', metric: 'ebit', sel: null, taskFilter: 'all', itemType: 'all', alertFilter: 'all', taskSel: null, itemsAll: false, approved: {}, scen: {}, tab: 'today' };
 const ENT = Object.fromEntries(DATA.entities.map((e) => [e.id, e]));
 const entName = (e) => (e === 'all' ? 'the group' : `${e} (${ENT[e].name})`);
 const DAYNAME = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -791,7 +811,7 @@ function openAlerts(ent, sev) {
   $('#modal-foot').innerHTML = '<button class="ghost" id="modal-list" type="button">Show in the alert list</button><button class="primary" id="modal-done" type="button">Close</button>';
   $('#modal-body').querySelectorAll('[data-ma]').forEach((b) => (b.onclick = () => askAlert(list[+b.dataset.ma])));
   $('#modal-done').onclick = closeModal;
-  $('#modal-list').onclick = () => { closeModal(); state.alertFilter = sev || 'all'; if (state.ent !== ent) { state.ent = ent; $('#ent').value = ent; renderAll(); } else renderAlerts(); $('#alerts-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  $('#modal-list').onclick = () => { closeModal(); state.alertFilter = sev || 'all'; if (state.ent !== ent) { state.ent = ent; $('#ent').value = ent; renderAll(); } else renderAlerts(); showTab('risks'); $('#alerts-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   lastFocus = document.activeElement; $('#modal').hidden = false; $('#modal-close').focus();
 }
 function closeModal() { $('#modal').hidden = true; if (lastFocus && lastFocus.isConnected) lastFocus.focus(); }
@@ -810,30 +830,29 @@ function renderScen() {
   const r = (n, a, b) => `<tr><td>${n}</td><td class="n">${fmtK(a)}</td><td class="n">${fmtK(b)}</td></tr>`;
   $('#scen-res').innerHTML = `<thead><tr><th></th><th class="n">Revenue</th><th class="n">EBIT</th></tr></thead><tbody>${r('Forecast today', rv, eb)}${r('With the selected scenarios', rv + eff.rev, eb + eff.ebit)}${r('Probability-weighted', rv + ex.rev, eb + ex.ebit)}${r('Best case (all opportunities)', rv, eb + ex.up)}${r('Worst case (all risks)', rv, eb + ex.down)}</tbody>`;
 }
-/* ---------- briefing + guide ---------- */
+/* ---------- briefing + tabs ---------- */
 function briefing() {
   const p = pnl(DATA, 'all', state.d, state.approved), top = [...p.lines].map((r) => ({ r, v: variance(r, R) })).sort((a, b) => Math.abs(b.v.impact) - Math.abs(a.v.impact)).slice(0, 3);
   const rd = readiness(DATA, 'all', state.d), it = openItems(DATA, 'all', state.d).filter((i) => i.amountK >= 100).length;
   send(`Write the pre-close briefing for ${DATA.periodLabel}, working day ${state.d} of ${NWD}. Group forecast: revenue ${fmtK(p.tRev.forecast)} (budget ${fmtK(p.tRev.budget)}), EBIT ${fmtK(p.ebit.forecast)} (budget ${fmtK(p.ebit.budget)}). Biggest effects: ${top.map((t) => `${t.r.name} ${fmtSigned(t.v.impact)}`).join('; ')}. Tasks: ${rd.blocked} blocked, ${rd.overdue} overdue. ${it} open items above 100 k. Maximum ten lines, then three actions for today. Please answer in English.`);
 }
-const STEPS = [
-  { t: 'The picture of today', x: 'Working day 17 of 22. The group forecasts a revenue close to budget but an EBIT below it. The band shows how sure the forecast is, the readiness shows how far the close is.', on: () => { state.d = 17; state.metric = 'ebit'; } },
-  { t: 'Where does the EBIT gap come from?', x: 'The bridge walks from the budget to the forecast. The licence deal of DE10 that moved to November is the biggest step; the hosting overrun of UK10 and the legal fees follow. Click the licence line for the method and the notes.', on: () => { state.sel = 'license'; state.ent = 'all'; } },
-  { t: 'Go back in time', x: 'Move the day back to working day 11: the forecast was still close to the budget. Every day the controllers add what they learn, and the evolution chart shows when the picture changed.', on: () => { state.d = 11; state.sel = 'license'; } },
-  { t: 'Back to today: what blocks the close?', x: 'Two tasks are blocked: the usage billing in the US and the card statement in France. Open items and the intercompany matrix show the amounts that must be cleared before the cut-off.', on: () => { state.d = 17; state.taskFilter = 'blocked'; state.ent = 'all'; } },
-  { t: 'Approve the accruals', x: 'Joule proposes accruals from receipts, timesheets and contracts. A person approves each one; the booked amount of the cost line rises.', on: () => { state.approved['AC-01'] = true; state.approved['AC-05'] = true; state.approved['AC-07'] = true; } },
-  { t: 'What if?', x: 'Select the scenarios, such as the milestone in the US or the credit note from the hosting provider. The table shows the forecast with them, the probability-weighted value and the best and worst case. The briefing button asks Joule for the daily summary.', on: () => { state.scen.milestone = true; state.scen.credit = true; state.scen.usage = false; } },
-];
-function renderGuide() {
-  const g = $('#guide');
-  if (state.step < 0) { g.innerHTML = '<div class="head"><div style="flex:1 1 300px"><h2>Demo flow</h2><p class="sub" style="margin:0">Six steps through one pre-close day: the picture, the gap to budget, the days before, the blockers, the accruals, the scenarios.</p></div><button class="primary" id="g-start" type="button">Start demo</button></div>'; $('#g-start').onclick = () => go(0); return; }
-  const s = STEPS[state.step];
-  g.innerHTML = `<div class="dots">${STEPS.map((_, i) => `<i class="${i <= state.step ? 'on' : ''}"></i>`).join('')}</div><div class="stepno">Step ${state.step + 1} of ${STEPS.length}</div><h2>${esc(s.t)}</h2><p>${esc(s.x)}</p><div class="btns"><button class="ghost" id="g-back" type="button" ${state.step === 0 ? 'disabled' : ''}>Back</button><button class="primary" id="g-next" type="button">${state.step === STEPS.length - 1 ? 'Finish' : 'Next'}</button><button class="ghost" id="g-end" type="button">End demo</button></div>`;
-  $('#g-back').onclick = () => go(state.step - 1); $('#g-next').onclick = () => (state.step === STEPS.length - 1 ? ((state.step = -1), renderAll()) : go(state.step + 1)); $('#g-end').onclick = () => { state.step = -1; renderAll(); };
-}
 function resetState() { Object.assign(state, { d: DATA.asOfWd, ent: 'all', metric: 'ebit', sel: null, taskFilter: 'all', itemType: 'all', alertFilter: 'all', taskSel: null, itemsAll: false, approved: {}, scen: {} }); $('#ent').value = 'all'; }
-function go(i) { state.step = i; resetState(); for (let k = 0; k <= i; k++) STEPS[k].on(); renderAll(); }
-function renderAll() { compute(); renderHead(); renderGuide(); renderKpis(); renderCharts(); renderPnl(); renderDetail(); renderEntities(); renderTasks(); renderItems(); renderAccruals(); renderAlerts(); renderScen(); }
+const TABS = ['today', 'forecast', 'close', 'items', 'risks'];
+function showTab(t) {
+  if (!TABS.includes(t)) return false;
+  state.tab = t;
+  document.querySelectorAll('#ptabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  for (const id of TABS) { const pg = $('#pg-' + id); pg.classList.toggle('on', id === t); pg.hidden = id !== t; }
+  return true;
+}
+document.querySelectorAll('#ptabs button').forEach((b) => (b.onclick = () => showTab(b.dataset.tab)));
+$('#ptabs').addEventListener('keydown', (e) => {
+  const i = TABS.indexOf(state.tab), to = e.key === 'ArrowRight' ? (i + 1) % TABS.length : e.key === 'ArrowLeft' ? (i + TABS.length - 1) % TABS.length : e.key === 'Home' ? 0 : e.key === 'End' ? TABS.length - 1 : -1;
+  if (to < 0) return;
+  e.preventDefault(); showTab(TABS[to]); $('#tab-' + TABS[to]).focus();
+});
+window.addEventListener('message', (e) => { const d = e.data; if (d && d.type === 'ct:open-tab' && typeof d.tab === 'string') showTab(d.tab); });
+function renderAll() { compute(); renderHead(); renderKpis(); renderCharts(); renderPnl(); renderDetail(); renderEntities(); renderTasks(); renderItems(); renderAccruals(); renderAlerts(); renderScen(); }
 $('#ent').innerHTML = '<option value="all">All company codes</option>' + DATA.entities.map((e) => `<option value="${e.id}">${e.id} · ${esc(e.name)}</option>`).join('');
 $('#ent').onchange = (e) => { state.ent = e.target.value; renderAll(); };
 $('#day').oninput = (e) => { state.d = +e.target.value; renderAll(); };
@@ -842,10 +861,10 @@ $('#next').onclick = () => { state.d = Math.min(NWD, state.d + 1); renderAll(); 
 $('#today').onclick = () => { state.d = DATA.asOfWd; renderAll(); };
 $('#metric').querySelectorAll('button').forEach((b) => (b.onclick = () => { state.metric = b.dataset.m; renderAll(); }));
 $('#brief').onclick = briefing;
-$('#reset').onclick = () => { state.step = -1; resetState(); renderAll(); };
+$('#reset').onclick = () => { resetState(); renderAll(); };
 $('#assump').textContent = `Mockup data, no live system: a generator creates the figures in the shape of an S/4HANA Finance extract (company codes, G/L accounts grouped into P&L lines), the same every time. Amounts are thousand EUR; costs are positive, EBIT = revenue − cost of revenue − operating expenses. The forecast of a day starts from the budget and moves towards the month end as controllers add what they know; the band is a ${R.bandPct} % range that shrinks over the month. A line is red when it is worse than the budget by at least ${R.varianceWarnPct} % and ${R.varianceWarnK} k. Subtotal ranges combine the line ranges as independent errors. Approved accruals only raise the booked amount in this demo.`;
 resetState(); renderAll();
-window.__preclose = () => ({ state, P }); window.__go = go;
+window.__preclose = () => ({ state, P });
 })();
 </script>
 </body>
