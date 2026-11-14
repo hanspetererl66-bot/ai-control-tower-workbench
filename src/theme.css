@@ -5401,8 +5401,6 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 .list-item-act:hover:not(:disabled) { background: rgb(109 40 217 / 8%); color: var(--accent); }
 .list-item-act-danger:hover:not(:disabled) { background: rgb(220 38 38 / 12%); color: #b91c1c; }
 :root[data-theme="dark"] .list-item-act-danger:hover:not(:disabled) { color: #f87171; }
-.list-item-act-armed { background: rgb(220 38 38 / 16%); color: #b91c1c; }
-:root[data-theme="dark"] .list-item-act-armed { color: #f87171; }
 @media (prefers-reduced-motion: reduce) { .list-item-actions { transition: none; } }
 
 /* The top bar drags the window; controls inside it must opt out or Electron swallows their mouse events
