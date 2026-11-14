@@ -6,7 +6,7 @@
 import { createInterface } from 'node:readline';
 import { JiraError, TOOL_DEFINITIONS, createJiraHandlers } from './jira.mjs';
 
-const SERVER_INFO = { name: 'jira', version: '0.2.0' };
+const SERVER_INFO = { name: 'jira', version: '0.3.0' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const send = (message) => process.stdout.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
 const reply = (id, result) => send({ id, result });
