@@ -5094,6 +5094,9 @@ textarea.studio-field { min-height: 120px; }
 .sx-tabs button { display: inline-flex; align-items: center; gap: 8px; }
 .sx-tab-text { display: grid; line-height: 1.15; text-align: left; }
 .sx-meta .sx-logo { margin-right: 2px; }
+.row-title .sx-logo { margin-right: 8px; position: relative; top: -1px; }
+.sx-logo.cl-plain { color: var(--muted); }
+.sources-list .sx-logo { vertical-align: -3px; }
 .sx-nature { display: block; font-size: 10px; font-weight: 400; opacity: .75; }
 .sx-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
 .sx-chip { display: inline-flex; gap: 6px; align-items: center; border: 1px solid var(--line); border-radius: 999px; padding: 3px 4px 3px 12px; font-size: 13px; }
