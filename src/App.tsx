@@ -1216,6 +1216,19 @@ export default function App() {
     void send(prompt);
   }
 
+  /** The Admin console tile "Skills analytics": the analytics tabs (overview, ranking, impact …) of the Skill Marketplace Space. */
+  function openSkillsAnalytics() {
+    if (!spaces.some((candidate) => candidate.slug === 'skill-marketplace')) {
+      setToast('The Skill Marketplace Space is not installed. Install it with: node scripts/install-example-space.mjs skill-marketplace');
+      setTimeout(() => setToast(null), 12000);
+      return;
+    }
+    setSelectedSpace('skill-marketplace');
+    setSpaceTab({ tab: 'overview', nonce: Date.now(), space: 'skill-marketplace' });
+    setSpacesHome(false);
+    setView('spaces');
+  }
+
   /** Open a Space (and optionally one of its tabs); used by spoken commands and briefing cards. */
   function navigateTo(target: { space: string; tab?: string; label?: string }) {
     const label = target.label ?? target.space;
@@ -1780,7 +1793,7 @@ export default function App() {
       ) : view === 'hiring' ? (
         <HiringApprovals onBack={() => { setSelectedSpace(HIRING_SPACE); setSpacesHome(false); setView('spaces'); }} />
       ) : view === 'admin' ? (
-        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} onOpenAnalysis={() => setView('spaceanalysis')} />
+        <AdminView onOpenOntology={() => setView('ontology')} onOpenRegistry={() => setView('registry')} onOpenSkills={() => setView('skillhealth')} onOpenAnalysis={() => setView('spaceanalysis')} onOpenSkillsAnalytics={openSkillsAnalytics} />
       ) : view === 'spaceanalysis' ? (
         <SpaceAnalysisView spaces={spaces} onBack={() => setView('admin')} onOpenSpace={(slug) => { setSelectedSpace(slug); setSpacesHome(false); setView('spaces'); }} />
       ) : view === 'ontology' ? (
