@@ -8,6 +8,7 @@ import {
 import { DEFAULT_PREFERENCES, sanitizePreferences } from '../src/preferences.ts';
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
+const CAT_MID = 15; // a column between the tabby stripes
 const flat = (g) => g.map((r) => r.join('')).join('/');
 
 test('only 60 % of the face is shown, and a ledge runs below it', () => {
@@ -26,7 +27,7 @@ test('every face is a full grid of valid tones with a thin black ledge along the
     for (let y = 0; y < VISIBLE_ROWS; y++) assert.ok(g[y].every((t) => t !== TONE.ledge), `${face} row ${y}`);
     // The head is really drawn (fur, eyes, nose).
     const tones = new Set(g.flat());
-    for (const t of [TONE.line, TONE.mid, TONE.pale, TONE.pink]) assert.ok(tones.has(t), `${face} tone ${t}`);
+    for (const t of [TONE.line, TONE.dark, TONE.light, TONE.mid, TONE.pale, TONE.pink]) assert.ok(tones.has(t), `${face} tone ${t}`);
   }
 });
 
@@ -151,4 +152,15 @@ test('wired in: App draws the cat, Settings has the switch, the colours are toke
   assert.doesNotMatch(comp, /localStorage/);
   const css = read('src/theme.css');
   for (let t = 1; t < TONE_COUNT; t++) assert.match(css, new RegExp(`--cat-${t}:`), `token --cat-${t}`);
+});
+
+test('dark purple cat with light purple ears: the ears are the light tone, the head is the dark one', () => {
+  const g = drawCat({ face: 'neutral' });
+  // Top rows (the ears) hold light cells, never the dark head tone; the middle of the head is dark.
+  const top = g.slice(0, 4).flat();
+  assert.ok(top.includes(TONE.light) && !top.includes(TONE.dark));
+  assert.equal(g[8][CAT_MID], TONE.dark);
+  const light = g.slice(0, 10).flat().filter((t) => t === TONE.light).length;
+  assert.ok(light >= 20, 'the ears are clearly light');
+  assert.match(read('src/ui/PreferencesPanels.tsx'), /A small dark purple cat with light purple ears and a lovely face that looks over a thin black ledge/);
 });
