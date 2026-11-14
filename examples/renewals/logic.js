@@ -429,3 +429,60 @@ function weeklyBriefing(cases, customers, asOf, rules) {
   return { headline, stakeEur: stake, sixWeeks: six.length, redCount: red.length, needNow: now.length, atRiskEur: atRisk, mail: { to: 'sales.manager@sap.example', subject: `Renewals this week: ${eur(stake)} at stake, ${red.length} red`, body } };
 }
 
+/* ---------- time-lapse of the renewal map: the customer as it was, week by week ---------- */
+const LAPSE_WEEKS = 21;
+const isoAdd = (d, n) => new Date(toDay(d) + n * DAY).toISOString().slice(0, 10);
+/** The dates of the frames, oldest first, one a week, the last one is today (asOf). */
+function lapseDates(asOf) { return Array.from({ length: LAPSE_WEEKS + 1 }, (_, i) => isoAdd(asOf, -7 * (LAPSE_WEEKS - i))); }
+/** Usage in percent of the licence on a date: the monthly values of the trend (the last one is today), in between a straight line. */
+function usageAtDate(c, date, asOf) {
+  const tr = c.usageTrend, now = usagePct(c);
+  if (!c.licensed) return null;
+  if (!tr || tr.length < 2) return now;
+  const pos = Math.max(0, Math.min(tr.length - 1, (tr.length - 1) + daysBetween(asOf, date) / 30)), i = Math.floor(pos), f = pos - i;
+  return Math.round(tr[i] + (i + 1 < tr.length ? (tr[i + 1] - tr[i]) * f : 0));
+}
+/** One renewal as it was on a date: what existed then (tickets, invoices, the mails of the customer), usage then, and not yet lapsed if the end date had not come. */
+function caseAt(c, date, asOf) {
+  const wasLive = c.status === 'Lapsed' && date <= c.end;
+  const pct = usageAtDate(c, date, asOf);
+  return {
+    ...c,
+    status: wasLive ? 'Running' : c.status,
+    offer: wasLive ? null : c.offer,
+    // Today the real figure; before that the percentage of the licence (not rounded, so small licences stay exact).
+    used: date !== asOf && c.licensed && pct !== null && !(c.status === 'Lapsed' && !wasLive) ? (c.licensed * pct) / 100 : c.used,
+    tickets: c.tickets.filter((t) => !t.created || t.created <= date),
+    invoices: c.invoices.filter((i) => !i.issued || i.issued <= date).map((i) => (i.status === 'Overdue' && i.due >= date ? { ...i, status: 'Open' } : i)),
+  };
+}
+/** The customer on a date: its renewals with their colour then, the situation (escalation only from its start), the level of the worst situation. */
+function lapseFrame(cases, customers, customerId, date, asOf) {
+  const cu = customerOf(customers, customerId), mine = cases.filter((c) => c.customerId === customerId).map((c) => caseAt(c, date, asOf));
+  const view = mine.map((c) => { const sig = signals(c, date); return { ...c, sig, health: sig.health }; });
+  const customer = { ...cu, escalation: cu.escalation && cu.escalation.since <= date ? cu.escalation : null, mails: (cu.mails || []).filter((m) => m.at.slice(0, 10) <= date) };
+  const sit = customerSituation(customer, view);
+  return { date, cases: view, customer, level: sit.primary.level, situation: sit };
+}
+/** What happened between two frames, most serious first: tickets, invoices, usage, colours, lapsed contracts, mails, an escalation. */
+function lapseEvents(prev, cur) {
+  const out = [], short = (c) => c.product.replace(/\s*\(.*\)/, ''), before = new Map(prev.cases.map((c) => [c.contractId, c])), add = (level, text, contractId) => out.push({ level, text, contractId });
+  for (const c of cur.cases) {
+    const p = before.get(c.contractId); if (!p) continue;
+    for (const t of c.tickets) if (!p.tickets.some((x) => x.id === t.id)) add(t.priority === 'Very high' ? 'red' : t.priority === 'High' ? 'amber' : 'grey', `Ticket ${t.id} opened (${t.priority}): ${t.title}`, c.contractId);
+    for (const i of c.invoices) {
+      const was = p.invoices.find((x) => x.id === i.id);
+      if (!was) add('grey', `Invoice ${i.id} issued (${eur(i.grossEur)}) for ${short(c)}`, c.contractId);
+      else if (was.status !== 'Overdue' && i.status === 'Overdue') add('red', `Invoice ${i.id} is overdue (${eur(i.grossEur)}) for ${short(c)}`, c.contractId);
+    }
+    const u0 = usagePct(p), u1 = usagePct(c);
+    if (c.status !== 'Lapsed' && u0 !== null && u1 !== null && Math.abs(u1 - u0) >= 6) add(u1 < u0 ? (u1 < 60 ? 'red' : 'amber') : 'green', `Usage of ${short(c)} ${u1 < u0 ? 'fell' : 'rose'} from ${u0} % to ${u1} %`, c.contractId);
+    if (p.status !== 'Lapsed' && c.status === 'Lapsed') add('amber', `${short(c)} lapsed on ${c.end}`, c.contractId);
+    if (p.health !== c.health && c.status !== 'Lapsed') { const why = (c.sig.signals.find((x) => x.level !== 'plus') || {}).text; add(c.health === 'red' ? 'red' : c.health === 'yellow' ? 'amber' : 'green', `${short(c)} turned ${c.health}${c.health !== 'green' && why ? ': ' + why : ''}`, c.contractId); }
+  }
+  for (const m of cur.customer.mails) if (!prev.customer.mails.some((x) => x.id === m.id)) add(m.mood === 'negative' ? 'red' : 'grey', `${m.side === 'customer' ? 'Mail from the customer' : 'Mail from us'}: ${m.subject}`, m.contractId);
+  if (cur.customer.escalation && !prev.customer.escalation) add('red', `${cur.customer.escalation.level} escalation opened: ${cur.customer.escalation.topic}`, null);
+  const rank = { red: 0, amber: 1, green: 2, grey: 3 };
+  return out.sort((a, b) => rank[a.level] - rank[b.level]);
+}
+

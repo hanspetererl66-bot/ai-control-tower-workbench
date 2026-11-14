@@ -365,6 +365,11 @@ h2,.card>.bar,.cust-panel>.bar{background:none}
 .pwhat{padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface)}.pwhat .pw-row{display:flex;align-items:center;gap:10px}.pwhat input[type=range]{flex:1;accent-color:var(--purple)}.pwhat .pw-u{min-width:56px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
 .pw-out{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;margin-top:8px;font-size:12px}.pw-out div{display:flex;justify-content:space-between;gap:8px;color:var(--muted)}.pw-out b{color:var(--ink);font-variant-numeric:tabular-nums}.pw-out .bad b{color:var(--red-ink)}.pw-out .good b{color:var(--green-ink)}
 .pw-warn{margin-top:6px;font-size:12px;font-weight:600}.pw-warn.over{color:var(--red-ink)}.pw-warn.ok{color:var(--green-ink)}
+.lapse{padding:10px 16px 0}.lapse[hidden]{display:none}.lapse-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}.lapse-bar input[type=range]{flex:1 1 220px;min-width:140px;accent-color:var(--purple)}.lapse-bar select{font:inherit;font-size:12px;padding:5px 8px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);color:var(--ink)}
+.lapse-date{min-width:150px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}.lapse-date small{display:block;font-weight:500;font-size:11px;color:var(--muted)}
+.lapse-ribbon{display:flex;gap:2px;margin:8px 0 0}.lapse-ribbon .lr{flex:1;height:12px;padding:0;border:0;border-radius:3px;background:var(--line);cursor:pointer;opacity:.55}.lapse-ribbon .lr.red{background:var(--red)}.lapse-ribbon .lr.amber{background:var(--amber)}.lapse-ribbon .lr.green{background:var(--green)}.lapse-ribbon .lr.on{opacity:1;outline:2px solid var(--ink);outline-offset:1px}.lapse-ribbon .lr:focus-visible{outline:2px solid var(--purple);outline-offset:1px;opacity:1}
+.lapse-events{margin:8px 0 2px;font-size:12px;color:var(--ink-2);min-height:20px}.lapse-events ul{margin:4px 0 0;padding:0;list-style:none}.lapse-events li{display:flex;gap:8px;align-items:baseline;margin:2px 0}.lapse-events li i{flex:none;width:8px;height:8px;border-radius:50%;background:var(--muted)}.lapse-events li i.red{background:var(--red)}.lapse-events li i.amber{background:var(--amber)}.lapse-events li i.green{background:var(--green)}.lapse-events .quiet{color:var(--muted)}
+.lapse-banner{display:inline-block;margin-left:8px;padding:1px 9px;border-radius:99px;background:var(--purple-dim);border:1px solid var(--purple-border);color:var(--purple-ink);font-size:11px;font-weight:700}
 .sig b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 .dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:12px;margin:8px 0}.dl dt{color:var(--muted)}.dl dd{margin:0;text-align:right;font-weight:600}
 .meter{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:4px 0}.meter i{display:block;height:100%;background:var(--purple)}
@@ -641,7 +646,7 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
       <div class="cview-main">
         <div class="card" id="process"></div>
         <div class="cust-cards" id="cust-cards"></div>
-        <div class="card cmapcard" id="cmap-wrap"><div class="cmapbody" id="cmap"></div></div>
+        <div class="card cmapcard" id="cmap-wrap"><div class="lapse" id="lapse" hidden></div><div class="cmapbody" id="cmap"></div></div>
         <div class="stand" id="stand"></div>
       </div>
       <aside class="card cust-panel" id="cust-panel" aria-live="polite"></aside>
@@ -905,13 +910,15 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-10708",
      "status": "Open",
      "grossEur": 69020,
-     "due": "2026-10-30"
+     "due": "2026-10-30",
+     "issued": "2026-09-15"
     },
     {
      "id": "INV-2026-10741",
      "status": "Open",
      "grossEur": 76160,
-     "due": "2026-11-24"
+     "due": "2026-11-24",
+     "issued": "2026-10-10"
     }
    ]
   },
@@ -957,7 +964,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "TKT-48166",
      "title": "SAP Commerce Cloud: storefront search returns no results after catalog import",
      "priority": "High",
-     "status": "In processing"
+     "status": "In processing",
+     "created": "2026-10-10"
     }
    ],
    "invoices": []
@@ -1004,19 +1012,22 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "TKT-48213",
      "title": "Joule skill returns empty result for open purchase orders",
      "priority": "High",
-     "status": "In processing"
+     "status": "In processing",
+     "created": "2026-10-12"
     },
     {
      "id": "TKT-48107",
      "title": "BTP AI Core deployment quota exceeded in eu10",
      "priority": "Very high",
-     "status": "Waiting for customer"
+     "status": "Waiting for customer",
+     "created": "2026-10-08"
     },
     {
      "id": "TKT-47888",
      "title": "Ariba approval workflow not triggering for cost centre 4711",
      "priority": "Medium",
-     "status": "In processing"
+     "status": "In processing",
+     "created": "2026-09-29"
     }
    ],
    "invoices": [
@@ -1024,13 +1035,15 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-10724",
      "status": "Open",
      "grossEur": 66878,
-     "due": "2026-10-31"
+     "due": "2026-10-31",
+     "issued": "2026-10-01"
     },
     {
      "id": "INV-2026-10738",
      "status": "Open",
      "grossEur": 45220,
-     "due": "2026-11-04"
+     "due": "2026-11-04",
+     "issued": "2026-10-05"
     }
    ]
   },
@@ -1076,7 +1089,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "TKT-47932",
      "title": "Document AI: VAT ID not extracted from scanned invoices of two suppliers",
      "priority": "High",
-     "status": "In processing"
+     "status": "In processing",
+     "created": "2026-10-01"
     }
    ],
    "invoices": []
@@ -1123,7 +1137,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "TKT-48097",
      "title": "Document AI: handwritten corrections on scanned batch records are not read",
      "priority": "Medium",
-     "status": "In processing"
+     "status": "In processing",
+     "created": "2026-10-05"
     }
    ],
    "invoices": [
@@ -1131,7 +1146,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-40110",
      "status": "Open",
      "grossEur": 49742,
-     "due": "2026-11-05"
+     "due": "2026-11-05",
+     "issued": "2026-10-06"
     }
    ]
   },
@@ -1178,19 +1194,22 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-10621",
      "status": "Overdue",
      "grossEur": 86275,
-     "due": "2026-08-31"
+     "due": "2026-08-31",
+     "issued": "2026-08-01"
     },
     {
      "id": "INV-2026-10721",
      "status": "Open",
      "grossEur": 14756,
-     "due": "2026-10-31"
+     "due": "2026-10-31",
+     "issued": "2026-10-01"
     },
     {
      "id": "INV-2026-10735",
      "status": "Open",
      "grossEur": 22491,
-     "due": "2026-11-04"
+     "due": "2026-11-04",
+     "issued": "2026-10-05"
     }
    ]
   },
@@ -1236,7 +1255,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "TKT-51022",
      "title": "Smart-meter data import drops 12 % of the readings (regulatory report due 2026-11-30)",
      "priority": "Very high",
-     "status": "In processing"
+     "status": "In processing",
+     "created": "2026-10-09"
     }
    ],
    "invoices": []
@@ -1311,7 +1331,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-51030",
      "status": "Overdue",
      "grossEur": 57120,
-     "due": "2026-09-30"
+     "due": "2026-09-30",
+     "issued": "2026-08-31"
     }
    ]
   },
@@ -1373,7 +1394,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-30590",
      "status": "Overdue",
      "grossEur": 24990,
-     "due": "2026-09-30"
+     "due": "2026-09-30",
+     "issued": "2026-08-31"
     }
    ],
    "addon": true
@@ -1420,13 +1442,15 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "TKT-48231",
      "title": "Integration Suite: the connector to the laboratory information system (LIMS) drops messages above 2 MB",
      "priority": "High",
-     "status": "In processing"
+     "status": "In processing",
+     "created": "2026-10-06"
     },
     {
      "id": "TKT-48233",
      "title": "Integration Suite: the certificate of the LIMS endpoint expires on 2026-11-09",
      "priority": "Medium",
-     "status": "Waiting for customer"
+     "status": "Waiting for customer",
+     "created": "2026-10-08"
     }
    ],
    "invoices": [
@@ -1434,13 +1458,15 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-40890",
      "status": "Overdue",
      "grossEur": 17136,
-     "due": "2026-09-30"
+     "due": "2026-09-30",
+     "issued": "2026-08-31"
     },
     {
      "id": "INV-2026-40912",
      "status": "Overdue",
      "grossEur": 2856,
-     "due": "2026-10-05"
+     "due": "2026-10-05",
+     "issued": "2026-09-05"
     }
    ],
    "addon": true
@@ -1549,7 +1575,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "TKT-48235",
      "title": "e-signature add-on: the meaning of the signature is missing in the audit-trail export (21 CFR Part 11)",
      "priority": "Medium",
-     "status": "In processing"
+     "status": "In processing",
+     "created": "2026-10-14"
     }
    ],
    "invoices": [
@@ -1557,7 +1584,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-40910",
      "status": "Open",
      "grossEur": 22134,
-     "due": "2026-11-15"
+     "due": "2026-11-15",
+     "issued": "2026-10-14"
     }
    ],
    "addon": true
@@ -1605,13 +1633,15 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-10716",
      "status": "Open",
      "grossEur": 49087.5,
-     "due": "2026-10-25"
+     "due": "2026-10-25",
+     "issued": "2026-09-25"
     },
     {
      "id": "INV-2026-10729",
      "status": "Open",
      "grossEur": 114716,
-     "due": "2026-11-01"
+     "due": "2026-11-01",
+     "issued": "2026-10-02"
     }
    ],
    "usageTrend": [
@@ -1735,7 +1765,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "TKT-48237",
      "title": "Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance",
      "priority": "Low",
-     "status": "Waiting for customer"
+     "status": "Waiting for customer",
+     "created": "2026-10-12"
     }
    ],
    "invoices": [
@@ -1743,7 +1774,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-40911",
      "status": "Open",
      "grossEur": 31416,
-     "due": "2026-12-01"
+     "due": "2026-12-01",
+     "issued": "2026-10-14"
     }
    ],
    "addon": true
@@ -2126,7 +2158,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-30077",
      "status": "Open",
      "grossEur": 261502.5,
-     "due": "2026-10-31"
+     "due": "2026-10-31",
+     "issued": "2026-10-01"
     }
    ],
    "usageTrend": [
@@ -2167,7 +2200,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "TKT-48188",
      "title": "Advanced Track and Trace: serial number requests are rejected for the Swiss market",
      "priority": "High",
-     "status": "Waiting for customer"
+     "status": "Waiting for customer",
+     "created": "2026-10-09"
     }
    ],
    "invoices": [
@@ -2175,7 +2209,8 @@ details.saw{margin-top:8px}details.saw summary{cursor:pointer;font-size:12px;col
      "id": "INV-2026-40104",
      "status": "Open",
      "grossEur": 492660,
-     "due": "2026-10-31"
+     "due": "2026-10-31",
+     "issued": "2026-10-01"
     }
    ],
    "usageTrend": [
@@ -3010,6 +3045,63 @@ function weeklyBriefing(cases, customers, asOf, rules) {
   return { headline, stakeEur: stake, sixWeeks: six.length, redCount: red.length, needNow: now.length, atRiskEur: atRisk, mail: { to: 'sales.manager@sap.example', subject: `Renewals this week: ${eur(stake)} at stake, ${red.length} red`, body } };
 }
 
+/* ---------- time-lapse of the renewal map: the customer as it was, week by week ---------- */
+const LAPSE_WEEKS = 21;
+const isoAdd = (d, n) => new Date(toDay(d) + n * DAY).toISOString().slice(0, 10);
+/** The dates of the frames, oldest first, one a week, the last one is today (asOf). */
+function lapseDates(asOf) { return Array.from({ length: LAPSE_WEEKS + 1 }, (_, i) => isoAdd(asOf, -7 * (LAPSE_WEEKS - i))); }
+/** Usage in percent of the licence on a date: the monthly values of the trend (the last one is today), in between a straight line. */
+function usageAtDate(c, date, asOf) {
+  const tr = c.usageTrend, now = usagePct(c);
+  if (!c.licensed) return null;
+  if (!tr || tr.length < 2) return now;
+  const pos = Math.max(0, Math.min(tr.length - 1, (tr.length - 1) + daysBetween(asOf, date) / 30)), i = Math.floor(pos), f = pos - i;
+  return Math.round(tr[i] + (i + 1 < tr.length ? (tr[i + 1] - tr[i]) * f : 0));
+}
+/** One renewal as it was on a date: what existed then (tickets, invoices, the mails of the customer), usage then, and not yet lapsed if the end date had not come. */
+function caseAt(c, date, asOf) {
+  const wasLive = c.status === 'Lapsed' && date <= c.end;
+  const pct = usageAtDate(c, date, asOf);
+  return {
+    ...c,
+    status: wasLive ? 'Running' : c.status,
+    offer: wasLive ? null : c.offer,
+    // Today the real figure; before that the percentage of the licence (not rounded, so small licences stay exact).
+    used: date !== asOf && c.licensed && pct !== null && !(c.status === 'Lapsed' && !wasLive) ? (c.licensed * pct) / 100 : c.used,
+    tickets: c.tickets.filter((t) => !t.created || t.created <= date),
+    invoices: c.invoices.filter((i) => !i.issued || i.issued <= date).map((i) => (i.status === 'Overdue' && i.due >= date ? { ...i, status: 'Open' } : i)),
+  };
+}
+/** The customer on a date: its renewals with their colour then, the situation (escalation only from its start), the level of the worst situation. */
+function lapseFrame(cases, customers, customerId, date, asOf) {
+  const cu = customerOf(customers, customerId), mine = cases.filter((c) => c.customerId === customerId).map((c) => caseAt(c, date, asOf));
+  const view = mine.map((c) => { const sig = signals(c, date); return { ...c, sig, health: sig.health }; });
+  const customer = { ...cu, escalation: cu.escalation && cu.escalation.since <= date ? cu.escalation : null, mails: (cu.mails || []).filter((m) => m.at.slice(0, 10) <= date) };
+  const sit = customerSituation(customer, view);
+  return { date, cases: view, customer, level: sit.primary.level, situation: sit };
+}
+/** What happened between two frames, most serious first: tickets, invoices, usage, colours, lapsed contracts, mails, an escalation. */
+function lapseEvents(prev, cur) {
+  const out = [], short = (c) => c.product.replace(/\s*\(.*\)/, ''), before = new Map(prev.cases.map((c) => [c.contractId, c])), add = (level, text, contractId) => out.push({ level, text, contractId });
+  for (const c of cur.cases) {
+    const p = before.get(c.contractId); if (!p) continue;
+    for (const t of c.tickets) if (!p.tickets.some((x) => x.id === t.id)) add(t.priority === 'Very high' ? 'red' : t.priority === 'High' ? 'amber' : 'grey', `Ticket ${t.id} opened (${t.priority}): ${t.title}`, c.contractId);
+    for (const i of c.invoices) {
+      const was = p.invoices.find((x) => x.id === i.id);
+      if (!was) add('grey', `Invoice ${i.id} issued (${eur(i.grossEur)}) for ${short(c)}`, c.contractId);
+      else if (was.status !== 'Overdue' && i.status === 'Overdue') add('red', `Invoice ${i.id} is overdue (${eur(i.grossEur)}) for ${short(c)}`, c.contractId);
+    }
+    const u0 = usagePct(p), u1 = usagePct(c);
+    if (c.status !== 'Lapsed' && u0 !== null && u1 !== null && Math.abs(u1 - u0) >= 6) add(u1 < u0 ? (u1 < 60 ? 'red' : 'amber') : 'green', `Usage of ${short(c)} ${u1 < u0 ? 'fell' : 'rose'} from ${u0} % to ${u1} %`, c.contractId);
+    if (p.status !== 'Lapsed' && c.status === 'Lapsed') add('amber', `${short(c)} lapsed on ${c.end}`, c.contractId);
+    if (p.health !== c.health && c.status !== 'Lapsed') { const why = (c.sig.signals.find((x) => x.level !== 'plus') || {}).text; add(c.health === 'red' ? 'red' : c.health === 'yellow' ? 'amber' : 'green', `${short(c)} turned ${c.health}${c.health !== 'green' && why ? ': ' + why : ''}`, c.contractId); }
+  }
+  for (const m of cur.customer.mails) if (!prev.customer.mails.some((x) => x.id === m.id)) add(m.mood === 'negative' ? 'red' : 'grey', `${m.side === 'customer' ? 'Mail from the customer' : 'Mail from us'}: ${m.subject}`, m.contractId);
+  if (cur.customer.escalation && !prev.customer.escalation) add('red', `${cur.customer.escalation.level} escalation opened: ${cur.customer.escalation.topic}`, null);
+  const rank = { red: 0, amber: 1, green: 2, grey: 3 };
+  return out.sort((a, b) => rank[a.level] - rank[b.level]);
+}
+
 </script>
 <script>
 (function () {
@@ -3435,7 +3527,7 @@ function renderMap() {
   });
   const worst = s.primary;
   svg += `<g class="cctr ${SIT[worst.level]}"><circle class="pulse" r="52"/><circle class="core" r="52"/><text class="pn" y="-4" text-anchor="middle">${esc(cu.name.split(' ')[0])}</text><text class="pv" y="12" text-anchor="middle">${eurK(s.renewalEur)} €</text><text class="ps" y="26" text-anchor="middle">${esc(worst.label)}</text></g>`;
-  el.innerHTML = `<div class="head"><div style="flex:1 1 320px"><h2>Renewal map: ${esc(cu.name)}</h2><p class="sub" style="margin:0">The customer in the middle, its contracts around it: size = annual value, the ring shows how close the decision date is, colour = health. Along each spoke: open tickets, invoices, mail and usage. Click a contract for its details on the right.</p></div>` +
+  el.innerHTML = `<div class="head"><div style="flex:1 1 320px"><h2>Renewal map: ${esc(cu.name)}${lapse.saved ? `<span class="lapse-banner">as it was on ${esc(dayMonth(DATA.asOf))}</span>` : ''}</h2><p class="sub" style="margin:0">The customer in the middle, its contracts around it: size = annual value, the ring shows how close the decision date is, colour = health. Along each spoke: open tickets, invoices, mail and usage. Click a contract for its details on the right.</p></div>` +
     `<button class="ghost" id="map-back" type="button">All customers</button>${REDUCED ? '' : '<button class="ghost" id="map-replay" type="button">Replay</button>'}</div>` +
     `<svg class="cmapsvg${ent}" viewBox="${-W / 2} ${-H / 2} ${W} ${H}" role="group" aria-label="Renewal map of ${esc(cu.name)}">${svg}</svg>` +
     `<div class="legend"><span><i class="g"></i>Green</span><span><i class="y"></i>Yellow</span><span><i class="r"></i>Red</span><span><b class="lg">#</b>tickets</span><span><b class="lg">€</b>invoices</span><span><b class="lg">✉</b>mail</span><span><b class="lg">%</b>usage</span><span><b class="lg">▲</b>growth</span></div>`;
@@ -3469,7 +3561,7 @@ function contractMini(c) {
 function renderCustomerView() {
   const all = state.customer === 'all';
   $('#cust-cards').hidden = !all; $('#cmap-wrap').hidden = all; $('#stand').hidden = all;
-  renderCustCards(); renderMap(); renderStand(); renderProcess(); renderCustPanel();
+  renderCustCards(); renderMap(); renderLapse(); renderStand(); renderProcess(); renderCustPanel();
   const mapEl = $('#cmap'); if (mapEl.querySelector('.enter')) runCounts(mapEl);
 }
 
@@ -3741,7 +3833,72 @@ function wirePrice(el, c) {
   rg.oninput = paint; box.querySelector('[data-pw-best]').onclick = () => { rg.value = String(best.upliftPct); paint(); };
   paint();
 }
+/* ---------- time-lapse of the renewal map: the customer as it was, week by week ---------- */
+const REAL = { asOf: DATA.asOf, customers: DATA.customers };
+const lapse = { cid: null, i: null, saved: null, timer: null, speed: 'normal' };
+const LAPSE_MS = { slow: 1400, normal: 700, fast: 300 };
+const lapseCache = {};
+const framesOf = (cid) => (lapseCache[cid] = lapseCache[cid] || lapseDates(REAL.asOf).map((d) => lapseFrame(DATA.cases, REAL.customers, cid, d, REAL.asOf)));
+/** A model entry for a renewal as it was on a date (the same fields compute() makes, without the demo state: nothing is signed or automatic in the past). */
+function entryAt(c, date) {
+  const s = c.sig, opts = options(c, s, DATA.rules), ac = autoCheck(c, s, opts, DATA.rules), p = retention(c, s.health, DATA.rules);
+  return { ...c, auto: ac, autoRun: false, email: null, stage: 0, actions: actions(c, s), actionKeys: actionKeys(c, s), reasons: s.signals.filter((x) => x.level !== 'plus').slice(0, 2).map((x) => x.text), options: opts, chosen: opts.find((o) => o.recommended) || opts[0], pRet: p, clv: clv(c.annualEur, p, DATA.rules), levers: levers(s, DATA.rules), ph: phaseOf(c, date, 0) };
+}
+function lapseExit() {
+  clearInterval(lapse.timer); lapse.timer = null;
+  if (lapse.saved) { model = lapse.saved; DATA.asOf = REAL.asOf; DATA.customers = REAL.customers; }
+  lapse.saved = null; lapse.i = null;
+}
+function lapseApply(i) {
+  const frames = framesOf(lapse.cid), fr = frames[i];
+  if (!lapse.saved) lapse.saved = model;
+  DATA.asOf = fr.date; DATA.customers = REAL.customers.map((x) => (x.id === lapse.cid ? fr.customer : x));
+  model = lapse.saved.map((c) => { if (c.customerId !== lapse.cid) return c; const snap = fr.cases.find((x) => x.contractId === c.contractId); return snap ? entryAt(snap, fr.date) : c; });
+  lapse.i = i;
+}
+function lapseGo(i) {
+  const last = framesOf(lapse.cid).length - 1;
+  if (i >= last) { lapseExit(); } else lapseApply(Math.max(0, i));
+  renderCustomerView(); paintLapse();
+}
+function lapsePlay() {
+  const last = framesOf(lapse.cid).length - 1;
+  if (lapse.timer) { clearInterval(lapse.timer); lapse.timer = null; paintLapse(); return; }
+  let i = lapse.i === null || lapse.i >= last ? 0 : lapse.i;
+  lapseGo(i);
+  lapse.timer = setInterval(() => { i += 1; if (i >= last) { lapseGo(last); clearInterval(lapse.timer); lapse.timer = null; paintLapse(); return; } lapseGo(i); }, LAPSE_MS[lapse.speed]);
+  paintLapse();
+}
+function renderLapse() {
+  const el = $('#lapse'); if (!el) return;
+  if (state.customer === 'all') { el.hidden = true; el.innerHTML = ''; el.dataset.cid = ''; return; }
+  el.hidden = false;
+  if (el.dataset.cid !== state.customer) {
+    if (lapse.cid !== state.customer) lapseExit();
+    lapse.cid = state.customer; el.dataset.cid = state.customer;
+    const frames = framesOf(lapse.cid), last = frames.length - 1;
+    el.innerHTML = `<div class="lapse-bar"><button class="ghost" type="button" id="lapse-play"></button><input type="range" id="lapse-i" min="0" max="${last}" step="1" value="${last}" aria-label="Week, from five months ago to today"><span class="lapse-date" id="lapse-date" aria-live="polite"></span><select id="lapse-speed" aria-label="Speed"><option value="slow">Slow</option><option value="normal" selected>Normal</option><option value="fast">Fast</option></select><button class="ghost" type="button" id="lapse-now">Today</button></div>` +
+      `<div class="lapse-ribbon" id="lapse-ribbon" role="group" aria-label="Situation of the customer, week by week">${frames.map((f, k) => `<button type="button" class="lr ${SIT[f.level]}" data-i="${k}" aria-label="${esc(dayMonth(f.date))}: ${esc(f.situation.primary.label)}" title="${esc(dayMonth(f.date) + ': ' + f.situation.primary.label)}"></button>`).join('')}</div><div class="lapse-events" id="lapse-events" aria-live="polite"></div>`;
+    $('#lapse-play').onclick = lapsePlay;
+    $('#lapse-i').oninput = (e) => { clearInterval(lapse.timer); lapse.timer = null; lapseGo(+e.target.value); };
+    $('#lapse-speed').onchange = (e) => { lapse.speed = e.target.value; if (lapse.timer) { clearInterval(lapse.timer); lapse.timer = null; lapsePlay(); } };
+    $('#lapse-now').onclick = () => { clearInterval(lapse.timer); lapse.timer = null; lapseGo(last); };
+    el.querySelectorAll('.lr').forEach((b) => (b.onclick = () => { clearInterval(lapse.timer); lapse.timer = null; lapseGo(+b.dataset.i); }));
+  }
+  paintLapse();
+}
+function paintLapse() {
+  const el = $('#lapse'); if (!el || el.hidden || !lapse.cid) return;
+  const frames = framesOf(lapse.cid), last = frames.length - 1, i = lapse.i === null ? last : lapse.i, fr = frames[i];
+  $('#lapse-i').value = String(i);
+  $('#lapse-date').innerHTML = `${esc(dayMonth(fr.date))} ${esc(fr.date.slice(0, 4))}<small>${i === last ? 'today' : `${(last - i)} week${last - i === 1 ? '' : 's'} ago`}</small>`;
+  $('#lapse-play').textContent = lapse.timer ? '❚❚ Pause' : (lapse.i === null ? '▶ Play the last 5 months' : '▶ Play on');
+  el.querySelectorAll('.lr').forEach((b) => b.classList.toggle('on', +b.dataset.i === i));
+  const evs = i === 0 ? [] : lapseEvents(frames[i - 1], fr), shown = evs.slice(0, 5);
+  $('#lapse-events').innerHTML = i === 0 ? `<span class="quiet">The start of the picture: ${esc(fr.situation.primary.label)}. Press play, or drag the slider.</span>` : `<b>${i === last ? 'This week' : 'That week'}:</b> ${shown.length ? `<ul>${shown.map((e) => `<li><i class="${e.level}"></i><span>${esc(e.text)}</span></li>`).join('')}</ul>${evs.length > shown.length ? `<span class="quiet">and ${evs.length - shown.length} more</span>` : ''}` : '<span class="quiet">Nothing changed.</span>'}`;
+}
 function renderAll() {
+  if (lapse.saved && !(state.tab === 'process' && state.customer === lapse.cid)) lapseExit();
   $('#auto-label').textContent = `Automatic renewal below ${eur(DATA.rules.autoThresholdEur)} a year (${model.filter((c) => c.auto.eligible).length} eligible)`;
   renderCtx(); renderTabs();
   if (state.tab === 'overview') { renderWow(); renderPlan(); renderKpis(); renderKpiDetail(); renderSix(); renderGroups($('#today-groups'), 't', 'What to do first', 'today:'); }
