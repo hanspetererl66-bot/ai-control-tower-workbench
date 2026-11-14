@@ -396,7 +396,8 @@ export function buildGraph({ sub4me, marketplace, controlTower, automation, link
     const HEALTH = { red: 'Red', yellow: 'Yellow', green: 'Green' };
     for (const c of renewals.cases ?? []) {
       const cust = `customer:${slug(c.customer)}`;
-      if (!nodes.has(cust)) continue;
+      // A customer that only exists in the Renewals Space (not in the Sub4Me sample data) gets its own node.
+      if (!nodes.has(cust)) addNode(cust, 'customer', c.customer, { 'SAP customer ID': c.sapCustomerId, Note: 'Not part of the Sub4Me sample data, only in the Renewals Space' }, { space: 'renewals', tab: 'process' });
       const cid = `contract:${c.contractId}`;
       let node = nodes.get(cid);
       if (!node) {
