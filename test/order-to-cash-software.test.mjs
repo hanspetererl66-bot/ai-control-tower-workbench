@@ -10,10 +10,9 @@ const data = JSON.parse(readFileSync(join(ROOT, 'examples/order-to-cash-software
 const logic = /\/\/ @logic-start([\s\S]*?)\/\/ @logic-end/.exec(page)[1];
 const L = new Function(`${logic}; return makeLogic;`)()(data);
 
-test('the page embeds the current sample data and starts with the intro collapsed', () => {
+test('the page embeds the current sample data and has no "What is this page?" box', () => {
   assert.equal(embedMockupData(page, data), page, 'run: npm run sync:mockups');
-  assert.match(page, /<details class="intro"><summary>What is this page\?/);
-  assert.doesNotMatch(page, /<details class="intro" open/);
+  assert.doesNotMatch(page, /<details class="intro"|<summary>What is this page\?/);
 });
 
 test('six committed positions and two rate items: three software kinds and three services', () => {
