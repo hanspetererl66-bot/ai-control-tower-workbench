@@ -9,6 +9,7 @@ import { DEFAULT_HARNESS_STATE, sanitizeHarnessState, type HarnessState } from '
 import { parseSpaceScale } from './space-scale.ts';
 import { DEFAULT_LAYOUT, isLayout, type LayoutId } from './layouts.ts';
 import { DEFAULT_SKIN, isSkin, type SkinId } from './skins.ts';
+import { DEFAULT_CAT, sanitizeCat, type CatPrefs } from './cat-peek.ts';
 
 export const PREFERENCES_STORAGE_KEY = 'werkbank.preferences.v1';
 export const PREFERENCES_VERSION = 1;
@@ -33,6 +34,20 @@ export const ACCENT_PRESETS = [
   { id: 'orange', name: 'Orange', hex: '#D9480F' },
   { id: 'pink', name: 'Pink', hex: '#C2185B' },
 ] as const;
+
+/** Ready-made tints for the app background: each is mixed into the skin's own background, so text stays readable in light and dark. */
+export const BACKGROUND_TINTS = [
+  { id: 'mist', name: 'Mist', hex: '#5B7FB5' },
+  { id: 'sage', name: 'Sage', hex: '#5E9275' },
+  { id: 'sand', name: 'Sand', hex: '#B59B6A' },
+  { id: 'rose', name: 'Rose', hex: '#B0707A' },
+  { id: 'lilac', name: 'Lilac', hex: '#8A74B8' },
+  { id: 'teal', name: 'Teal', hex: '#4E9A9C' },
+  { id: 'slate', name: 'Slate', hex: '#6C7585' },
+  { id: 'peach', name: 'Peach', hex: '#C48A66' },
+] as const;
+export const BACKGROUND_PATTERNS = ['none', 'dots', 'grid', 'lines', 'diagonal'] as const;
+export type BackgroundPattern = (typeof BACKGROUND_PATTERNS)[number];
 
 export const FONT_STACKS: Record<(typeof FONTS)[number], string> = {
   default: '',
@@ -100,6 +115,10 @@ export type ProfileSettings = {
   /** The side of the window the Spaces list sits on. */
   spacesDock: SpacesDock;
   accent: string;
+  /** Tint of the app background: '' (the skin's own) or one #RRGGBB hue that is mixed into it. */
+  bgTint: string;
+  /** A fine pattern over the app background. */
+  bgPattern: BackgroundPattern;
   appScale: number;
   /** One of ICON_SCALES. */
   iconScale: number;
@@ -128,6 +147,8 @@ export type Preferences = ProfileSettings & {
   version: number;
   /** Archived Spaces: hidden from the list and kept on this computer until restored or deleted. Not part of a profile. */
   archivedSpaces: string[];
+  /** Casimir, the cat that peeks over a window edge: on/off and where it sits. Personal, not part of a profile. */
+  cat: CatPrefs;
   /** Terms of the ontology marked in the Spaces (act B): the Spaces and the domains the person switched on. Default off; not part of a profile. */
   termSpaces: string[];
   termDomains: string[];
@@ -151,6 +172,8 @@ export const DEFAULT_PREFERENCES: Preferences = {
   spacesView: 'cards',
   spacesDock: 'left',
   accent: '',
+  bgTint: '',
+  bgPattern: 'none',
   appScale: 1,
   iconScale: 1,
   spaceScale: 1.15,
@@ -161,6 +184,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   startView: 'chat',
   pinnedSpaces: [],
   archivedSpaces: [],
+  cat: { ...DEFAULT_CAT },
   termSpaces: [],
   termDomains: [],
   domains: [],
@@ -264,6 +288,8 @@ export function sanitizeProfileSettings(value: unknown): Partial<ProfileSettings
   if (SPACES_VIEWS.includes(v.spacesView as never)) out.spacesView = v.spacesView as SpacesView;
   if (SPACES_DOCKS.includes(v.spacesDock as never)) out.spacesDock = v.spacesDock as SpacesDock;
   if (v.accent === '' || (typeof v.accent === 'string' && HEX.test(v.accent))) out.accent = String(v.accent).toUpperCase();
+  if (v.bgTint === '' || (typeof v.bgTint === 'string' && HEX.test(v.bgTint))) out.bgTint = String(v.bgTint).toUpperCase();
+  if (BACKGROUND_PATTERNS.includes(v.bgPattern as never)) out.bgPattern = v.bgPattern as BackgroundPattern;
   if (APP_SCALES.includes(v.appScale as never)) out.appScale = v.appScale as number;
   if (ICON_SCALES.includes(v.iconScale as never)) out.iconScale = v.iconScale as number;
   if (typeof v.spaceScale === 'number' && Number.isFinite(v.spaceScale) && v.spaceScale >= 0.5 && v.spaceScale <= 1.5) out.spaceScale = parseSpaceScale(v.spaceScale);
@@ -331,6 +357,7 @@ export function sanitizePreferences(value: unknown): Preferences {
     ...base,
     version: PREFERENCES_VERSION,
     archivedSpaces: Array.isArray(v.archivedSpaces) ? list(v.archivedSpaces, (s) => SLUG.test(s), 200) : [],
+    cat: sanitizeCat(v.cat),
     termSpaces: Array.isArray(v.termSpaces) ? list(v.termSpaces, (s) => SLUG.test(s), 200) : [],
     termDomains: Array.isArray(v.termDomains) ? list(v.termDomains, (s) => s.length > 0 && s.length <= 40, 50) : [],
     starters,
@@ -345,8 +372,8 @@ export function sanitizePreferences(value: unknown): Preferences {
 
 /** Everything a profile covers, taken from the current settings. */
 export function profileSettingsOf(prefs: Preferences): ProfileSettings {
-  const { appearance, skin, layout, spacesView, spacesDock, accent, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat, tips } = prefs;
-  return { appearance, skin, layout, spacesView, spacesDock, accent, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat }, tips: { ...tips } };
+  const { appearance, skin, layout, spacesView, spacesDock, accent, bgTint, bgPattern, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces, domains, spaceDomains, spaceParents, spaceTitles, favoriteSkills, assistant, chat, tips } = prefs;
+  return { appearance, skin, layout, spacesView, spacesDock, accent, bgTint, bgPattern, appScale, iconScale, spaceScale, font, density, contrast, reduceMotion, startView, pinnedSpaces: [...pinnedSpaces], domains: [...domains], spaceDomains: { ...spaceDomains }, spaceParents: { ...spaceParents }, spaceTitles: { ...spaceTitles }, favoriteSkills: [...favoriteSkills], assistant: { ...assistant }, chat: { ...chat }, tips: { ...tips } };
 }
 
 export function allProfiles(prefs: Preferences): Profile[] {
@@ -645,7 +672,7 @@ export function splitArchived<S extends { slug: string }>(spaces: S[], prefs: Pi
 
 // ---------- back to the original ----------
 
-const LOOK_KEYS = ['appearance', 'skin', 'layout', 'accent', 'appScale', 'iconScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
+const LOOK_KEYS = ['appearance', 'skin', 'layout', 'accent', 'bgTint', 'bgPattern', 'appScale', 'iconScale', 'spaceScale', 'font', 'density', 'contrast', 'reduceMotion'] as const;
 
 /** Only the look (colour, sizes, font, density, contrast, motion, light/dark) goes back to the original. */
 export function resetLook<T extends Preferences>(prefs: T): T {

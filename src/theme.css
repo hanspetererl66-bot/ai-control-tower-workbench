@@ -3128,25 +3128,7 @@ button {
   color: var(--muted);
 }
 
-.cover-logo {
-  height: 1.1em;
-  width: auto;
-  margin-left: 12px;
-  vertical-align: -0.15em;
-}
-
-.cover-by {
-  margin: 22px 0 0;
-  font-size: clamp(18px, 2.6vw, 28px);
-  font-weight: 400;
-  color: var(--ink);
-}
-
-.cover-author {
-  margin: 4px 0 0;
-  font-size: clamp(15px, 2vw, 20px);
-  color: var(--muted);
-}
+.cover-title + .cover-note { margin-top: 22px; }
 
 .cover-note {
   margin: 0;
@@ -6145,3 +6127,16 @@ textarea.om-code { width: 100%; font-family: ui-monospace, monospace; font-size:
 }
 .topbar-customer-label { font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
 .topbar-customer b { font-size: 13px; font-weight: 650; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Casimir: a pixel cat that looks over a window edge (src/ui/CatPeek.tsx). Only the cat itself takes clicks. */
+.cat-peek { position: fixed; z-index: 30; cursor: grab; touch-action: none; user-select: none; overflow: hidden; }
+.cat-peek.cat-dragging { cursor: grabbing; }
+.cat-svg { display: block; }
+.cat-live .cat-svg { animation: cat-pop .32s cubic-bezier(.2,.8,.3,1.2) both; }
+.cat-bottom.cat-live .cat-svg { --cat-from: translateY(30%); }
+.cat-top.cat-live .cat-svg { --cat-from: translateY(-30%); }
+.cat-left.cat-live .cat-svg { --cat-from: translateX(-30%); }
+.cat-right.cat-live .cat-svg { --cat-from: translateX(30%); }
+@keyframes cat-pop { from { transform: var(--cat-from, none); } to { transform: none; } }
+.cat-peek:focus-visible { outline: 2px solid var(--accent); }
+@media (prefers-reduced-motion: reduce) { .cat-live .cat-svg { animation: none; } }
