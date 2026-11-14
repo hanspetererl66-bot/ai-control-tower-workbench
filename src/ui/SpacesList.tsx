@@ -714,7 +714,7 @@ export default function SpacesList({ spaces, selected, onSelect, onReorder, onNu
                     onDrop={(event) => dropOnDomain(event, name)}
                   >
                     <button className="domain-toggle" aria-expanded={!isCollapsed} onClick={() => toggleCollapsed(name)}>
-                      <span aria-hidden="true">{isCollapsed ? '▸' : '▾'}</span>
+                      <span className="domain-chev" aria-hidden="true">{isCollapsed ? '▸' : '▾'}</span>
                       {renaming === name ? null : <span className="domain-name">{name}</span>}
                       {renaming === name ? null : <span className="domain-count">{items.length}</span>}
                     </button>
