@@ -51,7 +51,7 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
   const findings = useMemo(() => qualityFindings(ontologies, governance).length, [ontologies, governance]);
   const blocked = useMemo(() => ontologies.reduce((n, o) => n + governance.questions.filter((q) => q.slug === o.slug && checkQuestion(o, governance, q).state === 'blocked').length, 0), [ontologies, governance]);
   const TABS: Array<{ id: Tab; label: string; n?: number }> = [
-    { id: 'catalog', label: 'Catalog' }, { id: 'map', label: 'Map' }, { id: 'questions', label: 'Questions', n: blocked }, { id: 'proposals', label: 'Proposals', n: toReview },
+    { id: 'catalog', label: 'Catalog' }, { id: 'map', label: 'Knowledge graph' }, { id: 'questions', label: 'Questions', n: blocked }, { id: 'proposals', label: 'Proposals', n: toReview },
     { id: 'quality', label: 'Quality', n: findings }, { id: 'use', label: 'Use' }, { id: 'history', label: 'History' }, { id: 'export', label: 'Export' },
   ];
 

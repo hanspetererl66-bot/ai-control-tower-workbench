@@ -82,8 +82,8 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
   const [sel, setSel] = useState<string | null>(null);
   const [hover, setHover] = useState<string | null>(null);
   const [tour, setTour] = useState<number | null>(null);
-  /** Sorted: one panel per ontology with lanes from left to right. Free: the living force layout. */
-  const [mode, setMode] = useState<'sorted' | 'free'>('sorted');
+  /** Free (the default, shown as "Graph"): the living force layout, a knowledge graph. Sorted (shown as "Columns"): one panel per ontology with lanes from left to right. */
+  const [mode, setMode] = useState<'sorted' | 'free'>('free');
   const starts = useMemo(() => startingPoints(map, 4, depth), [map, depth]);
   const shown = useMemo(() => visibleMap(map, kinds, slug), [map, kinds, slug]);
   const shownIds = useMemo(() => new Set(shown.nodes.map((n) => n.id)), [shown]);
@@ -265,6 +265,12 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
         const gl = ctx.createRadialGradient(x, y, r * 0.5, x, y, hr);
         gl.addColorStop(0, rgba(colr, 0.38)); gl.addColorStop(1, rgba(colr, 0));
         ctx.globalAlpha = 1; ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(x, y, hr, 0, Math.PI * 2); ctx.fill();
+      }
+      if (!sorted && !(n.id === sl || n.id === hv)) {
+        // a knowledge graph glows: every node has a soft halo in its own colour (the hubs a wider one), so the clusters read as clouds
+        const hr = r * (n.kind === 'ontology' ? 3.4 : 2.3), hg = ctx.createRadialGradient(x, y, r * 0.6, x, y, hr);
+        hg.addColorStop(0, rgba(colr, n.kind === 'ontology' ? 0.28 : 0.16)); hg.addColorStop(1, rgba(colr, 0));
+        ctx.globalAlpha = Math.max(0.12, va) * intro; ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(x, y, hr, 0, Math.PI * 2); ctx.fill();
       }
       ctx.globalAlpha = Math.max(0.12, va) * (state === 'deprecated' ? 0.55 : 1);
       const fill = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r * 1.15);
@@ -588,11 +594,11 @@ export default function OntologyMap({ ontologies, gov, onOpen }: { ontologies: O
           <canvas ref={cv} tabIndex={0} role="application" onKeyDown={onKey} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}
             onPointerLeave={() => { if (!drag.current) setHover(null); }}
             style={{ cursor: hover ? 'pointer' : drag.current ? 'grabbing' : 'grab' }}
-            aria-label="Interactive map of the ontology catalog. Use the search box or the list beside it to pick a node. Plus and minus zoom, arrow keys move, 0 fits, Escape clears. You can drag a node to move it." />
+            aria-label="Interactive knowledge graph of the ontology catalog. Use the search box or the list beside it to pick a node. Plus and minus zoom, arrow keys move, 0 fits, Escape clears. You can drag a node to move it." />
           <div className="om-map-zoom">
             <span className="om-map-mode" role="group" aria-label="Arrangement">
-              <button className={`om-filter ${mode === 'sorted' ? 'om-filter-on' : ''}`} aria-pressed={mode === 'sorted'} onClick={() => setMode('sorted')} title="One panel per ontology, left to right: data, terms, metrics, users">Sorted</button>
-              <button className={`om-filter ${mode === 'free' ? 'om-filter-on' : ''}`} aria-pressed={mode === 'free'} onClick={() => setMode('free')} title="The map arranges itself by how things are linked">Free</button>
+              <button className={`om-filter ${mode === 'free' ? 'om-filter-on' : ''}`} aria-pressed={mode === 'free'} onClick={() => setMode('free')} title="The knowledge graph: the nodes arrange themselves by how things are linked">Graph</button>
+              <button className={`om-filter ${mode === 'sorted' ? 'om-filter-on' : ''}`} aria-pressed={mode === 'sorted'} onClick={() => setMode('sorted')} title="One panel per ontology, left to right: data, terms, metrics, users">Columns</button>
             </span>
             <button className="om-filter" onClick={() => zoom(1.3)} aria-label="Zoom in">+</button>
             <button className="om-filter" onClick={() => zoom(0.77)} aria-label="Zoom out">−</button>
