@@ -26,6 +26,7 @@
     "sync:knowledge-graph": "node scripts/sync-knowledge-graph.mjs",
     "sync:what-if": "node scripts/sync-what-if.mjs",
     "sync:prd-builder": "node scripts/sync-prd-builder.mjs",
+    "sync:spec-builder": "node scripts/sync-spec-builder.mjs",
     "sync:agent-activity": "node scripts/sync-agent-activity.mjs",
     "sync:mockups": "node scripts/sync-mockup-spaces.mjs",
     "sync:infra-ops": "node scripts/sync-infra-ops.mjs",
@@ -137,6 +138,7 @@
   "dependencies": {
     "@aaif/goose-sdk": "^0.20.2",
     "@agentclientprotocol/sdk": "^0.19.2",
+    "mermaid": "^11.17.2",
     "n3": "^2.13.12",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

@@ -1,0 +1,26 @@
+{
+  "note": "Invented sample answers of the Linear, Slack and Notion connectors, for the demo mode of the PRD Builder (the same shapes the connectors return).",
+  "linear": [
+    { "id": "SAL-41", "title": "Kanban view of the pipeline by stage", "state": "Todo", "priority": "High", "project": "Pipeline view", "labels": ["pipeline"], "url": "https://linear.example/SAL-41", "description": "As a seller I want a kanban view of my pipeline by stage so that I see where deals get stuck.\n\nAcceptance criteria\n- One column per stage\n- Dragging a deal changes its stage\n- Totals per column" },
+    { "id": "SAL-42", "title": "Forecast by quarter", "state": "In Progress", "priority": "Medium", "project": "Pipeline view", "labels": ["forecast"], "url": "https://linear.example/SAL-42", "description": "As a sales manager I want the forecast by quarter so that I can plan the team.\n\nAcceptance criteria\n- Weighted and unweighted value\n- Filter by owner" },
+    { "id": "SAL-47", "title": "Offline notes on the phone", "state": "Todo", "priority": "Low", "project": "Mobile", "labels": ["mobile"], "url": "https://linear.example/SAL-47", "description": "Sellers write notes after a visit without network and sync later." },
+    { "id": "SAL-51", "title": "Export a customer list to CSV", "state": "Todo", "priority": "", "project": null, "labels": [], "url": "https://linear.example/SAL-51", "description": "As an account executive I want to export a list so that I can share it." }
+  ],
+  "slack": {
+    "channel": "sales-feedback",
+    "messages": [
+      { "ts": "1763020800.000100", "user": "U01SELLER", "text": "Three customers this week asked for a way to see all open offers of an account on one page. Right now we click through four screens." },
+      { "ts": "1763024400.000200", "user": "U02MANAGER", "text": "The quarterly forecast is still built by hand in a sheet. If the app could do it, <@U01SELLER> and I would save half a day every month." },
+      { "ts": "1763028000.000300", "user": "U03LEAD", "text": "ok" },
+      { "ts": "1763031600.000400", "user": "U01SELLER", "text": "Mobile: notes after a visit get lost because there is no signal in the factory halls. Offline would help a lot, see <https://linear.example/SAL-47|SAL-47>." },
+      { "ts": "1763035200.000500", "user": "U02MANAGER", "text": "Please keep the discount approval simple. More than two steps and nobody will use it.", "thread_ts": "1763020800.000100", "replies": 2 }
+    ]
+  },
+  "notion": {
+    "id": "0f5c1d2e3a4b4c5d8e9f0a1b2c3d4e5f",
+    "title": "Quarterly planning: Sales Companion",
+    "url": "https://notion.example/Quarterly-planning-0f5c1d2e3a4b4c5d8e9f0a1b2c3d4e5f",
+    "text": "# Goals\n- Reduce the time to prepare a customer meeting from 45 to 15 minutes\n- One place for offers, contracts and open tickets of an account\n\n# Customer requests\nTwo key accounts asked for a read-only portal view of their offers and contracts. They do not want to call their account executive for status.\n\n# Risks\nThe data of contracts and offers sits in two systems. Until they are connected, numbers in the app can differ from the contract system by a few days.\n\n# Notes\nok",
+    "truncated": false
+  }
+}

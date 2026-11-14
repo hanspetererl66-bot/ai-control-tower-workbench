@@ -78,3 +78,16 @@ test('geography: every region rolls up into EMEA, NALA or APAC, and the page car
   const ops = read('examples/infra-ops/index.html');
   for (const needle of ['vmWall', 'data-vmt', 'Create ticket for operator', 'vmTicket']) assert.ok(ops.includes(needle), needle);
 });
+
+test('fleet: the status colours are stronger than the calm default and stay tokens (light, system dark and pinned dark)', () => {
+  const page = readFileSync(join(import.meta.dirname, '..', 'examples/it-fleet/index.html'), 'utf8');
+  const own = page.slice(page.indexOf('</style>', page.indexOf('id="design-system"')));
+  for (const t of ['green', 'amber', 'red']) {
+    assert.equal((own.match(new RegExp(`--${t}:oklch\\(`, 'g')) || []).length, 3, `${t}: light, system dark and pinned dark`);
+    assert.equal((own.match(new RegExp(`--${t}-dim:color-mix`, 'g')) || []).length, 3);
+    assert.equal((own.match(new RegExp(`--${t}-border:color-mix`, 'g')) || []).length, 3);
+  }
+  assert.match(own, /@media \(prefers-color-scheme:dark\)\{:root:not\(\[data-theme="light"\]\)\{/);
+  assert.match(own, /:root\[data-theme="dark"\]\{/);
+  assert.match(own, /\.tile\.red\{[^}]*inset 0 0 0 2px var\(--red\)/);
+});

@@ -52,3 +52,7 @@ Schwelle "zu spät" (hier 14 Tage), wer die Prognosen sehen darf, zulässige Ma�
 
 ## Nicht getestet
 Electron-App, echter Lauf des Knopfs "Ask Claude" (Live-Prognose, Gmail-Entwurf), Prognose für Nordlicht mit echtem TabPFN oder Ersatzmodell, Anbindung der Prüfungen an echte Systeme. Geprüft: Logik und Oberfläche mit jsdom (13 Tests), Headless-Browser in Hell und Dunkel bei 1280 und 400 px Breite.
+
+## Geführter Ablauf und Tipps (13.11.2026)
+Unter den Reitern liegt eine **Führungsleiste** mit sieben Schritten ("Step 2 of 7"): Rangliste, Gründe lesen, unsere Seite prüfen (Küstenlogistik wählen), als Sven in der Reihenfolge freigeben (P2 zuerst wird blockiert), sehen dass Claude nichts freigeben kann, Track record, Rechte und Audit. Jeder Schritt sagt, was zu tun ist und warum. Die Leiste erkennt erledigte Schritte selbst (aus dem Zustand der Seite) und rückt mit "Done: …" weiter; *Take me there*, *Next*, *Back* gehen immer, *Hide guide* blendet sie aus, *Reset demo* und *Start again* beginnen neu. Kleine **i-Knöpfe** (per Klick oder Tastatur) erklären "expected amount at risk", die Spanne, "Clarify first", Freigaben und den Track record in ein bis zwei Sätzen.
+Der Zustand der Leiste lebt nur in der Seite (kein localStorage, kein Netzwerk), beim Wechsel des Space beginnt sie neu. Tests: `test/collections.test.mjs` (Schrittlogik und Durchlauf im DOM). **Nicht getestet:** das Aussehen im echten Fenster (hell und dunkel, schmale Breite).

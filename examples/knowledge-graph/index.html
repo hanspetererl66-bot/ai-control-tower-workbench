@@ -377,6 +377,7 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
   "deal": "Deal (lead / opportunity)",
   "offer": "Offer",
   "ticket": "Ticket",
+  "invoice": "Invoice",
   "call": "Call",
   "thread": "E-mail conversation",
   "skill": "Skill",
@@ -406,6 +407,10 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
   "ABOUT": {
    "verb": "concerns",
    "inverse": "has ticket"
+  },
+  "INVOICE_FOR": {
+   "verb": "invoices",
+   "inverse": "invoiced by"
   },
   "IN_FAMILY": {
    "verb": "belongs to",
@@ -602,14 +607,20 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "SAP customer ID": "0010048211",
     "Customer no.": "100-482-117",
     "Country": "Germany",
-    "Contact": "A. Beispiel",
-    "Region": "MEE"
+    "Contact": "Mr. Miller",
+    "Region": "MEE",
+    "Escalation": "Management since 2026-10-14: The AI Core quota blocks the go-live of the purchase-order skill. The CIO asked for a call this week."
    },
    "view": {
     "space": "sub4me",
     "tab": "overview"
    },
-   "region": "MEE"
+   "region": "MEE",
+   "escalation": {
+    "level": "Management",
+    "since": "2026-10-14",
+    "owner": "Nina Kessler"
+   }
   },
   {
    "id": "product:joule-copilots",
@@ -865,7 +876,10 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "TCV": "€32,000,000 (60 months)",
     "Sales stage": "Contract",
     "Region": "MEE",
-    "Term ends": "2027-03-31 (auto-renews), notice 90 days"
+    "Term ends": "2027-03-31 (auto-renews), notice 90 days",
+    "Renewal decision": "2026-12-31 (in 73 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Decision date 2026-12-31 is in 73 days; 69 % of the cloud credits are used: be ready to right-size"
    },
    "view": {
     "space": "sub4me",
@@ -882,6 +896,19 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "end": "2027-03-31",
     "noticeDays": 90,
     "autoRenew": true
+   },
+   "renewal": {
+    "id": "R-C-2024-0233",
+    "decision": "2026-12-31",
+    "days": 73,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 640000,
+    "offer": {
+     "id": "OFF-2026-0531",
+     "stage": "Negotiation",
+     "validUntil": "2026-12-15"
+    }
    }
   },
   {
@@ -911,11 +938,27 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Term": "2025-01-01 → 2026-12-31",
     "Notice period": "90 days",
     "Service level": "Standard",
-    "Payment terms": "45 days net"
+    "Payment terms": "45 days net",
+    "Renewal decision": "2026-10-02 (17 days ago)",
+    "Renewal health": "Red",
+    "Renewal reasons": "Decision date 2026-10-02 passed 17 days ago: agree the renewal or a written extension now; Price rise of 6.8 % is above the contract cap of 4 %"
    },
    "view": {
     "space": "sub4me",
     "tab": "contracts"
+   },
+   "renewal": {
+    "id": "R-C-2025-0041",
+    "decision": "2026-10-02",
+    "days": -17,
+    "health": "red",
+    "status": "Renewal due",
+    "annualEur": 410000,
+    "offer": {
+     "id": "OFF-2026-0311",
+     "stage": "Proposal sent",
+     "validUntil": "2026-11-15"
+    }
    }
   },
   {
@@ -951,7 +994,10 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Sales stage": "Contract",
     "Risk": "Last day to give notice is 2026-11-02 and the renewal offer is still open.",
     "Region": "MEE",
-    "Term ends": "2027-01-31, notice 90 days"
+    "Term ends": "2027-01-31, notice 90 days",
+    "Renewal decision": "2026-11-02 (in 14 days)",
+    "Renewal health": "Red",
+    "Renewal reasons": "Decision date 2026-11-02 is in 14 days; Invoice INV-2026-10621 is overdue (€86,275, due 2026-08-31)"
    },
    "view": {
     "space": "sub4me",
@@ -970,6 +1016,19 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "end": "2027-01-31",
     "noticeDays": 90,
     "autoRenew": false
+   },
+   "renewal": {
+    "id": "R-C-2023-0390",
+    "decision": "2026-11-02",
+    "days": 14,
+    "health": "red",
+    "status": "Renewal due",
+    "annualEur": 290000,
+    "offer": {
+     "id": "OFF-2026-0318",
+     "stage": "Proposal sent",
+     "validUntil": "2026-12-04"
+    }
    }
   },
   {
@@ -997,7 +1056,10 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Sales stage": "Contract",
     "Risk": "Auto-renewal: the notice period is 60 days before 2026-12-31.",
     "Region": "MEE",
-    "Term ends": "2026-12-31 (auto-renews), notice 60 days"
+    "Term ends": "2026-12-31 (auto-renews), notice 60 days",
+    "Renewal decision": "2026-11-01 (in 13 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Decision date 2026-11-01 is in 13 days (renews automatically unless changed); 78 % of the AI units are used: be ready to right-size"
    },
    "view": {
     "space": "sub4me",
@@ -1016,6 +1078,19 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "end": "2026-12-31",
     "noticeDays": 60,
     "autoRenew": true
+   },
+   "renewal": {
+    "id": "R-C-2026-0012",
+    "decision": "2026-11-01",
+    "days": 13,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 360000,
+    "offer": {
+     "id": "OFF-2026-0530",
+     "stage": "Proposal sent",
+     "validUntil": "2026-11-20"
+    }
    }
   },
   {
@@ -1029,11 +1104,23 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Term": "2022-07-01 → 2026-06-30",
     "Notice period": "90 days",
     "Service level": "Standard",
-    "Payment terms": "30 days net"
+    "Payment terms": "30 days net",
+    "Renewal decision": "2026-04-01 (201 days ago)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Lapsed on 2026-06-30; no offer yet, decide whether to win the customer back"
    },
    "view": {
     "space": "sub4me",
     "tab": "contracts"
+   },
+   "renewal": {
+    "id": "R-C-2022-0502",
+    "decision": "2026-04-01",
+    "days": -201,
+    "health": "yellow",
+    "status": "Lapsed",
+    "annualEur": 95000,
+    "lapsed": true
    }
   },
   {
@@ -3563,13 +3650,19 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "label": "Lindenau Pharma AG",
    "meta": {
     "Note": "Not part of the Sub4Me sample data",
-    "Region": "MEE"
+    "Region": "MEE",
+    "Escalation": "Account team since 2026-10-12: The 2608 upgrade blocks the validation run in QAS (batch release dump). Quality Assurance cannot release the upgrade to PRD before it is fixed."
    },
    "view": {
     "space": "call-transcripts",
     "tab": "calls"
    },
-   "region": "MEE"
+   "region": "MEE",
+   "escalation": {
+    "level": "Account team",
+    "since": "2026-10-12",
+    "owner": "Jonas Weber"
+   }
   },
   {
    "id": "thread:T-202",
@@ -4100,7 +4193,10 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Sales stage": "Contract",
     "Risk": "The renewal offer OFF-2026-0402 is open and the last day to give notice is close.",
     "Region": "MEE",
-    "Term ends": "2026-12-31, notice 60 days"
+    "Term ends": "2026-12-31, notice 60 days",
+    "Renewal decision": "2026-11-01 (in 13 days)",
+    "Renewal health": "Red",
+    "Renewal reasons": "Decision date 2026-11-01 is in 13 days; Price rise of 6.6 % is above the contract cap of 4 %"
    },
    "view": {
     "space": "sales",
@@ -4119,6 +4215,19 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "end": "2026-12-31",
     "noticeDays": 60,
     "autoRenew": false
+   },
+   "renewal": {
+    "id": "R-C-2024-0611",
+    "decision": "2026-11-01",
+    "days": 13,
+    "health": "red",
+    "status": "Renewal due",
+    "annualEur": 380000,
+    "offer": {
+     "id": "OFF-2026-0402",
+     "stage": "Proposal sent",
+     "validUntil": "2026-11-20"
+    }
    }
   },
   {
@@ -4134,7 +4243,10 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Sales stage": "Contract",
     "Risk": "The top-up offer OFF-2026-0415 is still in negotiation.",
     "Region": "MEE",
-    "Term ends": "2026-12-31 (auto-renews), notice 60 days"
+    "Term ends": "2026-12-31 (auto-renews), notice 60 days",
+    "Renewal decision": "2026-11-01 (in 13 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Decision date 2026-11-01 is in 13 days (renews automatically unless changed); Price rise of 5 % is above the contract cap of 3 %"
    },
    "view": {
     "space": "sales",
@@ -4153,6 +4265,19 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "end": "2026-12-31",
     "noticeDays": 60,
     "autoRenew": true
+   },
+   "renewal": {
+    "id": "R-C-2026-0044",
+    "decision": "2026-11-01",
+    "days": 13,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 240000,
+    "offer": {
+     "id": "OFF-2026-0532",
+     "stage": "Negotiation",
+     "validUntil": "2026-11-27"
+    }
    }
   },
   {
@@ -4379,7 +4504,10 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Sales stage": "Contract",
     "Risk": "The top-up offer OFF-2026-0518 is still in negotiation.",
     "Region": "MEE",
-    "Term ends": "2026-12-31 (auto-renews), notice 60 days"
+    "Term ends": "2026-12-31 (auto-renews), notice 60 days",
+    "Renewal decision": "2026-11-01 (in 13 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Decision date 2026-11-01 is in 13 days (renews automatically unless changed); 78 % of the AI units are used: be ready to right-size"
    },
    "view": {
     "space": "sales",
@@ -4399,6 +4527,19 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "end": "2026-12-31",
     "noticeDays": 60,
     "autoRenew": true
+   },
+   "renewal": {
+    "id": "R-C-2026-0051",
+    "decision": "2026-11-01",
+    "days": 13,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 180000,
+    "offer": {
+     "id": "OFF-2026-0540",
+     "stage": "Negotiation",
+     "validUntil": "2026-11-30"
+    }
    }
   },
   {
@@ -4414,7 +4555,10 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "Sales stage": "Contract",
     "Risk": "Open High ticket TKT-48188: serial number requests for the Swiss market are rejected.",
     "Region": "MEE",
-    "Term ends": "2027-12-31, notice 120 days"
+    "Term ends": "2027-12-31, notice 120 days",
+    "Renewal decision": "2027-09-02 (in 318 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "High ticket TKT-48188 is open (waiting for customer)"
    },
    "view": {
     "space": "sales",
@@ -4433,6 +4577,14 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "end": "2027-12-31",
     "noticeDays": 120,
     "autoRenew": false
+   },
+   "renewal": {
+    "id": "R-C-2025-0833",
+    "decision": "2027-09-02",
+    "days": 318,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 414000
    }
   },
   {
@@ -4748,6 +4900,718 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
     "customer": "Lindenau Pharma AG"
    },
    "date": "2026-10-12"
+  },
+  {
+   "id": "contract:C-2023-0344",
+   "type": "contract",
+   "label": "C-2023-0344",
+   "meta": {
+    "Product": "Ariba Procurement",
+    "Status": "Expired",
+    "Annual value": "€127,200",
+    "Term": "ends 2026-01-31",
+    "Notice period": "90 days",
+    "Renewal decision": "2025-11-02 (351 days ago)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Lapsed on 2026-01-31; a reactivation offer (OFF-2026-0510) is open until 2026-11-25; Price rise of 80.2 % is above the contract cap of 3 %"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2023-0344",
+    "decision": "2025-11-02",
+    "days": -351,
+    "health": "yellow",
+    "status": "Lapsed",
+    "annualEur": 127200,
+    "lapsed": true,
+    "offer": {
+     "id": "OFF-2026-0510",
+     "stage": "Proposal sent",
+     "validUntil": "2026-11-25"
+    }
+   }
+  },
+  {
+   "id": "contract:C-2023-0215",
+   "type": "contract",
+   "label": "C-2023-0215",
+   "meta": {
+    "Product": "Integration Suite",
+    "Status": "Expired",
+    "Annual value": "€135,000",
+    "Term": "ends 2026-04-30",
+    "Notice period": "90 days",
+    "Renewal decision": "2026-01-30 (262 days ago)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Lapsed on 2026-04-30; a reactivation offer (OFF-2026-0407) is open until 2026-12-15; Price rise of 40.7 % is above the contract cap of 3 %"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2023-0215",
+    "decision": "2026-01-30",
+    "days": -262,
+    "health": "yellow",
+    "status": "Lapsed",
+    "annualEur": 135000,
+    "lapsed": true,
+    "offer": {
+     "id": "OFF-2026-0407",
+     "stage": "Proposal sent",
+     "validUntil": "2026-12-15"
+    }
+   }
+  },
+  {
+   "id": "invoice:INV-2026-10708",
+   "type": "invoice",
+   "label": "INV-2026-10708",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€69,020",
+    "Due": "2026-10-30"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-10741",
+   "type": "invoice",
+   "label": "INV-2026-10741",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€76,160",
+    "Due": "2026-11-24"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "ticket:TKT-48166",
+   "type": "ticket",
+   "label": "TKT-48166",
+   "meta": {
+    "Title": "SAP Commerce Cloud: storefront search returns no results after catalog import",
+    "Priority": "High",
+    "Status": "In processing"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-10724",
+   "type": "invoice",
+   "label": "INV-2026-10724",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€66,878",
+    "Due": "2026-10-31"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-10738",
+   "type": "invoice",
+   "label": "INV-2026-10738",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€45,220",
+    "Due": "2026-11-04"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "ticket:TKT-47932",
+   "type": "ticket",
+   "label": "TKT-47932",
+   "meta": {
+    "Title": "Document AI: VAT ID not extracted from scanned invoices of two suppliers",
+    "Priority": "High",
+    "Status": "In processing"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "ticket:TKT-48097",
+   "type": "ticket",
+   "label": "TKT-48097",
+   "meta": {
+    "Title": "Document AI: handwritten corrections on scanned batch records are not read",
+    "Priority": "Medium",
+    "Status": "In processing"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-40110",
+   "type": "invoice",
+   "label": "INV-2026-40110",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€49,742",
+    "Due": "2026-11-05"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-10621",
+   "type": "invoice",
+   "label": "INV-2026-10621",
+   "meta": {
+    "Status": "Overdue",
+    "Gross amount": "€86,275",
+    "Due": "2026-08-31"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-10721",
+   "type": "invoice",
+   "label": "INV-2026-10721",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€14,756",
+    "Due": "2026-10-31"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-10735",
+   "type": "invoice",
+   "label": "INV-2026-10735",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€22,491",
+    "Due": "2026-11-04"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "contract:C-2026-0902",
+   "type": "contract",
+   "label": "C-2026-0902",
+   "meta": {
+    "Product": "SAP Work Zone add-on",
+    "Status": "Active",
+    "Annual value": "€12,600",
+    "Term": "ends 2026-12-31",
+    "Notice period": "30 days",
+    "Note": "Add-on contract, fictional, only in the Renewals Space",
+    "Renewal decision": "2026-12-01 (in 43 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Decision date 2026-12-01 is in 43 days; No renewal offer yet"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0902",
+    "decision": "2026-12-01",
+    "days": 43,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 12600,
+    "addon": true
+   }
+  },
+  {
+   "id": "contract:C-2026-0912",
+   "type": "contract",
+   "label": "C-2026-0912",
+   "meta": {
+    "Product": "Commerce Cloud sandbox",
+    "Status": "Active",
+    "Annual value": "€21,000",
+    "Term": "ends 2026-12-31",
+    "Notice period": "30 days",
+    "Note": "Add-on contract, fictional, only in the Renewals Space",
+    "Renewal decision": "2026-12-01 (in 43 days)",
+    "Renewal health": "Red",
+    "Renewal reasons": "Invoice INV-2026-30590 is overdue (€24,990, due 2026-09-30); Decision date 2026-12-01 is in 43 days"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0912",
+    "decision": "2026-12-01",
+    "days": 43,
+    "health": "red",
+    "status": "Running",
+    "annualEur": 21000,
+    "addon": true
+   }
+  },
+  {
+   "id": "invoice:INV-2026-30590",
+   "type": "invoice",
+   "label": "INV-2026-30590",
+   "meta": {
+    "Status": "Overdue",
+    "Gross amount": "€24,990",
+    "Due": "2026-09-30"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "contract:C-2026-0922",
+   "type": "contract",
+   "label": "C-2026-0922",
+   "meta": {
+    "Product": "Integration Suite connectors for laboratory systems",
+    "Status": "Active",
+    "Annual value": "€14,400",
+    "Term": "ends 2026-12-31",
+    "Notice period": "30 days",
+    "Note": "Add-on contract, fictional, only in the Renewals Space",
+    "Renewal decision": "2026-12-01 (in 43 days)",
+    "Renewal health": "Red",
+    "Renewal reasons": "Invoice INV-2026-40890 is overdue (€17,136, due 2026-09-30); Invoice INV-2026-40912 is overdue (€2,856, due 2026-10-05)"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0922",
+    "decision": "2026-12-01",
+    "days": 43,
+    "health": "red",
+    "status": "Running",
+    "annualEur": 14400,
+    "addon": true,
+    "offer": {
+     "id": "OFF-2026-0541",
+     "stage": "Proposal sent",
+     "validUntil": "2026-11-20"
+    }
+   }
+  },
+  {
+   "id": "ticket:TKT-48231",
+   "type": "ticket",
+   "label": "TKT-48231",
+   "meta": {
+    "Title": "Integration Suite: the connector to the laboratory information system (LIMS) drops messages above 2 MB",
+    "Priority": "High",
+    "Status": "In processing"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "ticket:TKT-48233",
+   "type": "ticket",
+   "label": "TKT-48233",
+   "meta": {
+    "Title": "Integration Suite: the certificate of the LIMS endpoint expires on 2026-11-09",
+    "Priority": "Medium",
+    "Status": "Waiting for customer"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-40890",
+   "type": "invoice",
+   "label": "INV-2026-40890",
+   "meta": {
+    "Status": "Overdue",
+    "Gross amount": "€17,136",
+    "Due": "2026-09-30"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-40912",
+   "type": "invoice",
+   "label": "INV-2026-40912",
+   "meta": {
+    "Status": "Overdue",
+    "Gross amount": "€2,856",
+    "Due": "2026-10-05"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "contract:C-2026-0901",
+   "type": "contract",
+   "label": "C-2026-0901",
+   "meta": {
+    "Product": "SAP Signavio Process Manager add-on",
+    "Status": "Active",
+    "Annual value": "€24,000",
+    "Term": "ends 2027-01-31",
+    "Notice period": "60 days",
+    "Note": "Add-on contract, fictional, only in the Renewals Space",
+    "Renewal decision": "2026-12-02 (in 44 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Decision date 2026-12-02 is in 44 days; No renewal offer yet"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0901",
+    "decision": "2026-12-02",
+    "days": 44,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 24000,
+    "addon": true
+   }
+  },
+  {
+   "id": "contract:C-2026-0903",
+   "type": "contract",
+   "label": "C-2026-0903",
+   "meta": {
+    "Product": "BTP extra storage package",
+    "Status": "Active",
+    "Annual value": "€31,500",
+    "Term": "ends 2027-02-28",
+    "Notice period": "60 days",
+    "Note": "Add-on contract, fictional, only in the Renewals Space",
+    "Renewal decision": "2026-12-30 (in 72 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Decision date 2026-12-30 is in 72 days; No renewal offer yet"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0903",
+    "decision": "2026-12-30",
+    "days": 72,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 31500,
+    "addon": true
+   }
+  },
+  {
+   "id": "contract:C-2026-0921",
+   "type": "contract",
+   "label": "C-2026-0921",
+   "meta": {
+    "Product": "SuccessFactors e-signature add-on (21 CFR Part 11)",
+    "Status": "Active",
+    "Annual value": "€18,600",
+    "Term": "ends 2027-02-28",
+    "Notice period": "60 days",
+    "Note": "Add-on contract, fictional, only in the Renewals Space",
+    "Renewal decision": "2026-12-30 (in 72 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "Decision date 2026-12-30 is in 72 days"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0921",
+    "decision": "2026-12-30",
+    "days": 72,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 18600,
+    "addon": true,
+    "offer": {
+     "id": "OFF-2026-0542",
+     "stage": "Proposal sent",
+     "validUntil": "2026-12-15"
+    }
+   }
+  },
+  {
+   "id": "ticket:TKT-48235",
+   "type": "ticket",
+   "label": "TKT-48235",
+   "meta": {
+    "Title": "e-signature add-on: the meaning of the signature is missing in the audit-trail export (21 CFR Part 11)",
+    "Priority": "Medium",
+    "Status": "In processing"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-40910",
+   "type": "invoice",
+   "label": "INV-2026-40910",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€22,134",
+    "Due": "2026-11-15"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-10716",
+   "type": "invoice",
+   "label": "INV-2026-10716",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€49,088",
+    "Due": "2026-10-25"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-10729",
+   "type": "invoice",
+   "label": "INV-2026-10729",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€114,716",
+    "Due": "2026-11-01"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "contract:C-2026-0911",
+   "type": "contract",
+   "label": "C-2026-0911",
+   "meta": {
+    "Product": "SAP Analytics Cloud planning add-on",
+    "Status": "Active",
+    "Annual value": "€27,900",
+    "Term": "ends 2027-03-31",
+    "Notice period": "60 days",
+    "Note": "Add-on contract, fictional, only in the Renewals Space",
+    "Renewal decision": "2027-01-30 (in 103 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "No renewal offer yet"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0911",
+    "decision": "2027-01-30",
+    "days": 103,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 27900,
+    "addon": true
+   }
+  },
+  {
+   "id": "contract:C-2026-0923",
+   "type": "contract",
+   "label": "C-2026-0923",
+   "meta": {
+    "Product": "BTP extra storage package (batch-record archive)",
+    "Status": "Active",
+    "Annual value": "€26,400",
+    "Term": "ends 2027-04-30",
+    "Notice period": "60 days",
+    "Note": "Add-on contract, fictional, only in the Renewals Space",
+    "Renewal decision": "2027-03-01 (in 133 days)",
+    "Renewal health": "Yellow",
+    "Renewal reasons": "76 % of the TB are used: be ready to right-size"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0923",
+    "decision": "2027-03-01",
+    "days": 133,
+    "health": "yellow",
+    "status": "Running",
+    "annualEur": 26400,
+    "addon": true
+   }
+  },
+  {
+   "id": "ticket:TKT-48237",
+   "type": "ticket",
+   "label": "TKT-48237",
+   "meta": {
+    "Title": "Archive package: the retention rule for batch records is not yet confirmed by Quality Assurance",
+    "Priority": "Low",
+    "Status": "Waiting for customer"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-40911",
+   "type": "invoice",
+   "label": "INV-2026-40911",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€31,416",
+    "Due": "2026-12-01"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "contract:C-2026-0913",
+   "type": "contract",
+   "label": "C-2026-0913",
+   "meta": {
+    "Product": "Integration Suite extra connectors",
+    "Status": "Active",
+    "Annual value": "€9,800",
+    "Term": "ends 2027-06-30",
+    "Notice period": "30 days",
+    "Note": "Add-on contract, fictional, only in the Renewals Space",
+    "Renewal decision": "2027-05-31 (in 224 days)",
+    "Renewal health": "Green"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2026-0913",
+    "decision": "2027-05-31",
+    "days": 224,
+    "health": "green",
+    "status": "Running",
+    "annualEur": 9800,
+    "addon": true
+   }
+  },
+  {
+   "id": "contract:C-2024-0702",
+   "type": "contract",
+   "label": "C-2024-0702",
+   "meta": {
+    "Product": "SAP Analytics Cloud",
+    "Status": "Active",
+    "Annual value": "€219,750",
+    "Term": "ends 2027-10-31",
+    "Notice period": "90 days",
+    "Renewal decision": "2027-08-02 (in 287 days)",
+    "Renewal health": "Green"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   },
+   "renewal": {
+    "id": "R-C-2024-0702",
+    "decision": "2027-08-02",
+    "days": 287,
+    "health": "green",
+    "status": "Running",
+    "annualEur": 219750
+   }
+  },
+  {
+   "id": "invoice:INV-2026-30077",
+   "type": "invoice",
+   "label": "INV-2026-30077",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€261,503",
+    "Due": "2026-10-31"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "ticket:TKT-48188",
+   "type": "ticket",
+   "label": "TKT-48188",
+   "meta": {
+    "Title": "Advanced Track and Trace: serial number requests are rejected for the Swiss market",
+    "Priority": "High",
+    "Status": "Waiting for customer"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
+  },
+  {
+   "id": "invoice:INV-2026-40104",
+   "type": "invoice",
+   "label": "INV-2026-40104",
+   "meta": {
+    "Status": "Open",
+    "Gross amount": "€492,660",
+    "Due": "2026-10-31"
+   },
+   "view": {
+    "space": "renewals",
+    "tab": "process"
+   }
   }
  ],
  "edges": [
@@ -7869,6 +8733,216 @@ details.assume{margin-top:12px;font-size:12px;color:var(--ink-2)}details.assume 
    "type": "CONTACT_FOR"
   },
   {
+   "source": "customer:lindenau-pharma-ag",
+   "target": "contract:C-2023-0344",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "contract:C-2023-0215",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "invoice:INV-2026-10708",
+   "target": "contract:C-2025-0041",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "invoice:INV-2026-10741",
+   "target": "contract:C-2025-0041",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "ticket:TKT-48166",
+   "target": "contract:C-2024-0611",
+   "type": "ABOUT"
+  },
+  {
+   "source": "ticket:TKT-48213",
+   "target": "contract:C-2026-0012",
+   "type": "ABOUT"
+  },
+  {
+   "source": "ticket:TKT-48107",
+   "target": "contract:C-2026-0012",
+   "type": "ABOUT"
+  },
+  {
+   "source": "ticket:TKT-47888",
+   "target": "contract:C-2026-0012",
+   "type": "ABOUT"
+  },
+  {
+   "source": "invoice:INV-2026-10724",
+   "target": "contract:C-2026-0012",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "invoice:INV-2026-10738",
+   "target": "contract:C-2026-0012",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "ticket:TKT-47932",
+   "target": "contract:C-2026-0044",
+   "type": "ABOUT"
+  },
+  {
+   "source": "ticket:TKT-48097",
+   "target": "contract:C-2026-0051",
+   "type": "ABOUT"
+  },
+  {
+   "source": "invoice:INV-2026-40110",
+   "target": "contract:C-2026-0051",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "invoice:INV-2026-10621",
+   "target": "contract:C-2023-0390",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "invoice:INV-2026-10721",
+   "target": "contract:C-2023-0390",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "invoice:INV-2026-10735",
+   "target": "contract:C-2023-0390",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "contract:C-2026-0902",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "contract:C-2026-0912",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "invoice:INV-2026-30590",
+   "target": "contract:C-2026-0912",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "customer:lindenau-pharma-ag",
+   "target": "contract:C-2026-0922",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "ticket:TKT-48231",
+   "target": "contract:C-2026-0922",
+   "type": "ABOUT"
+  },
+  {
+   "source": "ticket:TKT-48233",
+   "target": "contract:C-2026-0922",
+   "type": "ABOUT"
+  },
+  {
+   "source": "invoice:INV-2026-40890",
+   "target": "contract:C-2026-0922",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "invoice:INV-2026-40912",
+   "target": "contract:C-2026-0922",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "contract:C-2026-0901",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "customer:muster-industrie-ag",
+   "target": "contract:C-2026-0903",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "customer:lindenau-pharma-ag",
+   "target": "contract:C-2026-0921",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "ticket:TKT-48235",
+   "target": "contract:C-2026-0921",
+   "type": "ABOUT"
+  },
+  {
+   "source": "invoice:INV-2026-40910",
+   "target": "contract:C-2026-0921",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "invoice:INV-2026-10716",
+   "target": "contract:C-2024-0233",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "invoice:INV-2026-10729",
+   "target": "contract:C-2024-0233",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "contract:C-2026-0911",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "customer:lindenau-pharma-ag",
+   "target": "contract:C-2026-0923",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "ticket:TKT-48237",
+   "target": "contract:C-2026-0923",
+   "type": "ABOUT"
+  },
+  {
+   "source": "invoice:INV-2026-40911",
+   "target": "contract:C-2026-0923",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "contract:C-2026-0913",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "customer:hanse-handelsgruppe-ag",
+   "target": "contract:C-2024-0702",
+   "type": "HAS_CONTRACT"
+  },
+  {
+   "source": "invoice:INV-2026-30077",
+   "target": "contract:C-2024-0702",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "ticket:TKT-48188",
+   "target": "contract:C-2025-0833",
+   "type": "ABOUT"
+  },
+  {
+   "source": "invoice:INV-2026-40104",
+   "target": "contract:C-2025-0833",
+   "type": "INVOICE_FOR"
+  },
+  {
+   "source": "thread:T-201",
+   "target": "contract:C-2023-0344",
+   "type": "DISCUSSES"
+  },
+  {
+   "source": "thread:T-204",
+   "target": "ticket:TKT-48097",
+   "type": "DISCUSSES"
+  },
+  {
    "source": "workflow:btp-service-health-check",
    "target": "product:business-technology-platform",
    "type": "MONITORS"
@@ -8181,12 +9255,12 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ST = {
   system:{c:'purple',s:'hex',r:13}, connector:{c:'muted',s:'hex',r:10}, customer:{c:'purple',s:'star',r:17},
   family:{c:'teal',s:'round',r:11}, product:{c:'teal',s:'circle',r:8}, contract:{c:'blue',s:'square',r:9},
-  offer:{c:'green',s:'square',r:8}, deal:{c:'blue',s:'round',r:9}, ticket:{c:'amber',s:'tri',r:7}, call:{c:'teal',s:'hex',r:8}, thread:{c:'blue',s:'diamond',r:8}, skill:{c:'purple',s:'circle',r:8},
+  offer:{c:'green',s:'square',r:8}, deal:{c:'blue',s:'round',r:9}, ticket:{c:'amber',s:'tri',r:7}, invoice:{c:'amber',s:'square',r:6}, call:{c:'teal',s:'hex',r:8}, thread:{c:'blue',s:'diamond',r:8}, skill:{c:'purple',s:'circle',r:8},
   tool:{c:'muted',s:'circle',r:4.5}, risk:{c:'red',s:'diamond',r:10}, agent:{c:'amber',s:'diamond',r:8},
   workflow:{c:'green',s:'circle',r:8}, app:{c:'blue',s:'round',r:6}, person:{c:'ink2',s:'circle',r:5},
 };
 /* Sales view first: sales types sit on the inner ring, enablers (skills, tools, agents ...) on the outer ring and are hidden until switched on */
-const SALES = ['deal','offer','contract','person','call','thread','ticket','product'];
+const SALES = ['deal','offer','contract','person','call','thread','ticket','invoice','product'];
 const EN_ORDER = ['family','skill','tool','agent','risk','workflow','app'];
 const ENABLER = new Set([...EN_ORDER, 'system', 'connector']);
 const HUB = new Set(['system','connector']);
@@ -8201,6 +9275,30 @@ function readColors() {
 
 /* ---------- model ---------- */
 const nodes = D.nodes.map((n) => ({ ...n, x:0, y:0, vx:0, vy:0, deg:0, pin:false, nb:[] }));
+/* @pulse-start */
+/* Renewal health as a ring (colour = health token) and a slow breath for what needs attention: customers with an escalation and red renewals
+   (closest decision first), at most `cap` together so the picture stays calm. Returns the ids in that order. */
+const HEALTH_TOKEN = { red: 'red', yellow: 'amber', green: 'green' };
+function pulseIds(list, cap) {
+  const esc = list.filter((n) => n.escalation);
+  const red = list.filter((n) => n.renewal && n.renewal.health === 'red').sort((a, b) => a.renewal.days - b.renewal.days);
+  return esc.concat(red).slice(0, cap).map((n) => n.id);
+}
+/* @pulse-end */
+const PULSE = new Map(pulseIds(nodes, 15).map((id, i) => [id, (i * 0.37) % 1])); // id -> phase, so the breaths do not run in step
+/* The renewal health ring and the quiet breath, in 2D and in 3D (x, y, r in pixels, al = opacity of the node). Only in the calm state,
+   never with reduced motion for the breath, and not before the intro of the 2D view has finished. */
+function healthRing(n, x, y, r, al, now) {
+  if (foc || r <= 5 || !(n.renewal || n.escalation)) return;
+  const hc = C[n.escalation ? 'amber' : HEALTH_TOKEN[n.renewal.health]], red = !n.escalation && n.renewal.health === 'red';
+  ctx.save(); ctx.strokeStyle = hc; ctx.lineWidth = red || n.escalation ? 2.2 : 1.6; ctx.globalAlpha = al * 0.9;
+  ctx.beginPath(); ctx.arc(x, y, r + 3, 0, Math.PI * 2); ctx.stroke();
+  if (PULSE.has(n.id) && !reduced && IP >= 1) {
+    const p = ((now / 2400) + PULSE.get(n.id)) % 1;
+    ctx.globalAlpha = al * 0.55 * (1 - p); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(x, y, r + 3 + p * 11, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.restore();
+}
 const byId = new Map(nodes.map((n) => [n.id, n]));
 const edges = D.edges.map((e, i) => ({ ...e, a: byId.get(e.source), b: byId.get(e.target), i, weak: !!(D.edgeTypes[e.type] || {}).weak }));
 for (const e of edges) { e.a.deg++; e.b.deg++; e.a.nb.push({ n: e.b, e, out: true }); e.b.nb.push({ n: e.a, e, out: false }); }
@@ -8559,6 +9657,7 @@ function draw(now) {
       sg.addColorStop(0, hl); sg.addColorStop(1, colr); ctx.globalAlpha = al * 0.26; ctx.fillStyle = sg; ctx.fill(); ctx.globalAlpha = al;
     }
     ctx.stroke();
+    healthRing(n, x, y, r, al, now);
     if (isNew(n) && !foc) { ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = C.teal; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(x, y, r + 3.5, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
     if (n.pin) { ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, r + 4, 0, Math.PI * 2); ctx.stroke(); }
     if (n === S.sel) {
@@ -8682,6 +9781,7 @@ function draw3d(now) {
     ctx.globalAlpha = al * (foc ? 1 : depth(q)); ctx.fillStyle = colr; ctx.strokeStyle = C.bg; ctx.lineWidth = 1.4;
     if (lift) { ctx.shadowColor = colr; ctx.shadowBlur = n === S.sel ? 24 : 12; }
     shapePath(ctx, ST[n.type].s, q.x, q.y, r); ctx.fill(); ctx.shadowBlur = 0; ctx.stroke();
+    healthRing(n, q.x, q.y, r, al * depth(q), now);
     if (n === S.sel) { ctx.strokeStyle = C.ink; ctx.lineWidth = 2; shapePath(ctx, ST[n.type].s, q.x, q.y, r + 5); ctx.stroke(); }
     ctx.globalAlpha = 1;
     if (al > 0.5 && (lift || S.labels || n.deg >= 9 || HUB.has(n.type) || n.type === 'customer')) lab.push({ n, x: q.x, y: q.y + r + 11, strong: lift || n === S.sel });
@@ -8795,6 +9895,7 @@ function salesCol(n) { // win probability scale; contracts are booked revenue
 }
 function nodeCol(n) {
   if (S.stake && n.stake) return C[STAKE_COL[n.stake.role]];
+  if (n.type === 'invoice' && n.meta && n.meta.Status === 'Overdue') return C.red; // an overdue invoice is red, an open one amber
   return S.value && n.sales ? salesCol(n) : col(n);
 }
 function valueEdgeW(e) { // line width = TCV of the deal, offer or contract on a customer edge
@@ -8982,10 +10083,10 @@ function syncBars() {
   $('#b-stake').setAttribute('aria-pressed', String(S.stake));
   const sw = (c, l) => `<span><i style="background:var(--${c})"></i>${l}</span>`;
   $('#vleg').innerHTML = S.stake
-    ? `<b>Stakeholders</b><div class="sw">${sw('green', 'Sponsor')}${sw('purple', 'Decider')}${sw('red', 'Blocker')}${sw('muted', 'Influencer')}</div><span>Size = contact strength</span>`
+    ? `<b>Stakeholders</b><div class="sw">${sw('green', 'Sponsor')}${sw('purple', 'Decider')}${sw('red', 'Blocker')}${sw('muted', 'Influencer')}</div><span>Size = contact strength · ring colour = renewal health</span>`
     : S.value
-      ? `<b>Value view</b><span>Node size = ACV · line width = TCV</span><div class="sw">${sw('green', '70 % +')}${sw('amber', '50 to 69 %')}${sw('red', 'under 50 %')}${sw('blue', 'contract')}</div><span>Dashed ring = new in the last 7 days</span>`
-      : '<b>Dashed ring</b><span>new in the last 7 days</span>';
+      ? `<b>Value view</b><span>Node size = ACV · line width = TCV</span><div class="sw">${sw('green', '70 % +')}${sw('amber', '50 to 69 %')}${sw('red', 'under 50 %')}${sw('blue', 'contract')}</div><span>Ring colour = renewal health, red and escalations breathe · overdue invoices are red · dashed ring = new in the last 7 days</span>`
+      : `<b>Rings</b><span>Colour = renewal health (red, yellow, green) · amber ring on a customer = escalation · red and escalated ones breathe · overdue invoices are red · dashed = new in the last 7 days</span>`;
   updateStats();
 }
 $('#b-enabler').onclick = () => {

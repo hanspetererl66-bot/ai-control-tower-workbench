@@ -10,7 +10,7 @@ The connector `connectors/linear` reads Linear through its GraphQL API. It reads
 
 ## Use
 
-- **Start from requirements**, source "Linear": give a team key (`ENG`, reads the open backlog), an issue link or identifier (`ENG-12`), or search words. Each issue that states a need becomes one requirement (one issue is one voice, like Jira). Clusters, classification and the hand-over work as for the other sources.
+- **Requirement collection**, source "Linear": give a team key (`ENG`, reads the open backlog), an issue link or identifier (`ENG-12`), or search words. Each issue that states a need becomes one requirement (one issue is one voice, like Jira). Clusters, classification and the hand-over work as for the other sources.
 - **Comments:** the agent is told to ask before it uses `linear_add_comment`. Nothing in the app writes to Linear yet; the preview-and-confirm flow like the Jira note comes in a later step.
 
 ## Limits

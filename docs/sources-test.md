@@ -1,6 +1,6 @@
 # Real run: requirement sources against Jira Cloud and Slack
 
-A test bed with a known answer. It creates invented requirements in a **test** Jira project and a **test** Slack channel, so you can check whether "Start from requirements" counts and clusters them correctly.
+A test bed with a known answer. It creates invented requirements in a **test** Jira project and a **test** Slack channel, so you can check whether "Requirement collection" counts and clusters them correctly.
 
 ## What you need
 - A Jira Cloud test project (key, for example `TB`) and an API token (`JIRA_SITE`, `JIRA_EMAIL`, `JIRA_API_TOKEN`).
@@ -10,7 +10,7 @@ A test bed with a known answer. It creates invented requirements in a **test** J
 ## Steps
 1. Look first: `node scripts/sources-testbed.mjs --project TB --channel testbed` (dry run, changes nothing).
 2. Create: `JIRA_SITE=… JIRA_EMAIL=… JIRA_API_TOKEN=… SLACK_BOT_TOKEN=… node scripts/sources-testbed.mjs --project TB --channel testbed --create` (`--only jira` or `--only slack` for one side). Run it once; running again creates duplicates.
-3. In the app: Develop, Start from requirements. Read Jira (project `TB`, label `werkbank-testbed`) and Slack (the test channel).
+3. In the app: Develop, Requirement collection. Read Jira (project `TB`, label `werkbank-testbed`) and Slack (the test channel).
 4. Cluster and compare with `node scripts/sources-testbed.mjs --expect`.
 
 ## What to compare

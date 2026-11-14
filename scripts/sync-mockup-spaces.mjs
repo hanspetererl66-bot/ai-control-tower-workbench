@@ -33,8 +33,8 @@ export const CATALOGS = [
 const BLOCK = /<script type="application\/json" id="data">[\s\S]*?<\/script>/;
 /** Pages whose logic has one source in a module (the page cannot import): the code between the two markers is copied from it. */
 export const LOGIC_PAGES = { 'examples/recruiting-workbench/index.html': () => makeLogic.toString(), 'examples/customer-360/index.html': () => makeLogic360.toString() };
-/** Pages that carry the Sales journey rail (shared/journey.mjs): the code between the two markers is copied from the module. */
-export const JOURNEY_PAGES = ['examples/sales/index.html', 'examples/customer-360/index.html', 'examples/customer-emails/index.html', 'examples/renewals/index.html'];
+/** Pages that carry the Sales journey code (shared/journey.mjs): the code between the two markers is copied from the module. The first four draw the rail; Collections only reads the hand-over. */
+export const JOURNEY_PAGES = ['examples/sales/index.html', 'examples/customer-360/index.html', 'examples/customer-emails/index.html', 'examples/renewals/index.html', 'examples/collections/index.html'];
 const JOURNEY = /\/\/ @journey-start\n(?:[\s\S]*?\n)?\s*\/\/ @journey-end/;
 export function embedJourney(html, source) {
   if (!JOURNEY.test(html)) throw new Error('page has no @journey-start / @journey-end markers');

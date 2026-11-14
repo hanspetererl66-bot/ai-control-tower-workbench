@@ -14,6 +14,7 @@ export const EXAMPLE_SPACES = {
   'knowledge-graph': 'knowledge-graph',
   'what-if': 'what-if',
   'prd-builder': 'prd-builder',
+  'spec-builder': 'spec-builder',
   'call-transcripts': 'call-transcripts',
   'customer-emails': 'customer-emails',
   'infra-ops': 'infra-ops',

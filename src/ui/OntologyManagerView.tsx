@@ -27,7 +27,10 @@ const FILTERS: Array<{ id: TermFilter; label: string }> = [
  * when that cannot be read it shows the bundled Finance Pre-Close sample and says why. Owners, declared users, views
  * and plans are saved in `governance.json` next to the catalog; the catalog itself is only changed by the connector.
  */
-export default function OntologyManagerView({ data, onReload, onBack, onGovernance, saveNote, generate, onStop, ready, knownSkills, actor = '', focusTerm = null }: {
+export default function OntologyManagerView({ data, onReload, onBack, onGovernance, saveNote, generate, onStop, ready, knownSkills, actor = '', focusTerm = null, tipsOn = true, onTipsOff }: {
+  /** The tips switch lives in Settings (Skin); the bubble's "Turn off tips" asks the app to switch it off. */
+  tipsOn?: boolean;
+  onTipsOff?: () => void;
   data: OntologyData; onReload: () => void; onBack: () => void; onGovernance: (g: Governance) => void; saveNote: string;
   generate?: Generate; onStop?: () => void; ready: boolean; knownSkills: string[];
   /** Who acts (the e-mail label of this window): written next to a decision about a found user. */
@@ -42,7 +45,7 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
   const [guide, setGuide] = useState<GuidePref>(() => readGuidePref(typeof window === 'undefined' ? null : window.localStorage));
   const [tourOpen, setTourOpen] = useState(true);
   const saveGuide = (g: GuidePref) => { setGuide(g); writeGuidePref(typeof window === 'undefined' ? null : window.localStorage, g); };
-  const showTour = guide.on && tourOpen && !guide.seen.includes(tab) && ontologies.length > 0 && source.kind !== 'loading';
+  const showTour = tipsOn && tourOpen && !guide.seen.includes(tab) && ontologies.length > 0 && source.kind !== 'loading';
   useEffect(() => { setTourOpen(true); }, [tab]);
   const toReview = proposals.filter((p) => p.status === 'proposed').length;
   const findings = useMemo(() => qualityFindings(ontologies, governance).length, [ontologies, governance]);
@@ -61,10 +64,11 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
           <h1>Know what every term means, <span>and who stands behind it.</span></h1>
           <p className="om-lede">The shared vocabulary of your agents in one place: owned, reviewed and traceable to the document it came from.</p>
         </div>
-        <label className="om-tips" data-guide="tips" title="Speech bubbles that explain each part and how to use it">
-          <input type="checkbox" role="switch" checked={guide.on} onChange={(e) => { setTourOpen(true); saveGuide({ on: e.target.checked, seen: [] }); }} />
-          <span>Tips {guide.on ? 'on' : 'off'}</span>
-        </label>
+        <button className="om-filter om-tips" data-guide="tips" disabled={!tipsOn}
+          title={tipsOn ? 'Show the tips of this tab again. Size, colours and the on/off switch are in Settings, Skin.' : 'The tips are off. Switch them on in Settings, Skin.'}
+          onClick={() => { setTourOpen(true); saveGuide({ ...guide, seen: guide.seen.filter((t) => t !== tab) }); }}>
+          {tipsOn ? 'Show tips' : 'Tips are off'}
+        </button>
       </header>
 
       <div className="om-source">
@@ -98,7 +102,7 @@ export default function OntologyManagerView({ data, onReload, onBack, onGovernan
       {tab === 'use' && <OntologyUse ontologies={ontologies} gov={governance} onGovernance={onGovernance} knownSkills={knownSkills} generate={generate} ready={ready} />}
       {tab === 'history' && <OntologyHistory ontologies={ontologies} history={history} />}
       {tab === 'export' && <OntologyExport ontologies={ontologies} gov={governance} />}
-      {showTour && <OntologyGuide tab={tab} root={root} onDone={() => { setTourOpen(false); saveGuide({ ...guide, seen: [...guide.seen, tab] }); }} onOff={() => saveGuide({ on: false, seen: guide.seen })} />}
+      {showTour && <OntologyGuide tab={tab} root={root} onDone={() => { setTourOpen(false); saveGuide({ ...guide, seen: [...guide.seen, tab] }); }} onOff={() => onTipsOff?.()} />}
     </main>
   );
 }

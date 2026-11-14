@@ -8,7 +8,7 @@ export type GuideStep = { target: string; title: string; text: string; side?: 'b
 
 export const GUIDE_STEPS: Record<GuideTab, GuideStep[]> = {
   catalog: [
-    { target: 'tips', title: 'Welcome to the Ontology Manager', text: 'This is where the meaning of your terms is kept, so every agent reads "DSO" or "customer" the same way. A short tour shows each part. This Tips switch turns the bubbles off or on again.', side: 'below' },
+    { target: 'tips', title: 'Welcome to the Ontology Manager', text: 'This is where the meaning of your terms is kept, so every agent reads "DSO" or "customer" the same way. A short tour shows each part. Switch them off, or change their size and colours, in Settings under Skin.', side: 'below' },
     { target: 'tabs', title: 'Eight views, one vocabulary', text: 'Catalog is the home base. Map shows how terms depend on each other, Proposals turns a document into new terms, Quality lists what needs fixing. Click a tab to see its tips.', side: 'below' },
     { target: 'kpis', title: 'How healthy is it?', text: 'Counts of classes, properties and certified metrics. The bar shows how many classes have a definition: aim for all of them.', side: 'below' },
     { target: 'side', title: 'Pick an ontology', text: 'Each card is one vocabulary (Finance, Sales, IT operations …). Click one to see its terms. Under the list you can set its owner, domain and who approves changes.', side: 'right' },
@@ -16,7 +16,7 @@ export const GUIDE_STEPS: Record<GuideTab, GuideStep[]> = {
     { target: 'terms', title: 'Open a term', text: 'Click a row. The panel on the right shows the definition, the owner, what depends on the term and what it is used by.', side: 'above' },
     { target: 'detail', title: 'Before you change anything', text: 'Here you see what would be affected by a change. Use "Plan a change" to write down who must be asked first. It never edits the catalog.', side: 'above' },
   ],
-  map: [{ target: 'tab-map', title: 'The map', text: 'Every term as a dot, linked to what it depends on. Click a dot: red shows everything that would be affected if it changed. Drag a dot, scroll to zoom, use the search to jump to a term.', side: 'below' }],
+  map: [{ target: 'tab-map', title: 'The map', text: 'Every term as a dot, linked to what it depends on. The map has its own four-step guide: press "? Guide" above the map. Click a dot and red shows everything that would be affected if it changed.', side: 'below' }],
   questions: [{ target: 'tab-questions', title: 'Competency questions', text: 'Write the questions your vocabulary has to answer ("Which invoices are overdue?"). The check says whether all needed terms exist and are defined. It checks the vocabulary, not the data.', side: 'below' }],
   proposals: [{ target: 'tab-proposals', title: 'Terms from a document', text: 'Ask the agent to read a handbook or policy and propose terms. You see each proposal with the quotes it is based on. Nothing changes until you tick the box and confirm.', side: 'below' }],
   quality: [{ target: 'tab-quality', title: 'What needs fixing', text: 'Missing owner or definition, duplicates, terms that are deprecated but still in use. Click a finding to jump to the term.', side: 'below' }],
