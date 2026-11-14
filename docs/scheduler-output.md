@@ -12,8 +12,10 @@ Jeder Job hat ein Ziel für sein Ergebnis (Formular "Write the result to"). Gesc
 | Databricks table | eine Zeile je Lauf in eine bestehende Tabelle | Connector `databricks` (neues Werkzeug `databricks_append_result`), SQL-Warehouse |
 
 ## Databricks-Tabelle anlegen (einmalig, von Hand)
+Im SQL-Editor von Databricks mit dem Warehouse aus den Connector-Einstellungen ausführen. Catalog `main`, Schema `default` (so von Hans-Peter gewählt); im Job unter "Databricks table" `main.default.job_results` eintragen.
+
 ```sql
-CREATE TABLE main.ops.job_results (
+CREATE TABLE main.default.job_results (
   job_id   STRING,
   job_name STRING,
   run_at   TIMESTAMP,
