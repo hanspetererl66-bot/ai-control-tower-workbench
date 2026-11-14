@@ -13,6 +13,25 @@ export type Cadence =
   | { kind: 'monthly'; time: string; day: number }
   | { kind: 'cron'; expr: string };
 
+/**
+ * Where the result of a run goes. `chat` is the old behaviour (answer stays in the chat). The others are written after the run
+ * by `deliverJobResult` (src/job-output.ts), never by the agent itself, so the destination is exactly what the job says.
+ */
+export type OutputKind = 'chat' | 'email' | 'file' | 'slack' | 'notion' | 'databricks';
+export type JobOutput =
+  | { kind: 'chat' }
+  | { kind: 'email'; to: string }
+  /** `path` is a folder below workspace/job-results/ (may be empty). */
+  | { kind: 'file'; path: string; format: 'md' | 'txt' }
+  | { kind: 'slack'; channel: string }
+  /** `parent` is the id or link of a Notion page or database. */
+  | { kind: 'notion'; parent: string; parentType: 'page' | 'database' }
+  /** `table` is catalog.schema.table; the connector appends one row per run. */
+  | { kind: 'databricks'; table: string };
+
+export const OUTPUT_LABEL: Record<OutputKind, string> = { chat: 'Chat only', email: 'Email draft', file: 'File on this computer', slack: 'Slack channel', notion: 'Notion page', databricks: 'Databricks table' };
+export const OUTPUT_KINDS = Object.keys(OUTPUT_LABEL) as OutputKind[];
+
 export type JobRun = { id: string; at: string; ms: number; status: 'ok' | 'error' | 'skipped'; trigger: 'schedule' | 'manual'; note: string };
 
 export type Job = {
@@ -21,6 +40,8 @@ export type Job = {
   target: Target;
   /** Extra instruction for the run (workflows and skills). */
   note: string;
+  /** Where the result is written. Missing means chat only. */
+  output?: JobOutput;
   cadence: Cadence;
   enabled: boolean;
   createdAt: string;
@@ -306,9 +327,58 @@ export function addRun(job: Job, run: JobRun): Job {
 let counter = 0;
 export const newId = (prefix: string, now = Date.now()) => `${prefix}-${now.toString(36)}${(counter++ % 1296).toString(36)}`;
 
-export function newJob(input: { name: string; target: Target; note?: string; cadence: Cadence; groups?: Record<string, string> }, now = new Date()): Job {
+export function newJob(input: { name: string; target: Target; note?: string; cadence: Cadence; groups?: Record<string, string>; output?: JobOutput }, now = new Date()): Job {
   const groups = Object.fromEntries(Object.entries(input.groups ?? {}).map(([k, v]) => [k, clean(v, 40)]).filter(([k, v]) => v && /^[a-z0-9-]{1,40}$/i.test(k as string) && k !== 'type'));
-  return { id: newId('job', now.getTime()), name: clean(input.name, 60) || `${TARGET_LABEL[input.target.type]}: ${input.target.label}`.slice(0, 60), target: input.target, note: clean(input.note, 400), cadence: input.cadence, enabled: true, createdAt: now.toISOString(), runs: [], ...(Object.keys(groups).length ? { groups } : {}) };
+  return { id: newId('job', now.getTime()), name: clean(input.name, 60) || `${TARGET_LABEL[input.target.type]}: ${input.target.label}`.slice(0, 60), target: input.target, note: clean(input.note, 400), cadence: input.cadence, enabled: true, createdAt: now.toISOString(), runs: [], ...outputField(input.output), ...(Object.keys(groups).length ? { groups } : {}) };
+}
+
+/* ---- Output (where the result goes) ---- */
+const EMAIL = /^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/;
+const TABLE = /^[A-Za-z0-9_]+\.[A-Za-z0-9_]+\.[A-Za-z0-9_]+$/;
+const SLACK_CHANNEL = /^(#?[A-Za-z0-9._-]{1,80}|[CGD][A-Z0-9]{8,14})$/;
+const NOTION_PARENT = /^(https:\/\/(www\.)?notion\.(so|site)\/[^\s]{1,300}|[0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+/** A folder path below workspace/job-results/: letters, digits, dot, dash, underscore, slash; no "..", no absolute path. */
+const SAFE_FOLDER = /^(?!.*(^|\/)\.\.?(\/|$))[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+){0,4}$/;
+
+/** What is wrong with a destination, empty when it is usable. The form shows this; sanitizeOutput drops what fails. */
+export function outputProblems(o: JobOutput | undefined): string[] {
+  if (!o || o.kind === 'chat') return [];
+  switch (o.kind) {
+    case 'email': return EMAIL.test(o.to.trim()) ? [] : ['Enter one email address.'];
+    case 'file': return !o.path.trim() || SAFE_FOLDER.test(o.path.trim().replace(/^\/+|\/+$/g, '')) ? [] : ['Folder: letters, digits, dot, dash, underscore and slash only, no ".."'];
+    case 'slack': return SLACK_CHANNEL.test(o.channel.trim()) ? [] : ['Enter a channel name (#general) or id (C0123ABCDE).'];
+    case 'notion': return NOTION_PARENT.test(o.parent.trim()) ? [] : ['Enter a notion.so link or the page/database id.'];
+    case 'databricks': return TABLE.test(o.table.trim()) ? [] : ['Enter the table as catalog.schema.table.'];
+  }
+}
+
+export function sanitizeOutput(raw: unknown): JobOutput | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const r = raw as Record<string, unknown>;
+  let o: JobOutput | undefined;
+  switch (r.kind) {
+    case 'email': o = { kind: 'email', to: clean(r.to, 120) }; break;
+    case 'file': o = { kind: 'file', path: clean(r.path, 120).replace(/^\/+|\/+$/g, ''), format: r.format === 'txt' ? 'txt' : 'md' }; break;
+    case 'slack': o = { kind: 'slack', channel: clean(r.channel, 80) }; break;
+    case 'notion': o = { kind: 'notion', parent: clean(r.parent, 300), parentType: r.parentType === 'database' ? 'database' : 'page' }; break;
+    case 'databricks': o = { kind: 'databricks', table: clean(r.table, 120) }; break;
+    default: return undefined;
+  }
+  return outputProblems(o).length === 0 ? o : undefined;
+}
+
+const outputField = (o: JobOutput | undefined): { output?: JobOutput } => { const s = sanitizeOutput(o); return s ? { output: s } : {}; };
+
+/** Short text for the job list and the detail view. */
+export function outputLabel(o: JobOutput | undefined): string {
+  if (!o || o.kind === 'chat') return OUTPUT_LABEL.chat;
+  switch (o.kind) {
+    case 'email': return `Email draft to ${o.to}`;
+    case 'file': return `File: job-results/${o.path ? `${o.path}/` : ''}`;
+    case 'slack': return `Slack ${o.channel.startsWith('#') || /^[CGD][A-Z0-9]{8,}$/.test(o.channel) ? o.channel : `#${o.channel}`}`;
+    case 'notion': return `Notion ${o.parentType}`;
+    case 'databricks': return `Databricks ${o.table}`;
+  }
 }
 
 /* ---- Storage ---- */
@@ -367,6 +437,7 @@ export function sanitizeJobs(value: unknown): Job[] {
       ...(typeof r.lastRun === 'string' && !Number.isNaN(Date.parse(r.lastRun)) ? { lastRun: r.lastRun } : {}), runs,
       ...(r.example === true ? { example: true } : {}),
       ...(r.fails === true && r.example === true ? { fails: true } : {}),
+      ...outputField(r.output as JobOutput | undefined),
       ...sanitizeGroups(r.groups),
     });
     if (out.length >= MAX_JOBS) break;

@@ -98,6 +98,7 @@ import SpaceDesigner from './ui/SpaceDesigner';
 import { exampleCatalog, loadCatalog, saveCatalog, syncInstalled, type Catalog } from './skill-health';
 import { catalogFromDatabase, lifecycleCalls, promotionCalls, supplementWithExamples, withdrawFlags, type SkillSource } from './skill-health-db';
 import { loadUse } from './chat-tabs';
+import { deliverJobResult } from './job-output';
 import { deliverBriefing, gmailExtension, isFailedAnswer } from './schedule-delivery';
 import { answerHtml } from './export-answer-html';
 import { loadSpaceOrder, moveSpace, nudgeSpace, orderSpaces, saveSpaceOrder } from './space-order';
@@ -1410,6 +1411,15 @@ export default function App() {
       await send(jobPrompt(job, manual), [], { trigger: manual ? 'manual' : 'schedule' });
       const answer = draft.current;
       if (isFailedAnswer(answer)) { status = 'error'; note = answer.replace(/^\s*⚠️\s*/, '').replace(/\s+/g, ' ').trim().slice(0, 160) || 'No answer. For an agent: is it published in the Studio?'; }
+      else if (job.output && job.output.kind !== 'chat') {
+        // The run itself worked. If writing the result fails, the run is marked failed so it shows up as "Failing" and the note says why.
+        const delivered = await deliverJobResult(job, answer, {
+          callTool: (name, args) => agent.callTool(name, args),
+          extensions: extensionNames,
+          writeFile: (request) => (window.host?.writeJobResult ? window.host.writeJobResult(request) : Promise.resolve({ ok: false, detail: 'Saving files needs the desktop app.' })),
+        });
+        status = delivered.status; note = delivered.note;
+      }
     } catch (error) {
       status = 'error'; note = (error instanceof Error ? error.message : 'The run failed.').slice(0, 160);
     } finally {
