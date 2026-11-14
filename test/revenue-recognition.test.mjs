@@ -8,11 +8,10 @@ const data = JSON.parse(fs.readFileSync('examples/revenue-recognition/data.json'
 const core = (h) => h.slice(h.indexOf('// @core-start'), h.indexOf('// @core-end'));
 const L = new Function(rr.slice(rr.indexOf('// @logic-start'), rr.indexOf('// @logic-end')) + '; return makeLogic;')()(data);
 
-test('the page embeds its data, collapses the intro, and is registered', () => {
+test('the page embeds its data, has no intro box, and is registered', () => {
   const m = rr.match(/<script type="application\/json" id="data">([\s\S]*?)<\/script>/);
   assert.deepEqual(JSON.parse(m[1]), data);
-  assert.match(rr, /<details class="intro"><summary>/);
-  assert.doesNotMatch(rr, /<details class="intro" open/);
+  assert.doesNotMatch(rr, /<details class="intro"/);
   assert.equal(data.title, 'Revenue Recognition (Software)');
   const space = JSON.parse(fs.readFileSync('examples/revenue-recognition/space.json', 'utf8'));
   assert.equal(space.domain, 'Finance');
