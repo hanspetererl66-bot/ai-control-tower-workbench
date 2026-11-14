@@ -101,3 +101,45 @@ test('journey: the rail is plain HTML with the current step and a value strip, n
   const off = J.railHtml({ customer: 'hanse', step: 'understand', stop: 'c360' }, [], '');
   assert.match(off, /data-jr-stop="c360" disabled/);
 });
+
+test('journey rail: five cards on one path, done / now / later per step, the figures sit big under their step, the rest stays in the strip', () => {
+  const j = makeJourney();
+  const html = j.railHtml({ customer: 'lindenau', step: 'decide', stop: 'pipeline' }, [['Money in play (open ACV)', '1.2 M'], ['Due within 30 days', '3 of 5'], ['Waiting for your decision', 4], ['Something else', 'x']], 'note');
+  assert.equal((html.match(/<li class="/g) ?? []).length, 5);
+  assert.deepEqual([...html.matchAll(/<li class="(done|cur|todo)/g)].map((m) => m[1]), ['done', 'done', 'cur', 'todo', 'todo']);
+  assert.equal((html.match(/aria-current="step"/g) ?? []).length, 1);
+  assert.match(html, /<div class="jr-dot" aria-hidden="true">&#10003;<\/div>[\s\S]*?Today/, 'a finished step shows a tick');
+  assert.match(html, /<li class="cur[^>]*>[\s\S]*?<div class="jr-h">Decide<\/div>[\s\S]*?<div class="jr-m"><b>1\.2 M<\/b><span>Money in play \(open ACV\)<\/span>/);
+  assert.match(html, /<div class="jr-h">Today<\/div>[\s\S]*?<div class="jr-m"><b>3 of 5<\/b><span>Due within 30 days/);
+  assert.match(html, /<div class="jr-h">Act<\/div>[\s\S]*?<div class="jr-m"><b>4<\/b>/);
+  const strip = /<div class="jr-val">([\s\S]*?)<\/div>/.exec(html)[1];
+  assert.match(strip, /Something else/);
+  assert.doesNotMatch(strip, /Money in play|Due within|Waiting for your decision/, 'mapped figures are not shown twice');
+  assert.match(html, /Sales journey · step 3 of 5: Decide/);
+});
+
+test('journey rail: the first drawing plays the entrance, a change of step glides from the old step, drawing the same step again stays still', () => {
+  const j = makeJourney();
+  const draw = (step) => j.railHtml({ customer: 'lindenau', step, stop: null }, [], '');
+  const first = draw('today');
+  assert.match(first, /class="jr jr-in"/);
+  assert.match(first, /--jr-from:0/);
+  const same = draw('today');
+  assert.match(same, /class="jr jr-still"/, 'a click inside the page must not replay the whole entrance');
+  const move = draw('act');
+  assert.match(move, /class="jr jr-move" style="--jr-from:0"/);
+  assert.deepEqual([...move.matchAll(/<li class="[a-z]+ (go)"/g)].length, 3, 'the line is drawn over the steps that were passed (understand, decide, act)');
+  const back = draw('understand');
+  assert.match(back, /class="jr jr-move" style="--jr-from:3"/);
+  assert.doesNotMatch(back, /<li class="[a-z]+ go"/, 'going back draws no line');
+});
+
+test('journey rail: styles use tokens only, everything stops with reduced motion, the rail turns into a column on a narrow screen', () => {
+  const src = readFileSync(join(ROOT, 'shared/journey.mjs'), 'utf8');
+  const css = src.slice(src.indexOf('var CSS ='), src.indexOf('function injectStyle'));
+  assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b|rgb\(|hsl\(/, 'no colour outside the tokens');
+  assert.match(css, /@media \(prefers-reduced-motion:reduce\)\{\.jr \*,\.jr \*::before,\.jr \*::after\{animation:none!important;transition:none!important\}\}/);
+  assert.match(css, /@media \(max-width:760px\)\{[^]*grid-template-columns:1fr/);
+  assert.match(css, /@keyframes jr-draw/);
+  assert.match(css, /\.jr-in li\.cur \.jr-dot\{animation:jr-popc/);
+});
