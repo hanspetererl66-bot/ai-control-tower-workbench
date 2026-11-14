@@ -85,6 +85,14 @@ Regeln:
 
 Die Zahlen in den Hooks (fünf rote Verlängerungen, "fifty" Bewerbungen, die Risikoprozente) sind Platzhalter aus den Beispieldaten und werden beim Bau gegen die Daten im Space geprüft.
 
+### Gags der neuen Posts (abgenommen am 14.11.2026)
+| Post | Wäscheleine | Casimir | Musik / Stimme |
+|---|---|---|---|
+| 5 Ontology Manager | vier Hemden, auf jedem ein anderes Wort für dasselbe (Customer, Client, Account, Buyer) | kommt mit einem Wörterbuch, das größer ist als er, und steckt allen vier dasselbe Schild an; die Hemden färben sich im selben Lila, der Diamant leuchtet kurz auf | Cembalo-Barock, ruhig und gelehrt; ruhiger, präziser Dozent |
+| 7 Revenue Recognition | – | trägt eine grüne Augenblende, tippt an einem Rechenschieber und hakt bei jedem der fünf Schritte einen Eintrag ab | Swing-Big-Band, gedämpft; trocken humorvolle Stimme |
+| 11 Renewals | Papierflieger (die Verlängerungen) segeln herein | sortiert sie mit einem Stempel in drei Körbe ("today", "this week", "later"); eine kleine Roboter-Maus fängt die Routinefälle auf; die dringenden Fälle pulsieren in Lila (kein Rot); am Ende ist der Korb "today" fast leer | Motown-Soul, fröhlich; energische, freundliche Stimme |
+| 13 AI Governance | Nacht; kleine Papierfiguren (die Agenten) huschen an der Leine vorbei | macht mit Taschenlampe und Schirmmütze die Runde, beleuchtet Zettel mit Spuren (Wer, Was, Wann) und setzt am Ende ein Siegel auf einen Bericht | Film-Noir mit Saxophon; tiefe, ruhige Stimme |
+
 ## Wäsche, Kater und Musik: Zuordnung zu den neuen Nummern (Vorschlag, offen)
 | Neu | Übernimmt | Offen |
 |---|---|---|
@@ -92,15 +100,15 @@ Die Zahlen in den Hooks (fünf rote Verlängerungen, "fifty" Bewerbungen, die Ri
 | 2 | Chatfenster: zwei weiße Shirts, Wollknäuel; Profil-Post: Bühne, Scheinwerfer, Bongos | Wäsche und Gag wählen (Vorschlag: Bühne, weil dort der Kater schon den Scheinwerfer hat und die Einstellungen ein Bühnenthema sind) |
 | 3 | Spaces: Wind, Handtücher, Kappe, ABBA-Stil | – |
 | 4 | Skill management: tanzender Kater mit Zylinder; Scheduler: Wecker | Vorschlag: Zylinder-Kater, dazu ein Wecker an der Leine |
-| 5 | neu | Gag offen |
+| 5 | siehe Gags der neuen Posts | – |
 | 6 | Recruiting: weiße Socken mit blauem Logo; Onboarding: Willkommens-Shirt, Hausschuhe, Karton | Vorschlag: Recruiting-Gag und der Karton am Schluss |
-| 7 | neu: Bettlaken und kleine Waage (Vorschlag), Kater wiegt Socken | Vorschlag nicht abgenommen |
+| 7 | siehe Gags der neuen Posts | – |
 | 8 | Pre-Close: zwei marineblaue "AI"-Shirts, Fahrrad, Beach-Boys-Stil | – |
 | 9 | TabPFN: sechs Socken, Regen, Schirm, "Singin' in the Rain"-Stil | – |
 | 10 | Sales und Renewals: Gummistiefel, Handtücher, roter Schal, Hip-Hop; Journey: fünf Wimpel | Vorschlag: Gummistiefel-Gag bleibt, Wimpel dazu |
-| 11 | neu | Gag offen |
+| 11 | siehe Gags der neuen Posts | – |
 | 12 | Anforderungen: Heißluftballon, südafrikanisch; Interview: Headset, Mikrofon | Vorschlag: Ballon bleibt, Mikrofon dazu |
-| 13 | neu: vier gestempelte Hemden, Siegel (Vorschlag), n8n-Dashboard: Kater am Schreibtisch mit Laptop und Brille | Vorschlag nicht abgenommen |
+| 13 | siehe Gags der neuen Posts; das n8n-Dashboard als Szene, Casimir am Schreibtisch mit Laptop und Brille, nur als kurzer Cameo | – |
 | 14 | Infra: Rücken zum Betrachter an der Konsole, Kraftwerk-Stil | – |
 
 Die Sprecherrollen der neuen Posts sind im Produktionschat gegen die vorhandenen Stimmen (Ben, Muriel, Alicia, Camille, Walter, Grace, Isla, Theo, Lily, Marcus, Nova, Leo) zu prüfen.
