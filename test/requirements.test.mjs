@@ -245,3 +245,20 @@ test('the hand-over brief carries the signal line and per-requirement counts', a
   assert.match(h.brief, /\[4 mentions\]/);
   assert.match(R.clusterPrompt(reqs, [], []), /said 4 times/);
 });
+
+test('a pasted link or query tells which source it belongs to; unclear input is not guessed', async () => {
+  const { detectSource, countBySource, NATURE } = await import('../src/requirements.ts');
+  assert.equal(detectSource('https://acme.atlassian.net/browse/ABC-12'), 'jira');
+  assert.equal(detectSource('https://linear.app/acme/issue/ENG-12/x'), 'linear');
+  assert.equal(detectSource('https://www.figma.com/design/abc/File?node-id=1-2'), 'figma');
+  assert.equal(detectSource('https://acme.slack.com/archives/C1/p1'), 'slack');
+  assert.equal(detectSource('https://teams.microsoft.com/l/message/1'), 'teams');
+  assert.equal(detectSource('https://www.notion.so/acme/Reqs-1'), 'notion');
+  assert.equal(detectSource('#requirements'), 'slack');
+  assert.equal(detectSource('Sales / Requirements'), 'teams');
+  assert.equal(detectSource('project = ABC AND labels = joule'), 'jira');
+  for (const v of ['', 'ABC-12', 'ENG', 'renewal reminder', 'https://example.com/x', 'https://evilatlassian.net.example.com/x', 'https://evilatlassian.net/x', 'https://notfigma.com/x']) assert.equal(detectSource(v), null, v);
+  assert.deepEqual(NATURE, { jira: 'ticket', linear: 'ticket', figma: 'design comment', slack: 'conversation', teams: 'conversation', notion: 'page' });
+  const list = [{ source: 'slack' }, { source: 'jira' }, { source: 'slack' }];
+  assert.deepEqual(countBySource(list), [{ source: 'jira', count: 1 }, { source: 'slack', count: 2 }]);
+});

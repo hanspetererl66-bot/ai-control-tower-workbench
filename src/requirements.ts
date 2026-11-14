@@ -7,6 +7,12 @@
 
 export type SourceKind = 'jira' | 'linear' | 'figma' | 'slack' | 'teams' | 'notion';
 
+/** What kind of thing a source holds: tickets are already requirements, conversations and design comments have to be judged. */
+export type SourceNature = 'ticket' | 'conversation' | 'design comment' | 'page';
+export const NATURE: Record<SourceKind, SourceNature> = { jira: 'ticket', linear: 'ticket', figma: 'design comment', slack: 'conversation', teams: 'conversation', notion: 'page' };
+export const NATURE_HINT: Record<SourceNature, string> = {
+  ticket: 'Already written as work items.', conversation: 'Talk, so Joule picks out what is a requirement.', 'design comment': 'Open comments on a design.', page: 'Pages and databases, read as written.',
+};
 export const SOURCES: Array<{ id: SourceKind; label: string; query: string; placeholder: string; help: string }> = [
   { id: 'jira', label: 'Jira', query: 'Project key, JQL or search words', placeholder: 'e.g. ABC, or: project = ABC AND labels = joule ORDER BY updated DESC', help: 'Uses the Jira connector (read only).' },
   { id: 'linear', label: 'Linear', query: 'Team key (e.g. ENG), an issue link or search words', placeholder: 'e.g. ENG, or: renewal reminder', help: 'Uses the Linear connector (read only).' },
@@ -28,6 +34,36 @@ export type SourceRef = { source: SourceKind; key: string; title: string; url: s
 export type ExtendsRef = { id: string; name: string };
 
 export const MAX_ITEMS = 40;
+
+/**
+ * Which source a pasted link or query belongs to, so the person does not have to choose first. Only what is clear: a link to one of
+ * the six tools, a Slack #channel, a JQL query. A bare key such as ABC-12 could be Jira or Linear, so it is not guessed.
+ */
+export function detectSource(input: string): SourceKind | null {
+  const q = input.trim();
+  if (!q) return null;
+  const url = /^https?:\/\/([^\s/]+)/i.exec(q)?.[1]?.toLowerCase() ?? '';
+  if (url) {
+    const on = (d: string) => url === d || url.endsWith(`.${d}`);
+    if (on('atlassian.net') || on('jira.com')) return 'jira';
+    if (url === 'linear.app') return 'linear';
+    if (on('figma.com')) return 'figma';
+    if (on('slack.com')) return 'slack';
+    if (url === 'teams.microsoft.com' || on('teams.live.com')) return 'teams';
+    if (on('notion.so') || on('notion.site')) return 'notion';
+    return null;
+  }
+  if (/^#[\w-]{2,}$/.test(q)) return 'slack';
+  if (/^[\w .-]+\s\/\s[\w .-]+$/.test(q)) return 'teams';
+  if (/\b(project|status|statusCategory|labels?|issuetype|assignee|reporter|sprint|epic|resolution|component|fixVersion)\b\s*(=|!=|~|in\b|is\b)/i.test(q)) return 'jira';
+  return null;
+}
+
+/** How many requirements each source brought into the list, in the order of the tabs. */
+export function countBySource(list: Requirement[]): Array<{ source: SourceKind; count: number }> {
+  return SOURCES.map((s) => ({ source: s.id, count: list.filter((r) => r.source === s.id).length })).filter((x) => x.count > 0);
+}
+
 const cut = (v: unknown, n: number) => String(v ?? '').replace(/[ \t]+/g, ' ').trim().slice(0, n);
 const urlOf = (v: unknown) => { const s = cut(v, 400); return /^https?:\/\/\S+$/i.test(s) ? s : ''; };
 const isSource = (v: unknown): v is SourceKind => v === 'jira' || v === 'linear' || v === 'figma' || v === 'slack' || v === 'teams' || v === 'notion';
