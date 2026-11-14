@@ -9,6 +9,7 @@ import { DEFAULT_HARNESS_STATE, sanitizeHarnessState, type HarnessState } from '
 import { parseSpaceScale } from './space-scale.ts';
 import { DEFAULT_LAYOUT, isLayout, type LayoutId } from './layouts.ts';
 import { DEFAULT_SKIN, isSkin, type SkinId } from './skins.ts';
+import { DEFAULT_CAT, sanitizeCat, type CatPrefs } from './cat-peek.ts';
 
 export const PREFERENCES_STORAGE_KEY = 'werkbank.preferences.v1';
 export const PREFERENCES_VERSION = 1;
@@ -146,6 +147,8 @@ export type Preferences = ProfileSettings & {
   version: number;
   /** Archived Spaces: hidden from the list and kept on this computer until restored or deleted. Not part of a profile. */
   archivedSpaces: string[];
+  /** Casimir, the cat that peeks over a window edge: on/off and where it sits. Personal, not part of a profile. */
+  cat: CatPrefs;
   /** Terms of the ontology marked in the Spaces (act B): the Spaces and the domains the person switched on. Default off; not part of a profile. */
   termSpaces: string[];
   termDomains: string[];
@@ -181,6 +184,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   startView: 'chat',
   pinnedSpaces: [],
   archivedSpaces: [],
+  cat: { ...DEFAULT_CAT },
   termSpaces: [],
   termDomains: [],
   domains: [],
@@ -353,6 +357,7 @@ export function sanitizePreferences(value: unknown): Preferences {
     ...base,
     version: PREFERENCES_VERSION,
     archivedSpaces: Array.isArray(v.archivedSpaces) ? list(v.archivedSpaces, (s) => SLUG.test(s), 200) : [],
+    cat: sanitizeCat(v.cat),
     termSpaces: Array.isArray(v.termSpaces) ? list(v.termSpaces, (s) => SLUG.test(s), 200) : [],
     termDomains: Array.isArray(v.termDomains) ? list(v.termDomains, (s) => s.length > 0 && s.length <= 40, 50) : [],
     starters,
