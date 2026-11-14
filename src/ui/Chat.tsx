@@ -1,3 +1,4 @@
+import ConnectorLogo from './ConnectorLogo';
 import { useEffect, useRef, useState } from 'react';
 import { ChatMarkdown } from './ChatMarkdown';
 import type { ToolCall } from '../acp';
@@ -333,7 +334,9 @@ function SourcesBar({ sources }: { sources: Source[] }) {
         <ul className="sources-list">
           {sources.map((source) => (
             <li key={`${source.kind}-${source.label}-${source.url ?? ''}`}>
-              <span className={`src-kind src-${source.kind}`} aria-hidden="true">{icon(source.kind)}</span>
+              {source.kind === 'connector' && source.ext
+                ? <span className="src-kind src-connector" aria-hidden="true"><ConnectorLogo name={source.ext} size={16} /></span>
+                : <span className={`src-kind src-${source.kind}`} aria-hidden="true">{icon(source.kind)}</span>}
               {source.url ? <a href={source.url} target="_blank" rel="noreferrer">{source.label}</a> : <b>{source.label}</b>}
               {source.detail && <small>{source.detail}</small>}
               {source.kind === 'connector' && <em>from the connector, not from the web</em>}

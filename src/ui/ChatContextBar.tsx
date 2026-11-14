@@ -65,14 +65,14 @@ export default function ChatContextBar(p: ChatContextBarProps) {
   const notable = safetyNotable(sf.profileId, sf.modeId);
   return (
     <div className="chip-wrap ctxslot" role="group" aria-label="What shapes the answers">
-      <button className={`chip chip-icon ctx-icon ${panelOpen ? 'chip-on' : ''}`} aria-expanded={panelOpen} aria-controls="ctx-panel" aria-label="Context: memory, group, persona, Space" title={`Context: memory, group, persona, Space (${inUse} of 4 in use)`} onClick={() => setPanelOpen((o) => !o)}>
+      <button className={`chip chip-icon ctx-icon ${panelOpen ? 'chip-on' : ''}`} aria-expanded={panelOpen} aria-controls="ctx-panel" aria-label="Context: memory, group, persona, Space" data-tip={`Context: memory, group, persona, Space (${inUse} of 4 in use)`} onClick={() => setPanelOpen((o) => !o)}>
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true">
           <path d="M2 4.5h7M12 4.5h2M2 11.5h2M7 11.5h7" /><circle cx="10.5" cy="4.5" r="1.5" /><circle cx="5.5" cy="11.5" r="1.5" />
         </svg>
         {inUse > 0 && <span className="ctx-badge" aria-hidden="true">{inUse}</span>}
       </button>
       {notable && (
-        <button className="chip chip-icon ctx-shield" aria-label="Safety settings are not the usual ones. Open the settings." title={`${safetyLine({ profileId: sf.profileId, profileName: profile?.name ?? '', modeId: sf.modeId, modeName: mode?.name ?? '' })}. Click to change.`} onClick={() => setPanelOpen(true)}>
+        <button className="chip chip-icon ctx-shield" aria-label="Safety settings are not the usual ones. Open the settings." data-tip={`${safetyLine({ profileId: sf.profileId, profileName: profile?.name ?? '', modeId: sf.modeId, modeName: mode?.name ?? '' })}. Click to change.`} onClick={() => setPanelOpen(true)}>
           <ShieldIcon />
         </button>
       )}
