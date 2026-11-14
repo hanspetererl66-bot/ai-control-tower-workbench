@@ -61,7 +61,7 @@ Jeder Post beginnt mit einem Hook (erste 3 bis 5 Sekunden, **vor** "Hi, I am …
 
 Regeln:
 1. **Konkret und überraschend**, nie allgemein ("Heute zeigen wir …" ist kein Hook). Muster: eine Zahl, ein Widerspruch, eine Frage, ein sichtbarer Moment.
-2. **Bild und Wort zusammen:** LinkedIn spielt Videos zuerst stumm ab, und die Serie hat keine Untertitel. Das erste Bild muss deshalb ohne Ton eine Spannung zeigen (großes Wort, Zahl oder eine Bewegung). Ob eine kurze Texteinblendung im Hook ausnahmsweise erlaubt ist, entscheidet Hans-Peter.
+2. **Bild und Wort zusammen:** LinkedIn spielt Videos zuerst stumm ab, und die Serie hat keine Untertitel. Das erste Bild muss deshalb ohne Ton eine Spannung zeigen (großes Wort, Zahl oder eine Bewegung). Entschieden am 14.11.2026: Im Hook ist eine kurze Texteinblendung erlaubt (ein Satz, groß).
 3. **Eingelöst im Post:** Die Antwort auf den Hook kommt im "einen Moment" (Szene 2).
 4. **Zahlen nur aus den Beispieldaten** und im Post als "sample data" gekennzeichnet.
 5. **Brücke:** Der letzte Satz stellt die Frage des nächsten Posts, nicht nur "next post". Im Finale löst sie den Diamanten auf.
@@ -145,13 +145,13 @@ Erzähler: Post 1 Ben (männlich), Post 2 Muriel (weiblich, energisch, großer T
 - 4:5, ca. 70 s, keine Untertitel. Intro und Outro wie in den Posts (Footer, Diamant, Mausloch, Accenture-Seite).
 - Stimme: weiblich, mittleren Alters, energiegeladen, empathisch, warm, leicht sinnlich, sehr klar gesprochen, leichter amerikanischer Akzent, weniger synthetisch.
 - Musik: eigener Track, moderner melodischer Afro-House mit Mainstream-Dance-Appeal (Black Coffee, David Guetta), 122 bis 124 BPM; Filter-Intro, Riser, Drop bei der Montage, Break vor der Hook-Frage. Kein bekannter Titel, keine geschützte Melodie.
-- Hook: "Fourteen deep dives. One purple diamond." Die Frage nach dem Diamanten wird erst im letzten Post beantwortet.
+- Hook: "Fourteen short stories. One purple diamond." Die Frage nach dem Diamanten wird erst im letzten Post beantwortet.
 - Je Teaser ca. 3 s mit unscharfem Screen-Ausschnitt und großer Nummer; Teaser sprechen die Frage des Managers an, nicht den Namen des Space.
 
 | Zeit | Sprechertext |
 |---|---|
 | 0:00–0:08 | "What if working with Joule felt completely different?" |
-| 0:08–0:15 | "Fourteen deep dives. One purple diamond. And a few things you won't see coming." |
+| 0:08–0:15 | "Fourteen short stories. One purple diamond. And a few things you won't see coming." |
 | 1 | "First: a tour of what could be." |
 | 2 | "A chat that shows what it knows. And you set the rules." |
 | 3 | "Your own page, in minutes. Inside the rules." |
