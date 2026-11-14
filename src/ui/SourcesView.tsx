@@ -23,7 +23,7 @@ type Props = {
 };
 
 /**
- * Tile 0 of Develop: start from requirements that already exist in Jira, Slack or Notion. Four steps: load, tick, cluster (with a check
+ * Tile 0 of Develop: requirement collection, which gathers requirements that already exist in Jira, Slack or Notion. Four steps: load, tick, cluster (with a check
  * of the requirements that were not ticked), hand over. Each cluster carries a comment with class, confidence and reason; the person can
  * change the class. Nothing is written back to the sources.
  */
@@ -115,7 +115,7 @@ export default function SourcesView({ generate, onStop, ready, onBack, onHandove
       <header className="sh-head">
         <button className="sh-back" onClick={clusters ? () => { setClusters(null); setNote(''); } : onBack} aria-label="Back">←</button>
         <div>
-          <h1>Start from requirements</h1>
+          <h1>Requirement collection</h1>
           <p>{clusters ? `${clusters.length} cluster${clusters.length === 1 ? '' : 's'} from ${selected.length} requirements` : 'Read them from Jira, Linear, Figma, Slack, Microsoft Teams or Notion, tick the ones that belong together, then let Joule cluster and classify them.'}</p>
         </div>
       </header>
