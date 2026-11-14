@@ -3,17 +3,17 @@
 Grundlage: `docs/linkedin-series.md` (14 Deep Dives, Hook und Brücke je Post, Casimir in jedem Video, Manager-Dramaturgie). Gesprochene Texte auf Englisch, Auftrag auf Deutsch. Nummern und Zeiten sind Richtwerte.
 
 Gemeinsam für alle drei Videos:
-- Hook **vor** "Hi, I am …" und vor der Wäscheleine, erstes Bild trägt die Spannung auch ohne Ton (LinkedIn spielt stumm ab, keine Untertitel; Texteinblendung im Hook nur, wenn Hans-Peter es freigibt).
+- Hook **vor** "Hi, I am …" und vor der Wäscheleine, erstes Bild trägt die Spannung auch ohne Ton (LinkedIn spielt stumm ab). Entschieden am 14.11.2026: Im Hook ist eine kurze Texteinblendung erlaubt (ein Satz, groß, nur im Hook); sonst weiter keine Untertitel.
 - Casimir (der violette Pixel-Kater) ist in Intro und Outro zu sehen. Name im Sprechertext höchstens einmal.
 - Intro und Outro wie bisher (Lavendel, Diamant, Mausloch, Footer, Accenture-Seite). Kein Rot.
-- Die Zahl im gesprochenen Intro lautet jetzt **fourteen** (bisher eighteen). Einheitlich "deep dives" statt "short stories" ist ein Vorschlag; den bisher abgenommenen Wortlaut mit "short stories" behält Hans-Peter, solange er nichts anderes sagt.
+- Die Zahl im gesprochenen Intro lautet jetzt **fourteen** (bisher eighteen). Entschieden am 14.11.2026: einheitlich "short stories" (auch im Trailer: "Fourteen short stories."), nicht "deep dives".
 
 ## 1. Pre-Trailer "Under the hood"
 Länge ca. 90 s. Gag: Casimir läuft von links nach rechts (Start und Ende), wie bisher.
 
 | Abschnitt | Sprechertext (weibliche Stimme, natürlich, mit Pausen) |
 |---|---|
-| **Hook (0:00)** | "One desktop app. Fourteen stories. And here is what is under the hood." |
+| **Hook (0:00)** | "One desktop app. Fourteen short stories. And here is what is under the hood." |
 | Intro | "Accenture developed a design and feature study, provided as open source, demonstrating high-value customer use cases for SAP Joule Work and SAP Joule Studio. One possible direction for their evolution, in fourteen short stories!" |
 | Joule Work X | "This is Joule Work X. An evolution of the new innovative experience layer Joule Work and Joule Studio from SAP." |
 | Start | "It starts on GitHub with Werkbank, an open-source desktop workbench by marianfoo. We forked it, and extended it into a design study for Joule Work and Joule Studio!" |
@@ -28,10 +28,10 @@ Länge ca. 90 s. Gag: Casimir läuft von links nach rechts (Start und Ende), wie
 | Outro | "So, what is this all about? Follow along, and find out!" |
 
 Änderungen gegenüber der alten Fassung: Hook vorangestellt; "fourteen" im Intro; die Connectorliste um Notion, Linear, Figma, Teams und das lesende Monitoring ergänzt (alle im Repo vorhanden, Stand `main` 14.11.2026); Supabase nennt jetzt auch Skills und Renewal-Fälle; Testzahl "more than a thousand" statt "more than a hundred" (Testsuite zuletzt 1109 Tests am 05.11.2026, der aktuelle Stand ist nicht neu gezählt).
-Ungeprüft: ob alle genannten Connectoren in der laufenden Desktop-App bei Hans-Peter aktiv sind.
+Alle genannten Connectoren sind bei Hans-Peter aktiv (bestätigt am 14.11.2026).
 
 ## 2. Serien-Trailer
-Text, Zeiten und Musikbeschreibung stehen in `docs/linkedin-series.md`, Abschnitt "Auftrag: Serien-Trailer mit 14 Folgen". Ergänzungen für die Produktion:
+Text, Zeiten und Musikbeschreibung stehen in `docs/linkedin-series.md`, Abschnitt "Auftrag: Serien-Trailer mit 14 Folgen" (Hook dort: "Fourteen short stories. One purple diamond."). Ergänzungen für die Produktion:
 - Die Teaser ziehen ihre Bilder aus den **neuen** Spaces (Ontology Manager, Revenue Recognition, Renewals Heute-Ansicht, AI Governance-Einstieg, Autonomous Operations), nicht aus den alten Clips.
 - Casimir: kurzer Auftritt in jedem dritten Teaser, am Ende sitzt er vor dem Mausloch. Letzter Satz: "Casimir knows where the diamond went."
 - Stimme: weiblich, mittleren Alters, energiegeladen, empathisch, warm, leicht amerikanisch, klar gesprochen, wenig synthetisch. Musik: eigener Afro-House, 122 bis 124 BPM, kein bekannter Titel.
@@ -51,13 +51,16 @@ Länge ca. 2:00. Gag wie bisher: ein Shirt an der Leine, Casimir läuft durch da
 | Skills | "Skills are reusable abilities for Joule, on three levels: personal, department and company. A skill moves up only with an approval." |
 | Scheduler | "The Scheduler runs agents, workflows or skills, daily, weekly, monthly, or by cron." |
 | Einstellungen (neu) | "And your settings: skins, profiles, memory, and the rules for what Joule may do. Yours to shape." |
-| Schluss | "A design study. Fourteen stories follow." |
+| Schluss | "A design study. Fourteen short stories follow." |
 | **Brücke** | "But what does the assistant actually know about you?" |
 
 Änderungen gegenüber der alten Fassung: Hook; "exciting new features" ersetzt durch "ideas of future features" (wie bei Post 2 und 3 abgenommen); "Skills with governance" und Scheduler gekürzt (eigene Deep Dives); Einstellungen als Vorschau auf Post 2; Brücke zu Post 2. Der Teil "Chat mit vier Tabs" bleibt, weil er im Video vor dem Chatfenster-Deep-Dive zu sehen ist.
 
-## Offen, vor dem Bau zu klären
-1. Texteinblendung im Hook: ja oder nein?
-2. "fourteen short stories" oder "fourteen deep dives" im gesprochenen Intro (einheitlich für alle Posts)?
-3. Bildmaterial: Die Spaces und Intro/Outro-Szenen liegen im Produktionschat. Dort sind die Aufnahmen für Rail, Spaces, Develop und Settings aus dem aktuellen `main` neu zu ziehen (Skins, Titel in Sales-Stil, Spaces-Liste als Baum oder als Leiste).
-4. Sprecher: Ben, die Trailer-Sprecherin und die Pre-Trailer-Sprecherin bleiben; die Stimmen der neuen Posts sind separat zu klären.
+## Entschieden am 14.11.2026
+1. Texteinblendung im Hook: ja, kurz.
+2. Wortlaut: "short stories" überall.
+3. Alle im Pre-Trailer genannten Connectoren sind bei Hans-Peter aktiv.
+
+## Noch offen
+1. Bildmaterial: Die Spaces und Intro/Outro-Szenen liegen im Produktionschat. Dort sind die Aufnahmen für Rail, Spaces, Develop und Settings aus dem aktuellen `main` neu zu ziehen (Skins, Titel in Sales-Stil, Spaces-Liste als Baum oder als Leiste).
+2. Sprecher: Ben, die Trailer-Sprecherin und die Pre-Trailer-Sprecherin bleiben; die Stimmen der neuen Posts sind separat zu klären.
