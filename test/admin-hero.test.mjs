@@ -28,7 +28,21 @@ test('the hero styles: the tokens of the Ontology Manager reach the two screens,
   const css = read('src/theme.css');
   assert.match(css, /\.sh \{ --om-hero: #000000; --om-hero-ink: #ffffff; --om-hero-soft: #cfcddb; --om-hero-hl: #dcafff; \}/);
   assert.match(css, /\.sh > \.om-hero \{ margin: -24px -32px 4px; \}/, 'flush with the top and the sides of the padded page');
-  assert.match(css, /\.sh \.om-hero \.om-back \{ background: transparent;/, 'the generic .sh button style must not turn the arrow white on white');
+  assert.match(css, /\.sh \.om-hero \.om-back \{ background: color-mix\(in srgb, var\(--om-hero-ink\) 8%, transparent\);/, 'the generic .sh button style must not turn the arrow white on white');
+  assert.match(css, /\.om-back \{ border: 2px solid/, 'the back button has a heavy ring');
   assert.match(css, /\.om-hero \.sh-ring-prog \{ stroke: var\(--om-hero-hl\); \}/);
   assert.match(css, /\.om-hero-noback \{ grid-template-columns: 1fr; \}/);
+});
+
+test('pages in the grid can scroll: the Admin console and Space Analysis may shrink below their content', () => {
+  const css = read('src/theme.css');
+  assert.match(css, /\.develop-main \{[^}]*overflow: auto; min-height: 0;/);
+  assert.match(css, /\.sa \{ grid-column: 2 \/ -1; min-height: 0; overflow: auto;/);
+});
+
+test('the hero headline has room: line height and bottom padding keep descenders from being cut off', () => {
+  const css = read('src/theme.css');
+  assert.match(css, /\.om-hero h1 \{[^}]*line-height: 1\.22; padding-bottom: 4px;/);
+  assert.match(css, /\.sa-hero h1 \{[^}]*line-height: 1\.22; padding-bottom: 4px;/);
+  assert.match(css, /\.om-hero \{[^}]*padding: 28px 40px 36px;/);
 });

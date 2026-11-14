@@ -19,7 +19,7 @@ import { handleRenewalsMessage, RENEWALS_SPACE, type RenewalsDeps } from '../ren
 import { handleSpecMessage, SPEC_SPACE, type SpecDeps } from '../spec-bridge';
 import { handleInterviewMessage, INTERVIEW_SPACE, type InterviewDeps } from '../interview-bridge';
 import { parseAskMessage } from '../space-ask';
-import { applySpacePrefs } from '../preferences-style';
+import { applySpacePrefs, spaceTipsMessage } from '../preferences-style';
 import { applySpaceTitle } from '../space-title';
 import type { Preferences } from '../preferences';
 import { applySpaceFit, applySpaceScroll, applySpaceTheme, DEFAULT_SPACE_SCALE, SPACE_SCALES, type SpaceScale } from '../space-scale';
@@ -49,6 +49,7 @@ export default function SpaceViewer({
   onTextScale,
   theme = 'light',
   prefs,
+  onTips,
   onHandoff,
   onOpenView,
   onOpenSpace,
@@ -91,6 +92,8 @@ export default function SpaceViewer({
   theme?: 'light' | 'dark';
   /** Personal look (accent, font, contrast); optional. */
   prefs?: Preferences;
+  /** A Space with tips asked to switch them off ("Turn off tips" in its bubble): the app stores the setting. */
+  onTips?: (enabled: boolean) => void;
   /** The Space hands work to another Space (the host opens it). */
   onHandoff?: (handoff: Handoff) => void;
   /** The Space asks the app to open one of its own views (e.g. the Agent Studio). */
@@ -111,6 +114,13 @@ export default function SpaceViewer({
   terms?: SpaceTermsControl;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
+  // The tips are told to the page when it loads; a later change in Settings goes in a message, so the page keeps its state.
+  const tipsAtLoad = useRef(prefs?.tips);
+  const tipsChange = useRef(onTips);
+  tipsChange.current = onTips;
+  useEffect(() => {
+    if (prefs?.tips) frame.current?.contentWindow?.postMessage(spaceTipsMessage(prefs.tips), '*');
+  }, [prefs?.tips]);
   const loaded = useRef(false);
   const postTab = () => {
     if (!tabRequest || !loaded.current) return;
@@ -196,6 +206,7 @@ export default function SpaceViewer({
     const onMessage = (event: MessageEvent) => {
       // Only the frame of this space may talk to the bridge.
       if (!frame.current || event.source !== frame.current.contentWindow) return;
+      if (event.data && event.data.type === 'wb:tips' && typeof event.data.enabled === 'boolean') { tipsChange.current?.(event.data.enabled); return; }
       const handle = space.slug === CUSTOMER360_SPACE ? (data: unknown) => handleCustomer360Message(data, c360Ref.current ?? {})
         : space.slug === RENEWALS_SPACE ? (data: unknown) => handleRenewalsMessage(data, renewalsRef.current ?? {})
         : space.slug === SPEC_SPACE ? (data: unknown) => handleSpecMessage(data, specRef.current ?? {})
@@ -255,17 +266,21 @@ export default function SpaceViewer({
   // Search and filter: the page script (space-tools.ts) does the work, these are its controls.
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Record<string, string>>({});
-  const [tools, setTools] = useState<SpaceToolsState>({ searchable: false, count: null, filters: [] });
+  const [tools, setTools] = useState<SpaceToolsState>({ searchable: false, count: null, filters: [], customer: null });
   const sendTools = (message: Record<string, unknown>) => frame.current?.contentWindow?.postMessage(message, '*');
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (!frame.current || event.source !== frame.current.contentWindow) return;
       const data = event.data;
+      if (data && data.type === 'sp:customer') {
+        setTools((current) => ({ ...current, customer: typeof data.customer === 'string' && data.customer.trim() ? data.customer.trim().slice(0, 80) : null }));
+        return;
+      }
       if (!data || data.type !== 'sp:state' || !Array.isArray(data.filters)) return;
       const filters = data.filters
         .filter((f: any) => f && typeof f.label === 'string' && Array.isArray(f.values))
         .map((f: any) => ({ label: f.label as string, values: f.values.filter((v: unknown) => typeof v === 'string') as string[] }));
-      setTools({ searchable: Boolean(data.searchable), count: typeof data.count === 'number' ? data.count : null, filters });
+      setTools({ searchable: Boolean(data.searchable), count: typeof data.count === 'number' ? data.count : null, filters, customer: typeof data.customer === 'string' && data.customer.trim() ? data.customer.trim().slice(0, 80) : null });
       // A tab without that column no longer offers its filter, so its selection must not keep hiding rows.
       setSelected((current) => {
         const kept = Object.fromEntries(Object.entries(current).filter(([label, value]) => filters.some((f: any) => f.label === label && f.values.includes(value))));
@@ -359,6 +374,12 @@ export default function SpaceViewer({
           <h1 className="topbar-title" title={space.title}>{space.title}</h1>
           <span className="topbar-sub">Updated {relativeTime(space.updatedAt)}</span>
         </div>
+        {tools.customer && (
+          <span className="topbar-customer" title={`Customer: ${tools.customer}`} aria-label={`Customer: ${tools.customer}`}>
+            <span className="topbar-customer-label" aria-hidden="true">Customer</span>
+            <b>{tools.customer}</b>
+          </span>
+        )}
 
         <div className={`space-tools ${tools.filters.length >= 2 ? 'space-tools-wide' : ''}`} role="search">
           <input
@@ -512,7 +533,7 @@ export default function SpaceViewer({
           key={`${space.slug}-${bust}-${html?.length ?? 0}-${textScale}-${theme}-${prefs ? `${prefs.accent}${prefs.font}${prefs.contrast}${prefs.reduceMotion}` : ''}`}
           className="space-frame"
           title={space.title}
-          srcDoc={applySpaceScroll(applySpaceTools(applySpaceFit((() => { const themed = applySpaceTheme(applySpaceTitle(html ?? '', space), theme); return applySpaceTerms(prefs ? applySpacePrefs(themed, prefs) : themed); })(), textScale)))}
+          srcDoc={applySpaceScroll(applySpaceTools(applySpaceFit((() => { const themed = applySpaceTheme(applySpaceTitle(html ?? '', space), theme); return applySpaceTerms(prefs ? applySpacePrefs(themed, { ...prefs, tips: tipsAtLoad.current }) : themed); })(), textScale)))}
           // No allow-same-origin: the page is agent-authored, so it gets an
           // opaque origin and cannot reach this window or its storage.
           sandbox="allow-scripts"

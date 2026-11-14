@@ -44,6 +44,10 @@
     {
       "name": "databricks_describe_table",
       "description": "Show the columns of a table (catalog.schema.table)."
+    },
+    {
+      "name": "databricks_append_result",
+      "description": "Append ONE row (job_id, job_name, run_at, result) to a result table (catalog.schema.table) that already exists. Used by scheduler jobs; changes Databricks. Ask the person before using it."
     }
   ],
   "user_config": {

@@ -301,7 +301,13 @@ export default defineConfig({
   define: { __BUILD_STAMP__: JSON.stringify(buildStamp()) },
   plugins: [react(), spacesApi(), skillsApi()],
   // mermaid is loaded on demand (chat diagrams) and is huge: pre-bundling it made the dev server run out of memory (4 GB)
-  optimizeDeps: { exclude: ['mermaid'] },
-  server: { port: 5273, strictPort: true },
+  // Only crawl the app's own entry: without `entries` vite scans EVERY .html under the repo (goose-home/.cache/uv/..., workspace/spaces, dist ...) and runs out of memory.
+  optimizeDeps: { exclude: ['mermaid', '@aaif/goose-sdk', '@modelcontextprotocol/sdk', '@modelcontextprotocol/ext-apps'], entries: ['index.html'] },
+  server: {
+    port: 5273,
+    strictPort: true,
+    // goose-home (python/uv caches, venvs) and the Spaces are read straight from disk by the middlewares above; vite must not watch them.
+    watch: { ignored: ['**/goose-home/**', '**/workspace/**', '**/dist/**', '**/release/**', '**/.venv/**', '**/__pycache__/**'] },
+  },
   build: { outDir: 'dist/renderer', emptyOutDir: true },
 });

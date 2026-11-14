@@ -1,13 +1,7 @@
 import { useEffect } from 'react';
-import { COVER_BY, COVER_NAME, COVER_STATUS, COVER_SUBTITLE, COVER_TAGLINE, PRODUCT_TITLE } from '../product';
+import { COVER_NAME, COVER_STATUS, COVER_SUBTITLE, COVER_TAGLINE, PRODUCT_TITLE } from '../product';
 import CoverGrid from './CoverGrid';
 import WerkbankMark from './WerkbankMark';
-
-/**
- * Optional logo behind the "by" line: put the file at src/assets/accenture-logo.svg (or .png, .webp). Without a file
- * nothing is shown; the app does not ship or draw a brand logo itself.
- */
-const LOGO = Object.values(import.meta.glob('../assets/accenture-logo.{svg,png,webp}', { eager: true, query: '?url', import: 'default' }))[0] as string | undefined;
 
 /** Full-screen cover sheet shown when the logo in the rail is clicked. */
 export default function CoverSheet({ onClose }: { onClose: () => void }) {
@@ -29,11 +23,6 @@ export default function CoverSheet({ onClose }: { onClose: () => void }) {
           <span className="cover-title-line2">{COVER_SUBTITLE}</span>
           <span className="cover-title-line2 cover-title-line3">{COVER_TAGLINE}</span>
         </h1>
-        <p className="cover-by">
-          {COVER_BY}
-          {LOGO && <img className="cover-logo" src={LOGO} alt="" />}
-        </p>
-        <p className="cover-author">Author: Hans-Peter Erl</p>
         <p className="cover-note">{COVER_STATUS}</p>
         <p className="cover-note" title="Git commit of the running version">Build {typeof __BUILD_STAMP__ === 'string' ? __BUILD_STAMP__ : 'dev'}</p>
         <button className="cover-close" onClick={onClose}>

@@ -22,7 +22,7 @@ Wortgleich aus der früheren `CLAUDE.md` ausgelagert (Stand der Einträge: jewei
 - n8n: `examples/n8n-workflows/13-order-to-cash-software.json`. **Nicht getestet:** Electron-App, echter n8n-Lauf, echte Systeme.
 
 
-## Revenue Recognition (Software), 08.11.2026
+## Revenue Recognition, 08.11.2026 (Titel bis 14.11.2026 "Revenue Recognition (Software)")
 Neuer Space `examples/revenue-recognition` (Finance), Anleitung `docs/revenue-recognition-demo.md`, Test `test/revenue-recognition.test.mjs`. Gleicher Fall und gleicher Rechenkern wie Order-to-Cash (Software). Neun Reiter, alle Abschnitte standardmäßig zugeklappt. Nicht getestet: Electron-App, echtes Finanzsystem; Zahlen sind Demo-Annahmen.
 
 ## Renewals: Prozess und Demo Flow, 08.11.2026
@@ -63,3 +63,12 @@ Neuer Space `examples/revenue-recognition` (Finance), Anleitung `docs/revenue-re
 - **Entitlement:** zwei Unter-Reiter **"Entitlement per check"** (die Prüfung gegen die Stückliste, wie bisher) und **"Entitlement per tenant"** (je Tenant eine Karte mit Rolle, Nutzerzahl, Region und den enthaltenen Services; grün, sobald die Rechte vergeben sind), jeder mit seinem Zustand im Reiterkopf. Der gewählte Unter-Reiter bleibt beim Ausführen der Schritte.
 - Alles mit Tokens; "weniger Bewegung" stoppt die Bewegung. Eine eigene Klasse hieß zuerst `bt` und überdeckte die Balkenspur des Design-Systems; sie heißt jetzt `bomtree` (Test hält das fest).
 - Tests: `test/o2c-software-bom-entitlement.test.mjs` (3, jsdom: die Unter-Reiter, der Baum mit Auswahl und Zeilenmarkierung und einmaligem Einstieg, die Stile); die vorhandenen Tests der Seite laufen unverändert. Im Headless-Chromium angesehen (Baum, Auswahl, beide Unter-Reiter). **Nicht getestet:** Electron-App, Dunkeldarstellung, schmale Fenster, andere Zustände der Stückliste nach den Freigaben (Serviceniveau Premium, Satz RC-2026-B im Detail).
+
+## Revenue Recognition: überarbeitet, 14.11.2026 (Branch `feat/revrec-overhaul`)
+- **Prozess klar:** Reiter in der Reihenfolge der fünf Schritte (Contract, Obligations, Price, Allocation, Revenue mit Schedule und Balances and entries), danach drei Seiten nach Vertragsabschluss. Prozessleiste mit Häkchen, pulsierendem aktuellem Schritt und fließender Linie; Banner mit Frage, Back und Next. Die Variable consideration steht jetzt bei Schritt 3, wohin sie gehört (vorher Reiter 6).
+- **Farbe:** je Schritt, je Position (sieben) und je Konto eine feste Farbe, nur Tokens; Kennzahlen mit farbiger Kante; Positionen mit Streifen und Punkt in jeder Tabelle.
+- **Bewegung:** Prozesskarten (Contract), Verteilbalken, Linien und gestapelte Fläche, Zählen der Zahlen, Buchungszeilen nacheinander; **Player** für die 38 Monate (Play und Regler, vier Karten zum Monat). Nur beim Öffnen einer Seite; "reduce motion" aus System und App schaltet alles ab.
+- **Diagramm:** Beschriftungen am Linienende überlappen nicht mehr, Jahreszahlen nicht mehr links, Flächen unter den Linien; das gestapelte Diagramm zeigt den Umsatz je Position.
+- **Tipps:** 2 bis 3 Sprechblasen je Seite, ausschaltbar in der Blase, über den Knopf "Tips" und in den Einstellungen (Skin, Tips: Schalter, Größe, Farben). Der Weg zur App: beim Laden die Variable `--wb-tips` (nur `off` wird gesetzt), später die Nachricht `ct:tips`; "Turn off tips" meldet `wb:tips`. Der App-Teil steht in `feat/space-tips`; ohne ihn bleiben die Tipps eingeschaltet und über Knopf und Blase steuerbar.
+- **Unverändert:** Rechenkern (`@core-start`/`@core-end`, identisch mit Order-to-Cash Software, getestet), Daten, Beträge.
+- **Test:** `test/revenue-recognition.test.mjs` (16, jsdom: Weg Back/Next durch alle neun Seiten, Karten, Balken, Player, Buchungsfarben, nur Tokens, Bewegung nur beim Öffnen, Tipps mit allen Zielen). **Gesehen:** alle neun Seiten im Headless-Chrome in dunkel, vier davon in hell, mit Host-Nachrichten im iframe (an, aus, groß und gelb, "Turn off tips", Start mit ausgeschalteten Tipps). **Nicht gesehen:** in der Electron-App mit der echten Einstellung, schmale Fenster, die Abspielgeschwindigkeit auf einem langsamen Rechner.
