@@ -365,6 +365,7 @@ details.acc .abody{padding:2px 14px 14px}
 </head>
 <body>
 <header>
+  <span id="wb-customer" data-wb-customer hidden></span>
   <div><div class="logo">Revenue <b>Recognition</b> · Software</div><div class="sub">When is a software deal revenue? Five steps, the pattern per kind of software, and what ends up in the books</div></div>
   <div class="hr"><span class="tag amber">draft mode</span><span class="sub" id="sys"></span></div>
 </header>
@@ -707,6 +708,7 @@ details.acc .abody{padding:2px 14px 14px}
     else if (act === 'set') { var k = b.getAttribute('data-k'), v = b.getAttribute('data-v'); S[k === 'avail' ? 'avail' : k] = k === 'avail' ? parseFloat(v) : v; }
     render(act !== 'tab');
   });
+  document.getElementById('wb-customer').textContent = D.customer.name;  // the host shows it in the top bar of every Space
   render();
 })();
 </script>
